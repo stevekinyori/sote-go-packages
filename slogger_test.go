@@ -1,46 +1,48 @@
-package slogger
+package packages
 
 import (
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
+
+	"gitlab.com/getsote/packages/slogger"
 )
 
 func TestDefaultLogLevel(t *testing.T) {
-	if logLevel := GetLogLevel(); logLevel != infoLogLevel {
+	if logLevel := slogger.GetLogLevel(); logLevel != slogger.InfoLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
-	if logLevel := GetLogLevel(); logLevel == debugLogLevel {
+	if logLevel := slogger.GetLogLevel(); logLevel == slogger.DebugLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 }
 
 func TestSetLogLevelDebug(t *testing.T) {
-	SetLogLevelDebug()
-	if logLevel := GetLogLevel(); logLevel == infoLogLevel {
+	slogger.SetLogLevelDebug()
+	if logLevel := slogger.GetLogLevel(); logLevel == slogger.InfoLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
-	if logLevel := GetLogLevel(); logLevel != debugLogLevel {
+	if logLevel := slogger.GetLogLevel(); logLevel != slogger.DebugLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 }
 
 func TestSetLogLevelInfo(t *testing.T) {
-	SetLogLevelInfo()
-	if logLevel := GetLogLevel(); logLevel != infoLogLevel {
+	slogger.SetLogLevelInfo()
+	if logLevel := slogger.GetLogLevel(); logLevel != slogger.InfoLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
-	if logLevel := GetLogLevel(); logLevel == debugLogLevel {
+	if logLevel := slogger.GetLogLevel(); logLevel == slogger.DebugLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 }
 
 func TestDebugMessage(t *testing.T) {
-	SetLogLevelDebug()
+	slogger.SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	Debug("Test Message")
+	slogger.Debug("Test Message")
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	if ! strings.HasPrefix(string(out), "DEBUG") {
@@ -49,10 +51,10 @@ func TestDebugMessage(t *testing.T) {
 }
 
 func TestDebugInfoMessage(t *testing.T) {
-	SetLogLevelDebug()
+	slogger.SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	Debug("Test Message")
+	slogger.Debug("Test Message")
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	if ! strings.HasPrefix(string(out), "DEBUG") {
@@ -60,7 +62,7 @@ func TestDebugInfoMessage(t *testing.T) {
 	}
 	r, w, _ = os.Pipe()
 	os.Stdout = w
-	Info("Test Message")
+	slogger.Info("Test Message")
 	w.Close()
 	out, _ = ioutil.ReadAll(r)
 	if ! strings.HasPrefix(string(out), "INFO") {
@@ -69,10 +71,10 @@ func TestDebugInfoMessage(t *testing.T) {
 }
 
 func TestDebugMethod(t *testing.T) {
-	SetLogLevelDebug()
+	slogger.SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	DebugMethod()
+	slogger.DebugMethod()
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	output := strings.TrimSuffix(string(out), "\n")
