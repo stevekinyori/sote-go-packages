@@ -13,12 +13,12 @@ import (
 	"runtime"
 )
 
-const debugLogLevel = "DEBUG" // Support log levels
-const infoLogLevel = "INFO"   // Support log levels
+const DebugLogLevel = "DEBUG" // Support log levels
+const InfoLogLevel = "INFO"   // Support log levels
 
 var (
 	logMessage *log.Logger
-	logLevel   string = infoLogLevel
+	logLevel   string = InfoLogLevel
 )
 
 // This is used to set the logging message format
@@ -34,7 +34,7 @@ func Info(tMessage string) {
 
 // This will publish a log message at the DEBUG level
 func Debug(tMessage string) {
-	if logLevel == debugLogLevel {
+	if logLevel == DebugLogLevel {
 		initLogger(os.Stdout, "DEBUG:")
 		logMessage.Println(tMessage)
 	}
@@ -42,7 +42,7 @@ func Debug(tMessage string) {
 
 // This will publish a log message at the DEBUG level for the function that is being executed.
 func DebugMethod(depthList ...int) {
-	if logLevel == debugLogLevel {
+	if logLevel == DebugLogLevel {
 		initLogger(os.Stdout, "DEBUG:")
 		var depth int
 		if depthList == nil {
