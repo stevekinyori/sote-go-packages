@@ -33,7 +33,7 @@ const ContentError string = "Content_Error"
 const LogicIssue string = "Logic_Issue"
 const ConfigurationIssue string = "Configuration_Issue"
 const ApiContractError string = "API_Contract_Error"
-const MakeDownTitleBar string = "| Error Code | Category | Parameter Names | Formatted Error Message |\n|--------|--------|--------|--------|\n"
+const MakeDownTitleBar string = "| Error Code | Category | Parameter descr. | Formatted Error Text |\n|--------|--------|--------|--------|\n"
 
 var SErrors = map[int]SoteError{
 	100000: {100000, UserError, 0, "", "Item already exists", ""},
