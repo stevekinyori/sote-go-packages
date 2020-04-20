@@ -4,11 +4,11 @@
 	This package provides a number of functions that help development and generate documentation.
 
 	The fields that make up the Sote Error structure are the following:
-		ErrType    The category of the error message
-		ParamCount The number of parameters have are needed for the message
-		ParamNames The name of the parameters that need to be supplied
-		FmtErrMsg  This is the raw formatted message before the parameters are applied
-		Loc        The location in the code where the error occurred
+		ErrType          The category of the error message
+		ParamCount       The number of parameters have are needed for the message
+		ParamDescription Description of the parameters that need to be supplied
+		FmtErrMsg        This is the raw formatted message before the parameters are applied
+		Loc              The location in the code where the error occurred
 */
 package serror
 
@@ -18,12 +18,12 @@ import (
 )
 
 type SoteError struct {
-	ErrCode    int
-	ErrType    string
-	ParamCount int
-	ParamNames string
-	FmtErrMsg  string
-	Loc        string
+	ErrCode          int
+	ErrType          string
+	ParamCount       int
+	ParamDescription string
+	FmtErrMsg        string
+	Loc              string
 }
 
 const UserError string = "User_Error"
@@ -36,28 +36,28 @@ const ApiContractError string = "API_Contract_Error"
 const MakeDownTitleBar string = "| Error Code | Category | Parameter descr. | Formatted Error Text |\n|--------|--------|--------|--------|\n"
 
 var SErrors = map[int]SoteError{
-	100000: {100000, UserError, 0, "", "Item already exists", ""},
-	100100: {100100, UserError, 2, "listOfRoles, actionDescription", "Your roles %v are not authorized to %v", ""},
-	109999: {109999, UserError, 0, "", "No %v was/were found", ""},
+	100000: {100000, UserError, 0, "None", "Item already exists", ""},
+	100100: {100100, UserError, 2, "list Of users roles, requested action", "Your roles %v are not authorized to %v", ""},
+	109999: {109999, UserError, 0, "None", "No %v was/were found", ""},
 	//
-	200000: {200000, ProcessError, 0, "", "Row has been updated since reading it, re-read the row", ""},
-	200100: {200100, ProcessError, 0, "", "Table doesn't exist", ""},
+	200000: {200000, ProcessError, 0, "None", "Row has been updated since reading it, re-read the row", ""},
+	200100: {200100, ProcessError, 0, "None", "Table doesn't exist", ""},
 	200200: {200200, ProcessError, 2, "", "%v must be of type %v", ""},
 	200250: {200250, ProcessError, 3, "", "%v (%v) must contain one of these values: %v", ""},
 	200260: {200260, ProcessError, 3, "", "%v must be provided when %v is set to (%v)", ""},
 	200500: {200500, ProcessError, 1, "", "You are making changes to a canceled or completed %v", ""},
 	200510: {200510, ProcessError, 3, "", "%v can't be updated because %v is set to %v", ""},
-	// 200511: {200510,ProcessError, 3, "", "%v and %v must both be populated or null", ""},
+	200511: {200510,ProcessError, 3, "", "%v and %v must both be populated or null", ""},
 	201000: {201000, ProcessError, 1, "", "Bad HTTP/HTTPS Request - %v", ""},
-	201005: {201005, ProcessError, 0, "", "Invalid Claim", ""},
+	201005: {201005, ProcessError, 0, "None", "Invalid Claim", ""},
 	202000: {202000, ProcessError, 1, "", "The API you are calling is not available in this environment (%v)", ""},
-	209999: {209999, ProcessError, 0, "", "SQL error - see details in retPack", ""},
-	219999: {219999, ProcessError, 0, "", "Cognito error - see details in retPack", ""},
-	230000: {230000, ProcessError, 0, "", "The number of parameters provided for the error message does not match the required number", ""},
-	230050: {230050, ProcessError, 0, "", "Number of parameters defined in the error message is not support by serror.GetSError", ""},
-	250000: {250000, ProcessError, 0, "", "AWS SES error - see details in retPack", ""},
+	209999: {209999, ProcessError, 0, "None", "SQL error - see details in retPack", ""},
+	219999: {219999, ProcessError, 0, "None", "Cognito error - see details in retPack", ""},
+	230000: {230000, ProcessError, 0, "None", "The number of parameters provided for the error message does not match the required number", ""},
+	230050: {230050, ProcessError, 0, "None", "Number of parameters defined in the error message is not support by serror.GetSError", ""},
+	250000: {250000, ProcessError, 0, "None", "AWS SES error - see details in retPack", ""},
 	//
-	300000: {300000, NatsError, 0, "", "TBD", ""},
+	300000: {300000, NatsError, 0, "None", "TBD", ""},
 	310000: {310000, NatsError, 1, "", "Upper or lower case %v key is missing", ""},
 	310005: {310005, NatsError, 1, "", "Upper or lower case %v keys value is missing", ""},
 	320000: {320000, NatsError, 1, "", "Message doesn't match signature. Sender must provide the following parameter names: %v", ""},
@@ -73,16 +73,16 @@ var SErrors = map[int]SoteError{
 	400070: {400070, ContentError, 2, "", "%v (%v) is not a valid date", ""},
 	400080: {400080, ContentError, 2, "", "%v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", ""},
 	400090: {400090, ContentError, 5, "", "%v (%v) is too %v. %v size: %v Actual size: %v", ""},
-	400100: {400100, ContentError, 0, "", "%v could't be converted to an array - JSON conversion error", ""},
+	400100: {400100, ContentError, 0, "None", "%v could't be converted to an array - JSON conversion error", ""},
 	405110: {405110, ContentError, 2, "", "No update is needed. No fields where changed for %v with id %v", ""},
 	405120: {405120, ContentError, 3, "", "The %v was empty for %v with id %v", ""},
 	//
-	500000: {500000, LogicIssue, 0, "", "Code is exiting in unexpected way.  Investigate logs right away!", ""},
+	500000: {500000, LogicIssue, 0, "None", "Code is exiting in unexpected way.  Investigate logs right away!", ""},
 	//
-	600000: {600000, ConfigurationIssue, 0, "", ".env files are missing", ""},
+	600000: {600000, ConfigurationIssue, 0, "None", ".env files are missing", ""},
 	601000: {601000, ConfigurationIssue, 1, "", "environment variable is missing (%v)", ""},
 	602000: {602000, ConfigurationIssue, 2, "", "Unable to connect to database %v using driver %v on port %v", ""},
-	602010: {602010, ConfigurationIssue, 0, "", "Unable to pass database authentication", ""},
+	602010: {602010, ConfigurationIssue, 0, "None", "Unable to pass database authentication", ""},
 	609999: {609999, ConfigurationIssue, 1, "", "Start up variable is missing (%v)", ""},
 	//
 	700000: {700000, ApiContractError, 1, "", "Call doesn't match API signature. Caller must provide the following parameter names: %v", ""},
@@ -163,7 +163,7 @@ func GenMarkDown() string {
 	var markDown string = MakeDownTitleBar
 	for _, i2 := range errorKeys {
 		x := SErrors[i2]
-		markDown += fmt.Sprintf("| %v | %v | %v | %v |\n", x.ErrCode, x.ErrType, x.ParamNames, x.FmtErrMsg)
+		markDown += fmt.Sprintf("| %v | %v | %v | %v |\n", x.ErrCode, x.ErrType, x.ParamDescription, x.FmtErrMsg)
 	}
 	return markDown
 }
