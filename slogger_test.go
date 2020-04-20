@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/getsote/packages/slogger"
+	"gitlab.com/soteapps/packages/slogger"
 )
 
 func TestDefaultLogLevel(t *testing.T) {
