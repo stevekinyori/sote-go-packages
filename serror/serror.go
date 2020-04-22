@@ -15,6 +15,8 @@ package serror
 import (
 	"fmt"
 	"sort"
+
+	"gitlab.com/soteapps/packages/slogger"
 )
 
 type SoteError struct {
@@ -125,6 +127,7 @@ var SErrors = map[int]SoteError{
 		700000  List of parameters needed for RESTFUL API being called
 */
 func GetSError(code int, params []string) SoteError {
+	slogger.DebugMethod()
 	var fmttdError SoteError = SErrors[code]
 	if fmttdError.ErrCode != code {
 		fmttdError = SErrors[109999]
@@ -154,6 +157,7 @@ func GetSError(code int, params []string) SoteError {
 	this code the master source of Sote Error messages
 */
 func GenMarkDown() string {
+	slogger.DebugMethod()
 	// Sort the Keys from SError map
 	var errorKeys []int
 	for _, i2 := range SErrors {
