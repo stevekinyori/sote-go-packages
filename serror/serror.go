@@ -18,7 +18,7 @@ import (
 )
 
 type SoteError struct {
-	ErrCode          int
+	ErrCode          interface{}
 	ErrType          string
 	ParamCount       int
 	ParamDescription string
