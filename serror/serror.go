@@ -60,7 +60,7 @@ var SErrors = map[int]SoteError{
 	300000: {300000, NatsError, 0, "None", "TBD", ""},
 	310000: {310000, NatsError, 1, "Key name", "Upper or lower case %v key is missing", ""},
 	310005: {310005, NatsError, 1, "Key name", "Upper or lower case %v keys value is missing", ""},
-	320000: {320000, NatsError, 1, "list of required parameters", "Message doesn't match signature. Sender must provide the following parameter names: %v", ""},
+	320000: {320000, NatsError, 1, "List of required parameters", "Message doesn't match signature. Sender must provide the following parameter names: %v", ""},
 	//
 	400000: {400000, ContentError, 2, "Field name, field value", "%v (%v) is not numeric", ""},
 	400010: {400010, ContentError, 2, "Field name, field value", "%v (%v) is not a string", ""},
