@@ -157,7 +157,7 @@ func GenMarkDown() string {
 	// Sort the Keys from SError map
 	var errorKeys []int
 	for _, i2 := range SErrors {
-		errorKeys = append(errorKeys, i2.ErrCode)
+		errorKeys = append(errorKeys, i2.ErrCode.(int))
 	}
 	sort.Ints(errorKeys)
 	// Generate the markdown syntax
