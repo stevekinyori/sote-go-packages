@@ -73,7 +73,8 @@ var SErrors = map[int]SoteError{
 	400070: {400070, ContentError, 2, "Field name, field value", "%v (%v) is not a valid date", ""},
 	400080: {400080, ContentError, 2, "Field name, field value", "%v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", ""},
 	400090: {400090, ContentError, 6, "Field name, field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size", "%v (%v) is too %v. %v size: %v Actual size: %v", ""},
-	400100: {400100, ContentError, 0, "None", "%v could't be converted to an array - JSON conversion error", ""},
+	400100: {400100, ContentError, 1, "Parameter Name", "%v could't be converted to an array - JSON conversion error", ""},
+	400110: {400110, ContentError, 1, "Parameter Name", "%v could't be parsed - Invalid JSON error", ""},
 	405110: {405110, ContentError, 2, "Thing being changed. System Id for the thing", "No update is needed. No fields where changed for %v with id %v", ""},
 	405120: {405120, ContentError, 3, "JSON array name, thing being changed, System Id for the thing", "The %v was empty for %v with id %v", ""},
 	//
