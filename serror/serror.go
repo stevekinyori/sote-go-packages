@@ -15,6 +15,8 @@ package serror
 import (
 	"fmt"
 	"sort"
+
+	"gitlab.com/soteapps/packages/slogger"
 )
 
 type SoteError struct {
@@ -81,6 +83,7 @@ var SErrors = map[int]SoteError{
 	500000: {500000, LogicIssue, 0, "None", "Code is exiting in unexpected way.  Investigate logs right away!", ""},
 	//
 	600000: {600000, ConfigurationIssue, 0, "None", ".env files are missing", ""},
+	600010: {600000, ConfigurationIssue, 2, "File name, Message Return from Open", "%v file was not found. Message return: %v", ""},
 	601000: {601000, ConfigurationIssue, 1, "Environment name", "environment variable is missing (%v)", ""},
 	602000: {602000, ConfigurationIssue, 3, "Database name, Database driver name, port value", "Unable to connect to database %v using driver %v on port %v", ""},
 	602010: {602010, ConfigurationIssue, 0, "None", "Unable to pass database authentication", ""},
@@ -125,6 +128,8 @@ var SErrors = map[int]SoteError{
 		700000  List of parameters needed for RESTFUL API being called
 */
 func GetSError(code int, params []string) SoteError {
+	slogger.DebugMethod()
+
 	var fmttdError SoteError = SErrors[code]
 	if fmttdError.ErrCode != code {
 		fmttdError = SErrors[109999]
@@ -154,6 +159,8 @@ func GetSError(code int, params []string) SoteError {
 	this code the master source of Sote Error messages
 */
 func GenMarkDown() string {
+	slogger.DebugMethod()
+
 	// Sort the Keys from SError map
 	var errorKeys []int
 	for _, i2 := range SErrors {
