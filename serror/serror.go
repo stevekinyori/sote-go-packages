@@ -40,7 +40,7 @@ const MakeDownTitleBar string = "| Error Code | Category | Parameter Description
 var SErrors = map[int]SoteError{
 	100000: {100000, UserError, 0, "None", "Item already exists", ""},
 	100100: {100100, UserError, 2, "List Of users roles, requested action", "Your roles %v are not authorized to %v", ""},
-	109999: {109999, UserError, 0, "None", "No %v was/were found", ""},
+	109999: {109999, UserError, 1, "Item name", "No %v was/were found", ""},
 	//
 	200000: {200000, ProcessError, 0, "None", "Row has been updated since reading it, re-read the row", ""},
 	200100: {200100, ProcessError, 0, "None", "Table doesn't exist", ""},
@@ -49,7 +49,7 @@ var SErrors = map[int]SoteError{
 	200260: {200260, ProcessError, 3, "Other parameter name, parameter name, parameter value", "%v must be provided when %v is set to (%v)", ""},
 	200500: {200500, ProcessError, 1, "Thing being changed", "You are making changes to a canceled or completed %v", ""},
 	200510: {200510, ProcessError, 3, "Parameter name, field name, field value", "%v can't be updated because %v is set to %v", ""},
-	200511: {200510,ProcessError, 2, "Parameter name, another parameter name", "%v and %v must both be populated or null", ""},
+	200511: {200510, ProcessError, 2, "Parameter name, another parameter name", "%v and %v must both be populated or null", ""},
 	201000: {201000, ProcessError, 1, "Info returned from HTTP/HTTPS Request", "Bad HTTP/HTTPS Request - %v", ""},
 	201005: {201005, ProcessError, 0, "None", "Invalid Claim", ""},
 	202000: {202000, ProcessError, 1, "Environment Name", "The API you are calling is not available in this environment (%v)", ""},
@@ -79,6 +79,7 @@ var SErrors = map[int]SoteError{
 	400110: {400110, ContentError, 1, "Parameter Name", "%v could't be parsed - Invalid JSON error", ""},
 	405110: {405110, ContentError, 2, "Thing being changed. System Id for the thing", "No update is needed. No fields where changed for %v with id %v", ""},
 	405120: {405120, ContentError, 3, "JSON array name, thing being changed, System Id for the thing", "The %v was empty for %v with id %v", ""},
+	410000: {410000, ContentError, 1, "Error Message Number", "%v error message is missing from serror package", ""},
 	//
 	500000: {500000, LogicIssue, 0, "None", "Code is exiting in unexpected way.  Investigate logs right away!", ""},
 	//
@@ -132,9 +133,9 @@ func GetSError(code int, params []string) SoteError {
 
 	var fmttdError SoteError = SErrors[code]
 	if fmttdError.ErrCode != code {
-		fmttdError = SErrors[109999]
+		fmttdError = GetSError(109999, params)
 	} else if fmttdError.ParamCount != len(params) {
-		fmttdError = SErrors[230000]
+		fmttdError = GetSError(230000, params)
 	} else {
 		switch fmttdError.ParamCount {
 		case 0:
