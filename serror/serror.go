@@ -83,7 +83,7 @@ var SErrors = map[int]SoteError{
 	500000: {500000, LogicIssue, 0, "None", "Code is exiting in unexpected way.  Investigate logs right away!", ""},
 	//
 	600000: {600000, ConfigurationIssue, 0, "None", ".env files are missing", ""},
-	600010: {600000, ConfigurationIssue, 2, "File name, Message Return from Open", "%v file was not found. Message return: %v", ""},
+	600010: {600010, ConfigurationIssue, 2, "File name, Message Return from Open", "%v file was not found. Message return: %v", ""},
 	601000: {601000, ConfigurationIssue, 1, "Environment name", "environment variable is missing (%v)", ""},
 	602000: {602000, ConfigurationIssue, 3, "Database name, Database driver name, port value", "Unable to connect to database %v using driver %v on port %v", ""},
 	602010: {602010, ConfigurationIssue, 0, "None", "Unable to pass database authentication", ""},
