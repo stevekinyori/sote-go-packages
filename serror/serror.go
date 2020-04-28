@@ -58,7 +58,7 @@ var SErrors = map[int]SoteError{
 	209999: {209999, ProcessError, 0, "None", "SQL error - see details in retPack", ""},
 	219999: {219999, ProcessError, 0, "None", "Cognito error - see details in retPack", ""},
 	230000: {230000, ProcessError, 0, "None", "The number of parameters provided for the error message does not match the required number", ""},
-	230050: {230050, ProcessError, 0, "None", "Number of parameters defined in the error message is not support by serror.GetSError", ""},
+	230050: {230050, ProcessError, 2, "Name, Application/Package name", "Number of parameters defined in the %v is not support by %v", ""},
 	230060: {230060, ProcessError, 2, "Provided parameter count, Expected parameter count", "Number of parameters provided (%v) doesn't match the number expected (%v)", ""},
 	250000: {250000, ProcessError, 0, "None", "AWS SES error - see details in retPack", ""},
 	//
@@ -157,7 +157,7 @@ func GetSError(code int, params []string) SoteError {
 		case 6:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1], params[2], params[3], params[4], params[5])
 		default:
-			fmttdError = SErrors[230050]
+			fmttdError = GetSError(230050, []string{"Error message", "serror.GetSError"})
 		}
 	}
 	return fmttdError
