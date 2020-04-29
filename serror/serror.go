@@ -177,13 +177,32 @@ func GetSError(code int, params []string, orgErrorDetails map[string]string) Sot
 	return fmttdError
 }
 
-func ConvertErr(err error) (orgErrorDetails []string, soteErr SoteError) {
+func ConvertErr(err error) (orgErrorDetails map[string]string, soteErr SoteError) {
 	slogger.DebugMethod()
 
 	if strings.Contains(err.Error(), SQLState) {
 		pgErr := err.(*pgconn.PgError)
-		orgErrorDetails = append(orgErrorDetails, pgErr.Code, pgErr.ColumnName, pgErr.ConstraintName, pgErr.DataTypeName, pgErr.Error(), pgErr.File, pgErr.Hint, strconv.Itoa(int(pgErr.InternalPosition)),
-			pgErr.InternalQuery, strconv.Itoa(int(pgErr.Line)), pgErr.Message, strconv.Itoa(int(pgErr.Position)), pgErr.Routine, pgErr.SchemaName, pgErr.Severity, pgErr.SQLState(), pgErr.TableName, pgErr.Where)
+
+		orgErrorDetails = map[string]string{
+			"Code":             pgErr.Code,
+			"ColumnName":       pgErr.ColumnName,
+			"ConstraintName":   pgErr.ConstraintName,
+			"DataTypeName":     pgErr.DataTypeName,
+			"Error":            pgErr.Error(),
+			"File":             pgErr.File,
+			"Hint":             pgErr.Hint,
+			"InternalPosition": strconv.Itoa(int(pgErr.InternalPosition)),
+			"InternalQuery":    pgErr.InternalQuery,
+			"Line":             strconv.Itoa(int(pgErr.Line)),
+			"Message":          pgErr.Message,
+			"Position":         strconv.Itoa(int(pgErr.Position)),
+			"Routine":          pgErr.Routine,
+			"SchemaName":       pgErr.SchemaName,
+			"Severity":         pgErr.Severity,
+			"SQLState":         pgErr.SQLState(),
+			"TableName":        pgErr.TableName,
+			"Where":            pgErr.Where,
+		}
 	} else {
 		soteErr = GetSError(400111, []string{"err", "serror"}, EmptyMap)
 	}
