@@ -39,6 +39,7 @@ const ContentError string = "Content_Error"
 const LogicIssue string = "Logic_Issue"
 const ConfigurationIssue string = "Configuration_Issue"
 const ApiContractError string = "API_Contract_Error"
+const GeneralError string = "General_Error"
 const MarkDownTitleBar string = "| Error Code | Category | Parameter Description | Formatted Error Text |\n|--------|--------|--------|--------|\n"
 const FuncCommentsHeader string = "\tError Code with requiring parameters:\n"
 const SQLState string = "SQLSTATE"
@@ -102,6 +103,9 @@ var SErrors = map[int]SoteError{
 	609999: {609999, ConfigurationIssue, 1, "Variable name", "Start up variable is missing (%v)", EmptyMap, ""},
 	//
 	700000: {700000, ApiContractError, 1, "List of required parameters", "Call doesn't match API signature. Caller must provide the following parameter names: %v", EmptyMap, ""},
+	//
+	800000: {800000, GeneralError, 0, "None", "An error has occurred that is not expected.", EmptyMap, ""},
+	800100: {800100, GeneralError, 0, "None", "Postgres error has occurred that is not expected.", EmptyMap, ""},
 }
 
 /*
