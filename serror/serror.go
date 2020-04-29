@@ -43,7 +43,7 @@ const MarkDownTitleBar string = "| Error Code | Category | Parameter Description
 const FuncCommentsHeader string = "\tError Code with requiring parameters:\n"
 const SQLState string = "SQLSTATE"
 
-var emptyMap = make(map[string]string)
+var EmptyMap = make(map[string]string)
 
 var SErrors = map[int]SoteError{
 	100000: {100000, UserError, 0, "None", "Item already exists", emptyMap, ""},
