@@ -62,6 +62,7 @@ var SErrors = map[int]SoteError{
 	201000: {201000, ProcessError, 1, "Info returned from HTTP/HTTPS Request", "Bad HTTP/HTTPS Request - %v", EmptyMap, ""},
 	201005: {201005, ProcessError, 0, "None", "Invalid Claim", EmptyMap, ""},
 	202000: {202000, ProcessError, 1, "Environment Name", "The API you are calling is not available in this environment (%v)", EmptyMap, ""},
+	209500: {209500, ProcessError, 0, "None", "QuickSight error - see Details", EmptyMap, ""},
 	209998: {209998, ProcessError, 0, "None", "Database constraint error - see Details", EmptyMap, ""},
 	209999: {209999, ProcessError, 0, "None", "SQL error - see Details", EmptyMap, ""},
 	219999: {219999, ProcessError, 0, "None", "Cognito error - see Details", EmptyMap, ""},
