@@ -83,13 +83,14 @@ var SErrors = map[int]SoteError{
 	400040: {400040, ContentError, 2, "Field name, Field value", "%v (%v) is not a json string", EmptyMap, ""},
 	400050: {400050, ContentError, 2, "Field name, Field value", "%v (%v) is not a valid email address", EmptyMap, ""},
 	400060: {400060, ContentError, 2, "Field name, Field value", "%v (%v) contains special characters which are not allowed", EmptyMap, ""},
-	400065: {400065, ContentError, 2, "Field name, Field value", "%v (%v) contains special characters other than alpha and underscore", EmptyMap, ""},
+	400065: {400065, ContentError, 2, "Field name, Field value", "%v (%v) contains special characters other than underscore", EmptyMap, ""},
 	400070: {400070, ContentError, 2, "Field name, Field value", "%v (%v) is not a valid date", EmptyMap, ""},
 	400080: {400080, ContentError, 2, "Field name, Field value", "%v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap, ""},
 	400090: {400090, ContentError, 6, "Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size", "%v (%v) is too %v. %v size: %v Actual size: %v", EmptyMap, ""},
 	400100: {400100, ContentError, 1, "Parameter name", "%v could't be converted to an array - JSON conversion error", EmptyMap, ""},
 	400110: {400110, ContentError, 1, "Parameter name", "%v could't be parsed - Invalid JSON error", EmptyMap, ""},
 	400111: {400111, ContentError, 2, "Parameter name, Application/Package name", "%v could't be converted to a map/keyed array - %v", EmptyMap, ""},
+	401000: {401000, ContentError, 1, "Field name", "%v must have a non-null value", EmptyMap, ""},
 	405110: {405110, ContentError, 2, "Thing being changed. System Id for the thing", "No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
 	405120: {405120, ContentError, 3, "JSON array name, Thing being changed, System Id for the thing", "The %v was empty for %v with id %v", EmptyMap, ""},
 	410000: {410000, ContentError, 1, "Error message number", "%v error message is missing from serror package", EmptyMap, ""},
@@ -139,11 +140,13 @@ var SErrors = map[int]SoteError{
 		400070	Field name, Field value
 		400080	Field name, Field value
 		400090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size
-		400100	Parameter Name
-		400110	Parameter Name
+		400100	Parameter name
+		400110	Parameter name
+		400111	Parameter name, Application/Package name
+		401000	Field name
 		405110	Thing being changed. System Id for the thing
 		405120	JSON array name, Thing being changed, System Id for the thing
-		410000	Error Message Number
+		410000	Error message number
 		600010	File name, Message returned from Open
 		601000	Environment name
 		602000	Database name, Database driver name, Port value
