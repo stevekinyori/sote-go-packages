@@ -91,7 +91,7 @@ var SErrors = map[int]SoteError{
 	400100: {400100, ContentError, 1, "Parameter name", "%v could't be converted to an array - JSON conversion error", EmptyMap, ""},
 	400110: {400110, ContentError, 1, "Parameter name", "%v could't be parsed - Invalid JSON error", EmptyMap, ""},
 	400111: {400111, ContentError, 2, "Parameter name, Application/Package name", "%v could't be converted to a map/keyed array - %v", EmptyMap, ""},
-	401000: {401000, ContentError, 1, "Field name", "%v must have a non-null value", EmptyMap, ""},
+	401000: {401000, ContentError, 0, "None", "Column must have a non-null value. Details: ", EmptyMap, ""},
 	405110: {405110, ContentError, 2, "Thing being changed. System Id for the thing", "No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
 	405120: {405120, ContentError, 3, "JSON array name, Thing being changed, System Id for the thing", "The %v was empty for %v with id %v", EmptyMap, ""},
 	410000: {410000, ContentError, 1, "Error message number", "%v error message is missing from serror package", EmptyMap, ""},
@@ -145,7 +145,6 @@ var SErrors = map[int]SoteError{
 		400100	Parameter name
 		400110	Parameter name
 		400111	Parameter name, Application/Package name
-		401000	Field name
 		405110	Thing being changed. System Id for the thing
 		405120	JSON array name, Thing being changed, System Id for the thing
 		410000	Error message number
