@@ -100,6 +100,11 @@ func Test400000Error(t *testing.T) {
 	var paramValues = []string{"FIELD_NAME", "FIELD_VALUE"}
 	validateReply(t, errCode, paramValues, serror.GetSError(errCode, paramValues, serror.EmptyMap))
 }
+func Test400005Error(t *testing.T) {
+	var errCode = 400005
+	var paramValues = []string{"FIELD_NAME", "MINIMAL_LENGTH"}
+	validateReply(t, errCode, paramValues, serror.GetSError(errCode, paramValues, serror.EmptyMap))
+}
 func Test400010Error(t *testing.T) {
 	var errCode = 400010
 	var paramValues = []string{"FIELD_NAME", "FIELD_VALUE"}
@@ -153,6 +158,11 @@ func Test400090Error(t *testing.T) {
 func Test400100Error(t *testing.T) {
 	var errCode = 400100
 	var paramValues = []string{"FIELD_VALUE"}
+	validateReply(t, errCode, paramValues, serror.GetSError(errCode, paramValues, serror.EmptyMap))
+}
+func Test401000Error(t *testing.T) {
+	var errCode = 401000
+	var paramValues = []string{"FIELD_NAME"}
 	validateReply(t, errCode, paramValues, serror.GetSError(errCode, paramValues, serror.EmptyMap))
 }
 func Test405110Error(t *testing.T) {
