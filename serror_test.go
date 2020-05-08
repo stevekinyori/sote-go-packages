@@ -160,11 +160,6 @@ func Test400100Error(t *testing.T) {
 	var paramValues = []string{"FIELD_VALUE"}
 	validateReply(t, errCode, paramValues, serror.GetSError(errCode, paramValues, serror.EmptyMap))
 }
-func Test401000Error(t *testing.T) {
-	var errCode = 401000
-	var paramValues = []string{"FIELD_NAME"}
-	validateReply(t, errCode, paramValues, serror.GetSError(errCode, paramValues, serror.EmptyMap))
-}
 func Test405110Error(t *testing.T) {
 	var errCode = 405110
 	var paramValues = []string{"OBJECT_TYPE", "SYSTEM_ID"}
