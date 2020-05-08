@@ -77,6 +77,7 @@ var SErrors = map[int]SoteError{
 	320000: {320000, NatsError, 1, "List of required parameters", "Message doesn't match signature. Sender must provide the following parameter names: %v", EmptyMap, ""},
 	//
 	400000: {400000, ContentError, 2, "Field name, Field value", "%v (%v) is not numeric", EmptyMap, ""},
+	400005: {400005, ContentError, 2, "Field name, Minimal length", "%v must a value greater than %v", EmptyMap, ""},
 	400010: {400010, ContentError, 2, "Field name, Field value", "%v (%v) is not a string", EmptyMap, ""},
 	400020: {400020, ContentError, 2, "Field name, Field value", "%v (%v) is not a float", EmptyMap, ""},
 	400030: {400030, ContentError, 2, "Field name, Field value", "%v (%v) is not a array", EmptyMap, ""},
@@ -130,6 +131,7 @@ var SErrors = map[int]SoteError{
 		310005	Key name
 		320000	List of required parameters
 		400000	Field name, Field value
+		400005	Field name, Minimal length
 		400010	Field name, Field value
 		400020	Field name, Field value
 		400030	Field name, Field value
