@@ -28,7 +28,7 @@ type SoteError struct {
 	ParamCount       int
 	ParamDescription string
 	FmtErrMsg        string
-	OrgErrorDetails  map[string]string
+	LUErrorDetails   map[string]string // LookUpErrorDetails
 	Loc              string
 }
 
@@ -45,7 +45,7 @@ const FuncCommentsHeader string = "\tError Code with requiring parameters:\n"
 const SQLState string = "SQLSTATE"
 
 var (
-	version = "v2020.2.0"
+	version  = "v2020.2.0"
 	EmptyMap = make(map[string]string)
 )
 
@@ -157,45 +157,45 @@ var SErrors = map[int]SoteError{
 		609999	Variable name
 		700000	List of required parameters
 */
-func GetSError(code int, params []string, orgErrorDetails map[string]string) SoteError {
+func GetSError(code int, params []string, LUErrorDetails map[string]string) SoteError {
 	slogger.DebugMethod()
 
 	var fmttdError SoteError = SErrors[code]
 	if fmttdError.ErrCode != code {
-		fmttdError = GetSError(410000, []string{strconv.Itoa(code)}, orgErrorDetails)
+		fmttdError = GetSError(410000, []string{strconv.Itoa(code)}, LUErrorDetails)
 	} else if fmttdError.ParamCount != len(params) {
-		fmttdError = GetSError(230060, []string{strconv.Itoa(fmttdError.ParamCount), strconv.Itoa(len(params))}, orgErrorDetails)
+		fmttdError = GetSError(230060, []string{strconv.Itoa(fmttdError.ParamCount), strconv.Itoa(len(params))}, LUErrorDetails)
 	} else {
 		switch fmttdError.ParamCount {
 		case 0:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg)
-			fmttdError.OrgErrorDetails = orgErrorDetails
+			fmttdError.LUErrorDetails = LUErrorDetails
 		case 1:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0])
-			fmttdError.OrgErrorDetails = orgErrorDetails
+			fmttdError.LUErrorDetails = LUErrorDetails
 		case 2:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1])
-			fmttdError.OrgErrorDetails = orgErrorDetails
+			fmttdError.LUErrorDetails = LUErrorDetails
 		case 3:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1], params[2])
-			fmttdError.OrgErrorDetails = orgErrorDetails
+			fmttdError.LUErrorDetails = LUErrorDetails
 		case 6:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1], params[2], params[3], params[4], params[5])
-			fmttdError.OrgErrorDetails = orgErrorDetails
+			fmttdError.LUErrorDetails = LUErrorDetails
 		default:
-			fmttdError = GetSError(230050, []string{"Error message", "serror.GetSError"}, orgErrorDetails)
+			fmttdError = GetSError(230050, []string{"Error message", "serror.GetSError"}, LUErrorDetails)
 		}
 	}
 	return fmttdError
 }
 
-func ConvertErr(err error) (orgErrorDetails map[string]string, soteErr SoteError) {
+func ConvertErr(err error) (LUErrorDetails map[string]string, soteErr SoteError) {
 	slogger.DebugMethod()
 
 	if strings.Contains(err.Error(), SQLState) {
 		pgErr := err.(*pgconn.PgError)
 
-		orgErrorDetails = map[string]string{
+		LUErrorDetails = map[string]string{
 			"Code":             pgErr.Code,
 			"ColumnName":       pgErr.ColumnName,
 			"ConstraintName":   pgErr.ConstraintName,
@@ -218,7 +218,7 @@ func ConvertErr(err error) (orgErrorDetails map[string]string, soteErr SoteError
 	} else {
 		soteErr = GetSError(400111, []string{"err", "serror"}, EmptyMap)
 	}
-	return orgErrorDetails, soteErr
+	return LUErrorDetails, soteErr
 }
 
 /*
