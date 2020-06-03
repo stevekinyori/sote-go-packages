@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# This is a testing script for the seeding utility
+#
+# The following will generate coverage.out files and new packages should be added.
+rm slogger/coverage.out; go test slogger/* -coverprofile slogger/coverage.out
+rm serror/coverage.out; go test serror/* -coverprofile serror/coverage.out
+
+# The following will run tests that use the packages as an external package or program.
+# There is no coverage because the tests are outside the directory with the source file.
+go test serror_external_test.go
+go test slogger_external_test.go
+
+# To output the results from the -coverprofile, using the following command
+go tool cover -func=serror/coverage.out
+go tool cover -func=slogger/coverage.out
