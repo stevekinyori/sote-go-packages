@@ -17,3 +17,4 @@ go tool cover -func=slogger/coverage.out >> coverage_review.out
 
 # Review the coverage totals for 70% compliance
  grep '^total' coverage_review.out | awk '/[0-6][0-9]./ { print "FAILED: Coverage must be 70% or higher" }'
+ grep '^total' coverage_review.out | awk '/[1,7-9][0-9]./ { print "PASSED: Coverage over 70%" }'
