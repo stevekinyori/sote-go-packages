@@ -12,5 +12,7 @@ go test serror_external_test.go
 go test slogger_external_test.go
 
 # To output the results from the -coverprofile, using the following command
-go tool cover -func=serror/coverage.out
-go tool cover -func=slogger/coverage.out
+go tool cover -func=serror/coverage.out > coverage_review.out
+go tool cover -func=slogger/coverage.out >> coverage_review.out
+
+# Review the coverage totals for 70% compliance
