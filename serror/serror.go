@@ -28,7 +28,7 @@ type SoteError struct {
 	ParamCount       int
 	ParamDescription string
 	FmtErrMsg        string
-	LUErrorDetails   map[string]string // LookUpErrorDetails
+	ErrorDetails     map[string]string // ErrorDetails, this can be used for anything inlcuding look up value errors.
 	Loc              string
 }
 
@@ -73,6 +73,7 @@ var SErrors = map[int]SoteError{
 	230050: {230050, ProcessError, 2, "Name, Application/Package name", "Number of parameters defined in the %v is not support by %v", EmptyMap, ""},
 	230060: {230060, ProcessError, 2, "Provided parameter count, Expected parameter count", "Number of parameters provided (%v) doesn't match the number expected (%v)", EmptyMap, ""},
 	250000: {250000, ProcessError, 0, "None", "AWS SES error - see details in retPack", EmptyMap, ""},
+	250005: {250005, ProcessError, 0, "None", "AWS STS error - see details in retPack", EmptyMap, ""},
 	//
 	300000: {300000, NatsError, 0, "None", "TBD", EmptyMap, ""},
 	310000: {310000, NatsError, 1, "Key name", "Upper or lower case %v key is missing", EmptyMap, ""},
@@ -157,45 +158,45 @@ var SErrors = map[int]SoteError{
 		609999	Variable name
 		700000	List of required parameters
 */
-func GetSError(code int, params []string, LUErrorDetails map[string]string) SoteError {
+func GetSError(code int, params []string, errorDetails map[string]string) SoteError {
 	slogger.DebugMethod()
 
 	var fmttdError SoteError = SErrors[code]
 	if fmttdError.ErrCode != code {
-		fmttdError = GetSError(410000, []string{strconv.Itoa(code)}, LUErrorDetails)
+		fmttdError = GetSError(410000, []string{strconv.Itoa(code)}, errorDetails)
 	} else if fmttdError.ParamCount != len(params) {
-		fmttdError = GetSError(230060, []string{strconv.Itoa(fmttdError.ParamCount), strconv.Itoa(len(params))}, LUErrorDetails)
+		fmttdError = GetSError(230060, []string{strconv.Itoa(fmttdError.ParamCount), strconv.Itoa(len(params))}, errorDetails)
 	} else {
 		switch fmttdError.ParamCount {
 		case 0:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg)
-			fmttdError.LUErrorDetails = LUErrorDetails
+			fmttdError.ErrorDetails = errorDetails
 		case 1:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0])
-			fmttdError.LUErrorDetails = LUErrorDetails
+			fmttdError.ErrorDetails = errorDetails
 		case 2:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1])
-			fmttdError.LUErrorDetails = LUErrorDetails
+			fmttdError.ErrorDetails = errorDetails
 		case 3:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1], params[2])
-			fmttdError.LUErrorDetails = LUErrorDetails
+			fmttdError.ErrorDetails = errorDetails
 		case 6:
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1], params[2], params[3], params[4], params[5])
-			fmttdError.LUErrorDetails = LUErrorDetails
+			fmttdError.ErrorDetails = errorDetails
 		default:
-			fmttdError = GetSError(230050, []string{"Error message", "serror.GetSError"}, LUErrorDetails)
+			fmttdError = GetSError(230050, []string{"Error message", "serror.GetSError"}, errorDetails)
 		}
 	}
 	return fmttdError
 }
 
-func ConvertErr(err error) (LUErrorDetails map[string]string, soteErr SoteError) {
+func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 	slogger.DebugMethod()
 
 	if strings.Contains(err.Error(), SQLState) {
 		pgErr := err.(*pgconn.PgError)
 
-		LUErrorDetails = map[string]string{
+		errorDetails = map[string]string{
 			"Code":             pgErr.Code,
 			"ColumnName":       pgErr.ColumnName,
 			"ConstraintName":   pgErr.ConstraintName,
@@ -218,7 +219,7 @@ func ConvertErr(err error) (LUErrorDetails map[string]string, soteErr SoteError)
 	} else {
 		soteErr = GetSError(400111, []string{"err", "serror"}, EmptyMap)
 	}
-	return LUErrorDetails, soteErr
+	return errorDetails, soteErr
 }
 
 /*
