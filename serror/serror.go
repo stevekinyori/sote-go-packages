@@ -158,38 +158,32 @@ var SErrors = map[int]SoteError{
 		609999	Variable name
 		700000	List of required parameters
 */
-func GetSError(code int, params []string, errorDetails map[string]string) (fmttdError SoteError) {
+func GetSError(code int, params []interface{}, errorDetails map[string]string) (fmttdError SoteError) {
 	slogger.DebugMethod()
 
 	fmttdError = SErrors[code]
 	if fmttdError.ErrCode != code {
-		fmttdError = GetSError(410000, []string{strconv.Itoa(code)}, errorDetails)
+		s := make([]interface{}, 1)
+		s[0] = code
+		fmttdError = GetSError(410000, s, errorDetails)
 	} else if fmttdError.ParamCount != len(params) {
-		fmttdError = GetSError(230060, []string{strconv.Itoa(fmttdError.ParamCount), strconv.Itoa(len(params))}, errorDetails)
+		s := make([]interface{}, 2)
+		s[0] = fmttdError.ParamCount
+		s[1] = len(params)
+		fmttdError = GetSError(230060, s, errorDetails)
 	} else {
-		switch fmttdError.ParamCount {
-		case 0:
+		if fmttdError.ParamCount == 0 {
 			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg)
 			fmttdError.ErrorDetails = errorDetails
-		case 1:
-			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0])
+		} else {
+			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params)
 			fmttdError.ErrorDetails = errorDetails
-		case 2:
-			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1])
-			fmttdError.ErrorDetails = errorDetails
-		case 3:
-			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1], params[2])
-			fmttdError.ErrorDetails = errorDetails
-		case 6:
-			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params[0], params[1], params[2], params[3], params[4], params[5])
-			fmttdError.ErrorDetails = errorDetails
-		default:
-			fmttdError = GetSError(230050, []string{"Error message", "serror.GetSError"}, errorDetails)
 		}
 	}
 	return
 }
 
+// This will convert a postgresql error into error details for include in SoteError
 func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 	slogger.DebugMethod()
 
@@ -217,7 +211,10 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 			"Where":            pgErr.Where,
 		}
 	} else {
-		soteErr = GetSError(400111, []string{"err", "serror"}, EmptyMap)
+		s := make([]interface{}, 2)
+		s[0] = "err"
+		s[1] = "serror"
+		soteErr = GetSError(400111, s, EmptyMap)
 	}
 	return
 }
