@@ -158,10 +158,10 @@ var SErrors = map[int]SoteError{
 		609999	Variable name
 		700000	List of required parameters
 */
-func GetSError(code int, params []string, errorDetails map[string]string) SoteError {
+func GetSError(code int, params []string, errorDetails map[string]string) (fmttdError SoteError) {
 	slogger.DebugMethod()
 
-	var fmttdError SoteError = SErrors[code]
+	fmttdError = SErrors[code]
 	if fmttdError.ErrCode != code {
 		fmttdError = GetSError(410000, []string{strconv.Itoa(code)}, errorDetails)
 	} else if fmttdError.ParamCount != len(params) {
@@ -187,7 +187,7 @@ func GetSError(code int, params []string, errorDetails map[string]string) SoteEr
 			fmttdError = GetSError(230050, []string{"Error message", "serror.GetSError"}, errorDetails)
 		}
 	}
-	return fmttdError
+	return
 }
 
 func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
@@ -219,14 +219,14 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 	} else {
 		soteErr = GetSError(400111, []string{"err", "serror"}, EmptyMap)
 	}
-	return errorDetails, soteErr
+	return
 }
 
 /*
 	This will generate the markdown syntax that can be published on a Wiki page.  This makes
 	this code the master source of Sote Error messages
 */
-func GenMarkDown() string {
+func GenMarkDown() (markDown string) {
 	slogger.DebugMethod()
 
 	// Sort the Keys from SError map
@@ -236,19 +236,19 @@ func GenMarkDown() string {
 	}
 	sort.Ints(errorKeys)
 	// Generate the markdown syntax
-	var markDown string = MarkDownTitleBar
+	markDown = MarkDownTitleBar
 	for _, i2 := range errorKeys {
 		x := SErrors[i2]
 		markDown += fmt.Sprintf("| %v | %v | %v | %v |\n", x.ErrCode, x.ErrType, x.ParamDescription, x.FmtErrMsg)
 	}
-	return markDown
+	return
 }
 
 /*
 	This will generate plain text comments about error code that require parameters.  This can be used
 	to update the GetSError function comments
 */
-func GenErrorLisRequiredParams() string {
+func GenErrorLisRequiredParams() (funcComments string) {
 	slogger.DebugMethod()
 
 	// Sort the Keys from SError map
@@ -258,11 +258,11 @@ func GenErrorLisRequiredParams() string {
 	}
 	sort.Ints(errorKeys)
 	// Generate the plain text
-	var funcComments string = FuncCommentsHeader
+	funcComments = FuncCommentsHeader
 	for _, i2 := range errorKeys {
 		if x := SErrors[i2]; x.ParamCount > 0 {
 			funcComments += fmt.Sprintf("\t\t%v\t%v\n", x.ErrCode, x.ParamDescription)
 		}
 	}
-	return funcComments
+	return
 }
