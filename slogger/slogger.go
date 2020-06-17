@@ -7,9 +7,9 @@ DEBUG and INFO.  If the system has failed, then panic should be called after all
 available information has been output to the log.
 
 The log message format is:
-    {year}/{month}}/{day} {hour}:{mins}:{secs}.{microsecs} {fileName}:{lineNumber}: {[logPrefix.]MessageType}:{Test Message}
+    {year}/{month}}/{day} {hour}:{mins}:{secs}.{microsecs} {[logPrefix.]MessageType}:{Test Message}
     example:
-    2020/06/16 22:26:42.165609 slogger.go:66: SLOGGER_TEST.DEBUG:gitlab.com/soteapps/packages/slogger.TestSetLogMessagePrefix
+    2020/06/16 22:26:42.165609 SLOGGER_TEST.DEBUG:gitlab.com/soteapps/packages/slogger.TestSetLogMessagePrefix
 It is recommended that the application set the log prefix (SetLogMessagePrefix) so log messages can be easily grouped.  If not, "missing" will be used.
 
 */
@@ -36,7 +36,7 @@ var (
 
 // This is used to set the logging message format
 func initLogger(infoHandle io.Writer, msgType string) {
-	logMessage = log.New(infoHandle, fmt.Sprintf("%v.%v:", logPrefix, msgType), log.Lshortfile|log.Lmsgprefix|log.LstdFlags|log.Lmicroseconds|log.LUTC)
+	logMessage = log.New(infoHandle, fmt.Sprintf("%v.%v:", logPrefix, msgType), log.Lmsgprefix|log.LstdFlags|log.Lmicroseconds|log.LUTC)
 }
 
 // This will publish a log message at the INFO level
