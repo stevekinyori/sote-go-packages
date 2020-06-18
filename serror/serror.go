@@ -107,7 +107,7 @@ var SErrors = map[int]SoteError{
 	601000: {601000, ConfigurationIssue, 1, "Environment name", "environment variable is missing (%v)", EmptyMap, ""},
 	602000: {602000, ConfigurationIssue, 3, "Database name, Database driver name, Port value", "Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
 	602010: {602010, ConfigurationIssue, 0, "None", "Unable to pass database authentication", EmptyMap, ""},
-	609999: {609999, ConfigurationIssue, 1, "Variable name", "Start up variable is missing (%v)", EmptyMap, ""},
+	609999: {609999, ConfigurationIssue, 1, "Parameter name", "Start up parameter is missing (%v)", EmptyMap, ""},
 	//
 	700000: {700000, ApiContractError, 1, "List of required parameters", "Call doesn't match API signature. Caller must provide the following parameter names: %v", EmptyMap, ""},
 	//
@@ -155,7 +155,7 @@ var SErrors = map[int]SoteError{
 		600010	File name, Message returned from Open
 		601000	Environment name
 		602000	Database name, Database driver name, Port value
-		609999	Variable name
+		609999	Parameter name
 		700000	List of required parameters
 */
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (fmttdError SoteError) {
