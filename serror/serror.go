@@ -149,7 +149,8 @@ var SErrors = map[int]SoteError{
 		400070	Field name, Field value
 		400080	Field name, Field value
 		400090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size
-		400100	Parameter name
+		400100	Parameter name, Data Structure Type
+		400105	Data Structure Name, Data Structure Type
 		400110	Parameter name
 		400111	Parameter name, Application/Package name
 		405110	Thing being changed. System Id for the thing
@@ -158,6 +159,8 @@ var SErrors = map[int]SoteError{
 		600010	File name, Message returned from Open
 		601000	Environment name
 		602000	Database name, Database driver name, Port value
+		602020	SSL Mode
+		602100	Connection Type
 		609999	Parameter name
 		700000	List of required parameters
 */
