@@ -92,7 +92,8 @@ var SErrors = map[int]SoteError{
 	400070: {400070, ContentError, 2, "Field name, Field value", "%v (%v) is not a valid date", EmptyMap, ""},
 	400080: {400080, ContentError, 2, "Field name, Field value", "%v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap, ""},
 	400090: {400090, ContentError, 6, "Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size", "%v (%v) is too %v. %v size: %v Actual size: %v", EmptyMap, ""},
-	400100: {400100, ContentError, 1, "Parameter name", "%v could't be converted to an array - JSON conversion error", EmptyMap, ""},
+	400100: {400100, ContentError, 2, "Parameter name, Data Structure Type", "%v could't be converted to an %v - JSON conversion error", EmptyMap, ""},
+	400105: {400105, ContentError, 2, "Data Structure Name, Data Structure Type", "%v (%v) could't be converted to JSON - JSON conversion error", EmptyMap, ""},
 	400110: {400110, ContentError, 1, "Parameter name", "%v could't be parsed - Invalid JSON error", EmptyMap, ""},
 	400111: {400111, ContentError, 2, "Parameter name, Application/Package name", "%v could't be converted to a map/keyed array - %v", EmptyMap, ""},
 	401000: {401000, ContentError, 0, "None", "Column must have a non-null value. Details: ", EmptyMap, ""},
@@ -107,6 +108,8 @@ var SErrors = map[int]SoteError{
 	601000: {601000, ConfigurationIssue, 1, "Environment name", "environment variable is missing (%v)", EmptyMap, ""},
 	602000: {602000, ConfigurationIssue, 3, "Database name, Database driver name, Port value", "Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
 	602010: {602010, ConfigurationIssue, 0, "None", "Unable to pass database authentication", EmptyMap, ""},
+	602020: {602020, ConfigurationIssue, 1, "SSL Mode", "Only disable, allow, prefer and required are supported.", EmptyMap, ""},
+	602100: {602100, ConfigurationIssue, 1, "Connection Type", "Only single or pool are supported.", EmptyMap, ""},
 	609999: {609999, ConfigurationIssue, 1, "Parameter name", "Start up parameter is missing (%v)", EmptyMap, ""},
 	//
 	700000: {700000, ApiContractError, 1, "List of required parameters", "Call doesn't match API signature. Caller must provide the following parameter names: %v", EmptyMap, ""},
