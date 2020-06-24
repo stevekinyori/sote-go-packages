@@ -22,6 +22,7 @@ const (
 	dbPortKey     = ""
 	dbNameKey     = ""
 	dbSSLModeKey  = ""
+	noKey         = ""
 )
 
 var (
@@ -69,6 +70,17 @@ func initParameters(tAWS, key string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func GetParameters(tAWS string) (parameters []*ssm.Parameter, found bool) {
+	slogger.DebugMethod()
+
+	initParameters(tAWS, noKey)
+	if len(sSSMParameterValues.Parameters) > 0 {
+		parameters = sSSMParameterValues.Parameters
+	}
+
+	return
 }
 
 func GetDBPassword(tAWS string) (dbPassword string, found bool) {
