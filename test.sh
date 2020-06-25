@@ -8,8 +8,8 @@ rm serror/coverage.out; go test serror/* -coverprofile serror/coverage.out
 
 # The following will run tests that use the packages as an external package or program.
 # There is no coverage because the tests are outside the directory with the source file.
-go test serror_external_test.go
-go test slogger_external_test.go
+go test sError_external_test.go
+go test sLogger_external_test.go
 
 # To output the results from the -coverprofile, using the following command
 go tool cover -func=serror/coverage.out > coverage_review.out
