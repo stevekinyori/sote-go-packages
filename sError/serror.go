@@ -10,7 +10,7 @@
 		FmtErrMsg        This is the raw formatted message before the parameters are applied
 		Loc              The location in the code where the error occurred
 */
-package serror
+package sError
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgconn"
-	"gitlab.com/soteapps/packages/slogger"
+	"gitlab.com/soteapps/packages/sLogger"
 )
 
 type SoteError struct {
@@ -99,7 +99,7 @@ var SErrors = map[int]SoteError{
 	401000: {401000, ContentError, 0, "None", "Column must have a non-null value. Details: ", EmptyMap, ""},
 	405110: {405110, ContentError, 2, "Thing being changed. System Id for the thing", "No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
 	405120: {405120, ContentError, 3, "JSON array name, Thing being changed, System Id for the thing", "The %v was empty for %v with id %v", EmptyMap, ""},
-	410000: {410000, ContentError, 1, "Error message number", "%v error message is missing from serror package", EmptyMap, ""},
+	410000: {410000, ContentError, 1, "Error message number", "%v error message is missing from sError package", EmptyMap, ""},
 	//
 	500000: {500000, LogicIssue, 0, "None", "Code is exiting in unexpected way.  Investigate logs right away!", EmptyMap, ""},
 	//
@@ -165,7 +165,7 @@ var SErrors = map[int]SoteError{
 		700000	List of required parameters
 */
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (fmttdError SoteError) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	fmttdError = SErrors[code]
 	if fmttdError.ErrCode != code {
@@ -191,7 +191,7 @@ func GetSError(code int, params []interface{}, errorDetails map[string]string) (
 
 // This will convert a postgresql error into error details for include in SoteError
 func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	if strings.Contains(err.Error(), SQLState) {
 		pgErr := err.(*pgconn.PgError)
@@ -219,7 +219,7 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 	} else {
 		s := make([]interface{}, 2)
 		s[0] = "err"
-		s[1] = "serror"
+		s[1] = "sError"
 		soteErr = GetSError(400111, s, EmptyMap)
 	}
 	return
@@ -230,7 +230,7 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 	this code the master source of Sote Error messages
 */
 func GenMarkDown() (markDown string) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	// Sort the Keys from SError map
 	var errorKeys []int
@@ -252,7 +252,7 @@ func GenMarkDown() (markDown string) {
 	to update the GetSError function comments
 */
 func GenErrorLisRequiredParams() (funcComments string) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	// Sort the Keys from SError map
 	var errorKeys []int
