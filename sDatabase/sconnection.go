@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
@@ -22,15 +21,10 @@ const (
 	SSLMODEALLOW    = "allow"
 	SSLMODEPREFER   = "prefer"
 	SSLMODEREQUIRED = "require"
+	DSCONNFORMAT    = "dbname=%v user=%v password=%v host=%v port=%v connect_timeout=%v sslmode=%v"
 )
 
-var (
-	dsSingleConnFormat = "dbname=%v user=%v password=%v host=%v port=%v connect_timeout=%v sslmode=%v"
-	// dsPoolConnFormat postgresql://[user[:password]@][host][:port][/dbname][?param1=value1&...]
-	dsPoolConnFormat = "postgresql://%v:%v@%v:%v/%v?connect_timeout=v%&sslmode=%v"
-	dbConn           *pgx.Conn
-	dbPool           *pgxpool.Pool
-)
+var dsConnValues ConnValues
 
 type ConnValues struct {
 	DBName   string `json:"dbName"`
@@ -58,25 +52,33 @@ type ConnValues struct {
 //   host     Internet DNS or IP address of the server running the instance of Postgres
 //   sslMode  Type of encryption used for the connection (https://www.postgresql.org/docs/12/libpq-ssl.html for version 12)
 //   port     Interface the connection communicates with Postgres
-//   timeout  Number of seconds a request must complete
+//   timeout  Number of seconds a request must complete (3 seconds is normal setting)
 func GetConnection(connType, dbName, user, password, host, sslMode string, port, timeout int) (dbConnPtr *pgx.Conn, dbPoolPtr *pgxpool.Pool, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if dsConnValues, soteErr := setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
+	if soteErr := setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
 		panic("Invalid connection parameters for database: " + soteErr.FmtErrMsg)
 	} else {
+		var err error
+		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dsConnValues.DBName, dsConnValues.User, dsConnValues.Password, dsConnValues.Host, dsConnValues.Port, dsConnValues.Timeout, dsConnValues.SSLMode)
 		switch strings.ToUpper(connType) {
 		case SINGLECONN:
-			soteErr = singleConnectionPGSQL(dsConnValues)
-			dbConnPtr = dbConn
+			dbConnPtr, err = pgx.Connect(context.Background(), dsConnString)
 		case POOLCONN:
-			// 	db url: postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]
-			soteErr = poolConnectionPGSQL(dsConnValues)
-			dbPoolPtr = dbPool
+			dbPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString)
 		default:
 			params := make([]interface{}, 1)
 			params[0] = connType
 			soteErr = sError.GetSError(602100, params, sError.EmptyMap)
+		}
+		if err != nil {
+			errDetails, soteErr := sError.ConvertErr(err)
+			if soteErr.ErrCode != nil {
+				sLogger.Info(soteErr.FmtErrMsg)
+				panic("sError.ConvertErr Failed")
+			}
+			sLogger.Info(sError.GetSError(800100, nil, errDetails).FmtErrMsg)
+			panic("GetConnection Failed")
 		}
 	}
 
@@ -84,7 +86,7 @@ func GetConnection(connType, dbName, user, password, host, sslMode string, port,
 }
 
 // This will set the connection values so GetConnection can be called.
-func setConnectionValues(dbName, user, password, host, sslMode string, port, timeout int) (dsConnValues ConnValues, soteErr sError.SoteError) {
+func setConnectionValues(dbName, user, password, host, sslMode string, port, timeout int) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	switch sslMode {
@@ -103,7 +105,7 @@ func setConnectionValues(dbName, user, password, host, sslMode string, port, tim
 }
 
 // This will return the connection values in JSON format
-func GetConnectionValuesJSON(dsConnValues ConnValues) string {
+func GetConnectionValuesJSON() string {
 	sLogger.DebugMethod()
 
 	jsonString, err := json.Marshal(dsConnValues)
@@ -112,40 +114,6 @@ func GetConnectionValuesJSON(dsConnValues ConnValues) string {
 	}
 
 	return string(jsonString)
-}
-
-func singleConnectionPGSQL(dsConnValues ConnValues) (errDetails sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var err error
-	dbConn, err = pgx.Connect(context.Background(), fmt.Sprintf(dsSingleConnFormat, dsConnValues.DBName, dsConnValues.User, dsConnValues.Password, dsConnValues.Host, dsConnValues.Port,
-		dsConnValues.Timeout, dsConnValues.SSLMode))
-	if err != nil {
-		errDetails, soteErr := sError.ConvertErr(err)
-		if soteErr.ErrCode != nil {
-			log.Println(soteErr.FmtErrMsg)
-		}
-		log.Println(sError.GetSError(800100, nil, errDetails).FmtErrMsg)
-	}
-
-	return
-}
-
-func poolConnectionPGSQL(dsConnValues ConnValues) (errDetails sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var err error
-	dbPool, err = pgxpool.Connect(context.Background(), fmt.Sprintf(dsSingleConnFormat, dsConnValues.DBName, dsConnValues.User, dsConnValues.Password, dsConnValues.Host, dsConnValues.Port,
-		dsConnValues.Timeout, dsConnValues.SSLMode))
-	if err != nil {
-		errDetails, soteErr := sError.ConvertErr(err)
-		if soteErr.ErrCode != nil {
-			log.Println(soteErr.FmtErrMsg)
-		}
-		log.Println(sError.GetSError(800100, nil, errDetails).FmtErrMsg)
-	}
-
-	return
 }
 
 func buildParams(values []string) (s []interface{}) {
