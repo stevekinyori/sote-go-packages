@@ -1,4 +1,4 @@
-package slogger
+package sLogger
 
 import (
 	"io/ioutil"

@@ -1,5 +1,5 @@
 /*
-slogger is a wrapper for the log package for Sote GO software developers.
+sLogger is a wrapper for the log package for Sote GO software developers.
 
 The GO log package should not be used directly.  This package sets the format of
 the logging message so they are uniform.  Also, Sote only has two logging level,
@@ -9,11 +9,11 @@ available information has been output to the log.
 The log message format is:
     {year}/{month}}/{day} {hour}:{mins}:{secs}.{microsecs} {[logPrefix.]MessageType}:{Test Message}
     example:
-    2020/06/16 22:26:42.165609 SLOGGER_TEST.DEBUG:gitlab.com/soteapps/packages/slogger.TestSetLogMessagePrefix
+    2020/06/16 22:26:42.165609 SLOGGER_TEST.DEBUG:gitlab.com/soteapps/packages/sLogger.TestSetLogMessagePrefix
 It is recommended that the application set the log prefix (SetLogMessagePrefix) so log messages can be easily grouped.  If not, "missing" will be used.
 
 */
-package slogger
+package sLogger
 
 import (
 	"fmt"

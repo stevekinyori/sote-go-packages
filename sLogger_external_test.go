@@ -6,74 +6,74 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/soteapps/packages/slogger"
+	"gitlab.com/soteapps/packages/sLogger"
 )
 
 func TestDefaultLogLevel(t *testing.T) {
-	if logLevel := slogger.GetLogLevel(); logLevel != slogger.InfoLogLevel {
+	if logLevel := sLogger.GetLogLevel(); logLevel != sLogger.InfoLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
-	if logLevel := slogger.GetLogLevel(); logLevel == slogger.DebugLogLevel {
+	if logLevel := sLogger.GetLogLevel(); logLevel == sLogger.DebugLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 }
 func TestSetLogLevelDebug(t *testing.T) {
-	slogger.SetLogLevelDebug()
-	if logLevel := slogger.GetLogLevel(); logLevel == slogger.InfoLogLevel {
+	sLogger.SetLogLevelDebug()
+	if logLevel := sLogger.GetLogLevel(); logLevel == sLogger.InfoLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
-	if logLevel := slogger.GetLogLevel(); logLevel != slogger.DebugLogLevel {
+	if logLevel := sLogger.GetLogLevel(); logLevel != sLogger.DebugLogLevel {
 		t.Errorf("The default log level should be Debug.  It is " + logLevel)
 	}
 }
 func TestSetLogLevelInfo(t *testing.T) {
-	slogger.SetLogLevelInfo()
-	if logLevel := slogger.GetLogLevel(); logLevel != slogger.InfoLogLevel {
+	sLogger.SetLogLevelInfo()
+	if logLevel := sLogger.GetLogLevel(); logLevel != sLogger.InfoLogLevel {
 		t.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
-	if logLevel := slogger.GetLogLevel(); logLevel == slogger.DebugLogLevel {
+	if logLevel := sLogger.GetLogLevel(); logLevel == sLogger.DebugLogLevel {
 		t.Errorf("The default log level should be Debug.  It is " + logLevel)
 	}
 }
 func TestDebugMessage(t *testing.T) {
-	slogger.SetLogLevelDebug()
+	sLogger.SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	slogger.Debug("Test Message")
+	sLogger.Debug("Test Message")
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
-	if ! strings.Contains(string(out), slogger.DebugLogLevel) {
+	if ! strings.Contains(string(out), sLogger.DebugLogLevel) {
 		t.Errorf("The Debug message was not found on StdOut.")
 	}
 }
 func TestDebugInfoMessage(t *testing.T) {
-	slogger.SetLogLevelDebug()
+	sLogger.SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	slogger.Debug("Test Message")
+	sLogger.Debug("Test Message")
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
-	if ! strings.Contains(string(out), slogger.DebugLogLevel) {
+	if ! strings.Contains(string(out), sLogger.DebugLogLevel) {
 		t.Errorf("The Debug message was not found on StdOut.")
 	}
 	r, w, _ = os.Pipe()
 	os.Stdout = w
-	slogger.Info("Test Message")
+	sLogger.Info("Test Message")
 	w.Close()
 	out, _ = ioutil.ReadAll(r)
-	if ! strings.Contains(string(out), slogger.InfoLogLevel) {
+	if ! strings.Contains(string(out), sLogger.InfoLogLevel) {
 		t.Errorf("The Info message was not found on StdOut.")
 	}
 }
 func TestDebugMethod(t *testing.T) {
-	slogger.SetLogLevelDebug()
+	sLogger.SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	output := strings.TrimSuffix(string(out), "\n")
-	if ! strings.Contains(output, slogger.DebugLogLevel) {
+	if ! strings.Contains(output, sLogger.DebugLogLevel) {
 		t.Errorf("The Debug message was not found on StdOut.")
 	}
 	if ! strings.Contains(output, "TestDebugMethod") {
@@ -81,15 +81,15 @@ func TestDebugMethod(t *testing.T) {
 	}
 }
 func TestSetLogMessagePrefix(t *testing.T) {
-	slogger.SetLogLevelDebug()
-	slogger.SetLogMessagePrefix("slogger_test")
+	sLogger.SetLogLevelDebug()
+	sLogger.SetLogMessagePrefix("slogger_test")
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	output := strings.TrimSuffix(string(out), "\n")
-	if ! strings.Contains(output, slogger.DebugLogLevel) && ! strings.Contains(output, "SLOGGER_TEST") {
+	if ! strings.Contains(output, sLogger.DebugLogLevel) && ! strings.Contains(output, "SLOGGER_TEST") {
 		t.Errorf("The Debug message didn't was not found on StdOut.")
 	}
 	if ! strings.Contains(output, "TestDebugMethod") && ! strings.Contains(output, "SLOGGER_TEST") {
