@@ -119,7 +119,7 @@ func GetConnectionValuesJSON() (jsonString string) {
 	}
 
 	jsonString = string(json)
-	
+
 	return
 }
 

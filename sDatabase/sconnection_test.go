@@ -38,25 +38,15 @@ func TestSetGetConnectionString(t *testing.T) {
 
 }
 func TestGetConnection(t *testing.T) {
-	connPtr, poolPtr, soteErr := GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	soteErr := GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("Get Connection Failed: Should have returned a pointer to the single database connection")
 		t.Fail()
 	}
 
-	if connPtr != nil && poolPtr != nil {
-		t.Errorf("Get Connection Failed: Should have returned only one pointer to a connection, not two")
-		t.Fail()
-	}
-
-	connPtr, poolPtr, soteErr = GetConnection("pool", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	soteErr = GetConnection("pool", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("Get Connection Failed: Should have returned a pointer to the pool database connection")
-		t.Fail()
-	}
-
-	if connPtr != nil && poolPtr != nil {
-		t.Errorf("Get Connection Failed: Should have returned only one pointer to a connection, not two")
 		t.Fail()
 	}
 
@@ -67,14 +57,9 @@ func TestGetConnection(t *testing.T) {
 	}
 }
 func TestGetConnectionValues(t *testing.T) {
-	connPtr, poolPtr, soteErr := GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	soteErr := GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("Get Connection Failed: Should have returned a pointer to the single database connection")
-		t.Fail()
-	}
-
-	if connPtr != nil && poolPtr != nil {
-		t.Errorf("Get Connection Failed: Should have returned only one pointer to a connection, not two")
 		t.Fail()
 	}
 
@@ -83,9 +68,12 @@ func TestGetConnectionValues(t *testing.T) {
 		t.Errorf("Set Connection String: Expected a nil error code.")
 		t.Fail()
 	}
+
 	s := GetConnectionValuesJSON()
 	if s != POPULATEDCONNECTIONJSON {
 		t.Errorf("Get Connection Values JSON: Expected JSON string with populated values")
 		t.Fail()
 	}
+
+	getTables("sote")
 }
