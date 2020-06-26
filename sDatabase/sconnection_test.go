@@ -5,7 +5,7 @@ import (
 )
 
 const EMPTYCONNECTIONJSON = `{"connType":"","dbName":"","user":"","password":"","host":"","port":0,"timeout":0,"sslMode":""}`
-const POPULATEDCONNECTIONJSON = `{"connType":"connType","dbName":"dbName","user":"User","password":"Password","host":"Host","port":1,"timeout":1,"sslMode":"disable"}`
+const POPULATEDCONNECTIONJSON = `{"connType":"CONNTYPE","dbName":"dbName","user":"User","password":"Password","host":"Host","port":1,"timeout":1,"sslMode":"disable"}`
 
 func TestGetConnectionStringEmpty(t *testing.T) {
 	if s := GetConnectionValuesJSON(); s != EMPTYCONNECTIONJSON {
@@ -74,6 +74,4 @@ func TestGetConnectionValues(t *testing.T) {
 		t.Errorf("Get Connection Values JSON: Expected JSON string with populated values")
 		t.Fail()
 	}
-
-	getTables("sote")
 }
