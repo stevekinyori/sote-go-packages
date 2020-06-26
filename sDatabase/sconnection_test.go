@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-const EMPTYCONNECTIONJSON = `{"dbName":"","user":"","password":"","host":"","port":0,"timeout":0,"sslMode":""}`
-const POPULATEDCONNECTIONJSON = `{"dbName":"dbName","user":"User","password":"Password","host":"Host","port":1,"timeout":1,"sslMode":"disable"}`
+const EMPTYCONNECTIONJSON = `{"connType":"","dbName":"","user":"","password":"","host":"","port":0,"timeout":0,"sslMode":""}`
+const POPULATEDCONNECTIONJSON = `{"connType":"connType","dbName":"dbName","user":"User","password":"Password","host":"Host","port":1,"timeout":1,"sslMode":"disable"}`
 
 func TestGetConnectionStringEmpty(t *testing.T) {
 	if s := GetConnectionValuesJSON(); s != EMPTYCONNECTIONJSON {
@@ -14,14 +14,14 @@ func TestGetConnectionStringEmpty(t *testing.T) {
 	}
 }
 func TestSetConnectionStringInvalidSSLMode(t *testing.T) {
-	soteErr := setConnectionValues("dbName", "User", "Password", "Host", "INVALID", 1, 1)
+	soteErr := setConnectionValues("connType", "dbName", "User", "Password", "Host", "INVALID", 1, 1)
 	if soteErr.ErrCode != 602020 {
 		t.Errorf("Set Connection String Invalid SSL Mode: Error code is not for an invalid sslMode.")
 		t.Fail()
 	}
 }
 func TestSetGetConnectionString(t *testing.T) {
-	soteErr := setConnectionValues("dbName", "User", "Password", "Host", "disable", 1, 1)
+	soteErr := setConnectionValues("connType", "dbName", "User", "Password", "Host", "disable", 1, 1)
 	if soteErr.ErrCode != nil {
 		t.Errorf("Set Connection String: Expected a nil error code.")
 		t.Fail()
@@ -60,7 +60,7 @@ func TestGetConnection(t *testing.T) {
 		t.Fail()
 	}
 
-	soteErr = setConnectionValues("dbName", "User", "Password", "Host", "disable", 1, 1)
+	soteErr = setConnectionValues("connType", "dbName", "User", "Password", "Host", "disable", 1, 1)
 	if soteErr.ErrCode != nil {
 		t.Errorf("Set Connection String: Expected a nil error code.")
 		t.Fail()
@@ -78,7 +78,7 @@ func TestGetConnectionValues(t *testing.T) {
 		t.Fail()
 	}
 
-	soteErr = setConnectionValues("dbName", "User", "Password", "Host", "disable", 1, 1)
+	soteErr = setConnectionValues("connType", "dbName", "User", "Password", "Host", "disable", 1, 1)
 	if soteErr.ErrCode != nil {
 		t.Errorf("Set Connection String: Expected a nil error code.")
 		t.Fail()

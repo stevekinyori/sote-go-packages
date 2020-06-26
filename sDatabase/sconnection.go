@@ -24,9 +24,14 @@ const (
 	DSCONNFORMAT    = "dbname=%v user=%v password=%v host=%v port=%v connect_timeout=%v sslmode=%v"
 )
 
-var dsConnValues ConnValues
+var (
+	dsConnValues ConnValues
+	dbPoolPtr    *pgxpool.Pool
+	dbConnPtr    *pgx.Conn
+)
 
 type ConnValues struct {
+	ConnType string `json:"connType"`
 	DBName   string `json:"dbName"`
 	User     string `json:"user"`
 	Password string `json:"password"`
@@ -56,7 +61,7 @@ type ConnValues struct {
 func GetConnection(connType, dbName, user, password, host, sslMode string, port, timeout int) (dbConnPtr *pgx.Conn, dbPoolPtr *pgxpool.Pool, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if soteErr := setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
+	if soteErr := setConnectionValues(connType, dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
 		panic("Invalid connection parameters for database: " + soteErr.FmtErrMsg)
 	} else {
 		var err error
@@ -86,7 +91,7 @@ func GetConnection(connType, dbName, user, password, host, sslMode string, port,
 }
 
 // This will set the connection values so GetConnection can be called.
-func setConnectionValues(dbName, user, password, host, sslMode string, port, timeout int) (soteErr sError.SoteError) {
+func setConnectionValues(connType, dbName, user, password, host, sslMode string, port, timeout int) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	switch sslMode {
@@ -99,7 +104,7 @@ func setConnectionValues(dbName, user, password, host, sslMode string, port, tim
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
-	dsConnValues = ConnValues{dbName, user, password, host, port, timeout, sslMode}
+	dsConnValues = ConnValues{connType, dbName, user, password, host, port, timeout, sslMode}
 
 	return
 }
