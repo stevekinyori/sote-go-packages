@@ -61,7 +61,7 @@ func GetConnection(connType, dbName, user, password, host, sslMode string, port,
 	} else {
 		var err error
 		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dsConnValues.DBName, dsConnValues.User, dsConnValues.Password, dsConnValues.Host, dsConnValues.Port, dsConnValues.Timeout, dsConnValues.SSLMode)
-		switch strings.ToUpper(connType) {
+		switch dsConnValues.ConnType {
 		case SINGLECONN:
 			dbConnPtr, err = pgx.Connect(context.Background(), dsConnString)
 		case POOLCONN:
@@ -99,7 +99,7 @@ func setConnectionValues(connType, dbName, user, password, host, sslMode string,
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
-	dsConnValues = ConnValues{connType, dbName, user, password, host, port, timeout, sslMode}
+	dsConnValues = ConnValues{strings.ToUpper(connType), dbName, user, password, host, port, timeout, sslMode}
 
 	return
 }
