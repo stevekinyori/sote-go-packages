@@ -58,7 +58,7 @@ type ConnValues struct {
 //   sslMode  Type of encryption used for the connection (https://www.postgresql.org/docs/12/libpq-ssl.html for version 12)
 //   port     Interface the connection communicates with Postgres
 //   timeout  Number of seconds a request must complete (3 seconds is normal setting)
-func GetConnection(connType, dbName, user, password, host, sslMode string, port, timeout int) (dbConnPtr *pgx.Conn, dbPoolPtr *pgxpool.Pool, soteErr sError.SoteError) {
+func GetConnection(connType, dbName, user, password, host, sslMode string, port, timeout int) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr := setConnectionValues(connType, dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
@@ -110,15 +110,17 @@ func setConnectionValues(connType, dbName, user, password, host, sslMode string,
 }
 
 // This will return the connection values in JSON format
-func GetConnectionValuesJSON() string {
+func GetConnectionValuesJSON() (jsonString string) {
 	sLogger.DebugMethod()
 
-	jsonString, err := json.Marshal(dsConnValues)
+	json, err := json.Marshal(dsConnValues)
 	if err != nil {
 		sLogger.Info(sError.GetSError(400100, buildParams([]string{"dsConnValues", "struct"}), nil).FmtErrMsg)
 	}
 
-	return string(jsonString)
+	jsonString = string(json)
+	
+	return
 }
 
 func buildParams(values []string) (s []interface{}) {
