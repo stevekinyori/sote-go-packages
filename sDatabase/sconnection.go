@@ -46,11 +46,6 @@ type ConnValues struct {
 //   connType (Forced to upper case)
 //     single for a connection that only allows one action at a time
 //     pool   for a connection that only multiple concurrent uses
-//
-//   If the connType provided is not support:
-//     dbConnPtr will be nil
-//     dbPoolPtr will be nil
-//     sError.SoteError will be populated
 //   dbName   Name of the Postgres database
 //   user     User that connection will use to authenticate
 //   password Users password for authentication
