@@ -36,7 +36,7 @@ var (
 )
 
 func init() {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	sess, err := session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -48,7 +48,7 @@ func init() {
 }
 
 func initParameters(tAWS, key string) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	var (
 		ssmPath           ssm.GetParametersByPathInput
@@ -73,7 +73,7 @@ func initParameters(tAWS, key string) {
 }
 
 func GetParameters(tAWS string) (parameters []*ssm.Parameter, found bool) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	initParameters(tAWS, noKey)
 	if len(sSSMParameterValues.Parameters) > 0 {
@@ -84,7 +84,7 @@ func GetParameters(tAWS string) (parameters []*ssm.Parameter, found bool) {
 }
 
 func GetDBPassword(tAWS string) (dbPassword string, found bool) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	initParameters(tAWS, dbPasswordKey)
 	dbPassword, found = search(tAWS, dbPasswordKey)
@@ -93,7 +93,7 @@ func GetDBPassword(tAWS string) (dbPassword string, found bool) {
 }
 
 func GetDBHost(tAWS string) (dbHost string, found bool) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	initParameters(tAWS, dbHostKey)
 	dbHost, found = search(tAWS, dbHostKey)
@@ -102,7 +102,7 @@ func GetDBHost(tAWS string) (dbHost string, found bool) {
 }
 
 func GetDBUser(tAWS string) (dbUser string, found bool) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	initParameters(tAWS, dbUserKey)
 	dbUser, found = search(tAWS, dbUserKey)
@@ -111,7 +111,7 @@ func GetDBUser(tAWS string) (dbUser string, found bool) {
 }
 
 func GetDBPort(tAWS string) (dbPort string, found bool) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	initParameters(tAWS, dbPortKey)
 	dbPort, found = search(tAWS, dbPortKey)
@@ -120,7 +120,7 @@ func GetDBPort(tAWS string) (dbPort string, found bool) {
 }
 
 func GetDBName(tAWS string) (dbName string, found bool) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	initParameters(tAWS, dbNameKey)
 	dbName, found = search(tAWS, dbNameKey)
@@ -129,7 +129,7 @@ func GetDBName(tAWS string) (dbName string, found bool) {
 }
 
 func GetDBSSLMode(tAWS string) (dbSSLMode string, found bool) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	initParameters(tAWS, dbSSLModeKey)
 	dbSSLMode, found = search(tAWS, dbSSLModeKey)
@@ -138,7 +138,7 @@ func GetDBSSLMode(tAWS string) (dbSSLMode string, found bool) {
 }
 
 func search(tAWS, key string) (value string, found bool) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	found = false
 	for _, v := range sSSMParameterValues.Parameters {

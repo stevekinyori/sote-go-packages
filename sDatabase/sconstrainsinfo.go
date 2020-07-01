@@ -12,7 +12,7 @@ import (
 )
 
 func getColumnConstrainInfo(schemaName string, dbConnection *pgx.Conn) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	qStmt1 := "SELECT tc.table_schema, tc.table_name, COUNT (tc.table_name) FROM information_schema.table_constraints tc " +
 		"INNER JOIN information_schema.constraint_column_usage ccu ON tc.table_schema = ccu.table_schema and tc.table_name = ccu.table_name " +
@@ -65,7 +65,7 @@ func getColumnConstrainInfo(schemaName string, dbConnection *pgx.Conn) {
 }
 
 func getKeyColumnInfo(schemaName string, dbConnection *pgxpool.Conn) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	qStmt1 := "SELECT tc.table_schema, tc.table_name, COUNT (tc.table_name) FROM information_schema.table_constraints tc " +
 		"INNER JOIN information_schema.constraint_column_usage ccu ON tc.table_schema = ccu.table_schema and tc.table_name = ccu.table_name " +

@@ -80,7 +80,7 @@ func TestDebugMethod(t *testing.T) {
 }
 func TestSetLogMessagePrefix(t *testing.T) {
 	SetLogLevelDebug()
-	SetLogMessagePrefix("slogger_test")
+	SetLogMessagePrefix("sLogger_test")
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 	DebugMethod()

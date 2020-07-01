@@ -13,19 +13,19 @@ const (
 )
 
 func TestGetDBPassword(t *testing.T) {
-	slogger.DebugMethod()
+	sLogger.DebugMethod()
 
 	if _, found := GetDBPassword(tAWS); !found {
 		var p = make([]interface{}, 1)
 		p[0] = dbPassword
-		serror.GetSError(609999, p, serror.EmptyMap)
-		t.Errorf("TestGetDBPassword should have found the password: %v", serror.GetSError(609999, p, serror.EmptyMap).FmtErrMsg)
+		sError.GetSError(609999, p, sError.EmptyMap)
+		t.Errorf("TestGetDBPassword should have found the password: %v", sError.GetSError(609999, p, sError.EmptyMap).FmtErrMsg)
 	}
 	if _, found := GetDBPassword(tAWS); !found {
 		var p = make([]interface{}, 1)
 		p[0] = dbPassword
-		serror.GetSError(609999, p, serror.EmptyMap)
-		t.Errorf("TestGetDBPassword should have found the password: %v", serror.GetSError(609999, p, serror.EmptyMap).FmtErrMsg)
+		sError.GetSError(609999, p, sError.EmptyMap)
+		t.Errorf("TestGetDBPassword should have found the password: %v", sError.GetSError(609999, p, sError.EmptyMap).FmtErrMsg)
 	}
 
 }
