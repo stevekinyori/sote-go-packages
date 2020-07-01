@@ -3,8 +3,8 @@ package sConfigParams
 import (
 	"testing"
 
-	"gitlab.com/soteapps/packages/serror"
-	"gitlab.com/soteapps/packages/slogger"
+	"gitlab.com/soteapps/packages/v2020/sError"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 const (

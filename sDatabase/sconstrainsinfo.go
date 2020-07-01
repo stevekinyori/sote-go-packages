@@ -8,7 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"gitlab.com/soteapps/packages/slogger"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 func getColumnConstrainInfo(schemaName string, dbConnection *pgx.Conn) {

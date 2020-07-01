@@ -8,8 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"gitlab.com/soteapps/packages/sError"
-	"gitlab.com/soteapps/packages/sLogger"
+	"gitlab.com/soteapps/packages/v2020/sError"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 const (

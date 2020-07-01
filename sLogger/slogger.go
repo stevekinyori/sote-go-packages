@@ -9,7 +9,7 @@ available information has been output to the log.
 The log message format is:
     {year}/{month}}/{day} {hour}:{mins}:{secs}.{microsecs} {[logPrefix.]MessageType}:{Test Message}
     example:
-    2020/06/16 22:26:42.165609 SLOGGER_TEST.DEBUG:gitlab.com/soteapps/packages/sLogger.TestSetLogMessagePrefix
+    2020/06/16 22:26:42.165609 SLOGGER_TEST.DEBUG:gitlab.com/soteapps/packages/v2020/sLogger.TestSetLogMessagePrefix
 It is recommended that the application set the log prefix (SetLogMessagePrefix) so log messages can be easily grouped.  If not, "missing" will be used.
 
 */

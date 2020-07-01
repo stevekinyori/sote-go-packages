@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v4"
-	"gitlab.com/soteapps/packages/sLogger"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 

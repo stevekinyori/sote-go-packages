@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/soteapps/packages/sError"
+	"gitlab.com/soteapps/packages/v2020/sError"
 )
 
 func TestIncorrectParams(t *testing.T) {

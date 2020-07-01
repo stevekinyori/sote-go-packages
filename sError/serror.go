@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgconn"
-	"gitlab.com/soteapps/packages/sLogger"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 type SoteError struct {

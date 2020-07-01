@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
-	"gitlab.com/soteapps/packages/slogger"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 const (
