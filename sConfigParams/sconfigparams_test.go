@@ -3,7 +3,6 @@ package sConfigParams
 import (
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2020/sError"
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
@@ -18,14 +17,12 @@ func TestGetDBPassword(t *testing.T) {
 	if _, found := GetDBPassword(tAWS); !found {
 		var p = make([]interface{}, 1)
 		p[0] = dbPassword
-		sError.GetSError(609999, p, sError.EmptyMap)
-		t.Errorf("TestGetDBPassword should have found the password: %v", sError.GetSError(609999, p, sError.EmptyMap).FmtErrMsg)
+		t.Errorf("TestGetDBPassword should have found the password: %v", "asdf")
 	}
 	if _, found := GetDBPassword(tAWS); !found {
 		var p = make([]interface{}, 1)
 		p[0] = dbPassword
-		sError.GetSError(609999, p, sError.EmptyMap)
-		t.Errorf("TestGetDBPassword should have found the password: %v", sError.GetSError(609999, p, sError.EmptyMap).FmtErrMsg)
+		t.Errorf("TestGetDBPassword should have found the password: %v", "asdf")
 	}
 
 }
