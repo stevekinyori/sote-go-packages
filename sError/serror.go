@@ -4,10 +4,12 @@
 	This package provides a number of functions that help development and generate documentation.
 
 	The fields that make up the Sote Error structure are the following:
+		ErrCode          This is the assigned error number or nil.  Nil means that there was no error
 		ErrType          The category of the error message
 		ParamCount       The number of parameters have are needed for the message
 		ParamDescription Description of the parameters that need to be supplied
 		FmtErrMsg        This is the raw formatted message before the parameters are applied
+		ErrorDetails     This can be used for anything including look up value errors.
 		Loc              The location in the code where the error occurred
 */
 package sError
@@ -28,7 +30,7 @@ type SoteError struct {
 	ParamCount       int
 	ParamDescription string
 	FmtErrMsg        string
-	ErrorDetails     map[string]string // ErrorDetails, this can be used for anything inlcuding look up value errors.
+	ErrorDetails     map[string]string
 	Loc              string
 }
 
@@ -45,7 +47,6 @@ const FuncCommentsHeader string = "\tError Code with requiring parameters:\n"
 const SQLState string = "SQLSTATE"
 
 var (
-	version  = "v2020.2.0"
 	EmptyMap = make(map[string]string)
 )
 
