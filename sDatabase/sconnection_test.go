@@ -40,13 +40,13 @@ func TestSetGetConnectionString(t *testing.T) {
 func TestGetConnection(t *testing.T) {
 	soteErr := GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
-		t.Errorf("Get Connection Failed: Should have returned a pointer to the single database connection")
+		t.Errorf("Get Connection Failed: Please Investigate")
 		t.Fail()
 	}
 
 	soteErr = GetConnection("pool", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
-		t.Errorf("Get Connection Failed: Should have returned a pointer to the pool database connection")
+		t.Errorf("Get Connection Failed: Please Investigate")
 		t.Fail()
 	}
 
@@ -59,7 +59,7 @@ func TestGetConnection(t *testing.T) {
 func TestGetConnectionValues(t *testing.T) {
 	soteErr := GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
-		t.Errorf("Get Connection Failed: Should have returned a pointer to the single database connection")
+		t.Errorf("Get Connection Failed: Please Investigate")
 		t.Fail()
 	}
 
@@ -84,7 +84,7 @@ func TestConnectionEstablished(t *testing.T) {
 
 	soteErr = GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
-		t.Errorf("Get Connection Failed: Should have returned a pointer to the single database connection")
+		t.Errorf("Get Connection Failed: Please Investigate")
 		t.Fail()
 	}
 
@@ -96,7 +96,7 @@ func TestConnectionEstablished(t *testing.T) {
 
 	soteErr = GetConnection("pool", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
-		t.Errorf("Get Connection Failed: Should have returned a pointer to the pool database connection")
+		t.Errorf("Get Connection Failed: Please Investigate")
 		t.Fail()
 	}
 
