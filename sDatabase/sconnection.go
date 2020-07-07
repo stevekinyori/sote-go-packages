@@ -129,6 +129,7 @@ func buildParams(values []string) (s []interface{}) {
 	return
 }
 
+// This will determine if a single or pool connection to a database has been established
 func ConnectionEstablished() (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
