@@ -119,9 +119,21 @@ func GetConnectionValuesJSON() (jsonString string) {
 }
 
 func buildParams(values []string) (s []interface{}) {
+	sLogger.DebugMethod()
+
 	s = make([]interface{}, len(values))
 	for i, v := range values {
 		s[i] = v
+	}
+
+	return
+}
+
+func ConnectionEstablished() (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if dbPoolPtr == nil && dbConnPtr == nil {
+		soteErr = sError.GetSError(602999, nil, sError.EmptyMap)
 	}
 
 	return
