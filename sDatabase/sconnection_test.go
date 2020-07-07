@@ -75,3 +75,34 @@ func TestGetConnectionValues(t *testing.T) {
 		t.Fail()
 	}
 }
+func TestConnectionEstablished(t *testing.T) {
+	soteErr := ConnectionEstablished()
+	if soteErr.ErrCode != 602999 {
+		t.Errorf("Connection Established Failed: Expected error code of 602999")
+		t.Fail()
+	}
+
+	soteErr = GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	if soteErr.ErrCode != nil {
+		t.Errorf("Get Connection Failed: Should have returned a pointer to the single database connection")
+		t.Fail()
+	}
+
+	soteErr = ConnectionEstablished()
+	if soteErr.ErrCode != nil {
+		t.Errorf("Connection Established Failed: Expected error code of nil")
+		t.Fail()
+	}
+
+	soteErr = GetConnection("pool", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	if soteErr.ErrCode != nil {
+		t.Errorf("Get Connection Failed: Should have returned a pointer to the pool database connection")
+		t.Fail()
+	}
+
+	soteErr = ConnectionEstablished()
+	if soteErr.ErrCode != nil {
+		t.Errorf("Connection Established Failed: Expected error code of nil")
+		t.Fail()
+	}
+}
