@@ -9,8 +9,8 @@ import (
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
-
-
+// This function gets a list of tables for the supplied schema. This function uses
+// the dbConnPtr or dbPoolPtr which are established using sconnection.
 func getTables(schemaName string) {
 	sLogger.DebugMethod()
 
@@ -38,5 +38,3 @@ func getTables(schemaName string) {
 
 	fmt.Println(tableData)
 }
-
-
