@@ -108,12 +108,12 @@ func setConnectionValues(connType, dbName, user, password, host, sslMode string,
 func GetConnectionValuesJSON() (jsonString string) {
 	sLogger.DebugMethod()
 
-	json, err := json.Marshal(dsConnValues)
+	jsonObj, err := json.Marshal(dsConnValues)
 	if err != nil {
 		sLogger.Info(sError.GetSError(400100, buildParams([]string{"dsConnValues", "struct"}), nil).FmtErrMsg)
 	}
 
-	jsonString = string(json)
+	jsonString = string(jsonObj)
 
 	return
 }
