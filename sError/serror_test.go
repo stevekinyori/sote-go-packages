@@ -208,8 +208,8 @@ func Test602020Error(t *testing.T) {
 	s := buildParams([]string{"SSL_MODE"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
-func Test602100Error(t *testing.T) {
-	var errCode = 602100
+func Test602030Error(t *testing.T) {
+	var errCode = 602030
 	s := buildParams([]string{"CONNECTION_TYPE"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }

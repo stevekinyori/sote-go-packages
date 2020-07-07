@@ -110,7 +110,8 @@ var SErrors = map[int]SoteError{
 	602000: {602000, ConfigurationIssue, 3, "Database name, Database driver name, Port value", "Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
 	602010: {602010, ConfigurationIssue, 0, "None", "Unable to pass database authentication", EmptyMap, ""},
 	602020: {602020, ConfigurationIssue, 1, "SSL Mode", "Only disable, allow, prefer and required are supported.", EmptyMap, ""},
-	602100: {602100, ConfigurationIssue, 1, "Connection Type", "Only single or pool are supported.", EmptyMap, ""},
+	602030: {602030, ConfigurationIssue, 1, "Connection Type", "Only single or pool are supported.", EmptyMap, ""},
+	602999: {602999, ConfigurationIssue, 0, "None", "No database connection has been established", EmptyMap, ""},
 	609999: {609999, ConfigurationIssue, 1, "Parameter name", "Start up parameter is missing (%v)", EmptyMap, ""},
 	//
 	700000: {700000, ApiContractError, 1, "List of required parameters", "Call doesn't match API signature. Caller must provide the following parameter names: %v", EmptyMap, ""},
@@ -161,7 +162,7 @@ var SErrors = map[int]SoteError{
 		601000	Environment name
 		602000	Database name, Database driver name, Port value
 		602020	SSL Mode
-		602100	Connection Type
+		602030	Connection Type
 		609999	Parameter name
 		700000	List of required parameters
 */
