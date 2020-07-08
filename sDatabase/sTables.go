@@ -32,10 +32,10 @@ func getTables(schemaName string) (tableList []string, soteErr sError.SoteError)
 		var tableRow []interface{}
 		for tbRows.Next() {
 			tableRow, err = tbRows.Values()
-			tableList = append(tableList, tableRow[0].(string))
 			if err != nil {
 				log.Fatalln(err)
 			}
+			tableList = append(tableList, tableRow[0].(string))
 
 		}
 		defer tbRows.Close()
