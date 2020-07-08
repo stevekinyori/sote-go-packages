@@ -1,3 +1,4 @@
+// All functions use the dbConnPtr or dbPoolPtr which are established using sconnection.
 package sDatabase
 
 import (
@@ -8,10 +9,17 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"gitlab.com/soteapps/packages/v2020/sError"
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
-func getColumnConstrainInfo(schemaName string, dbConnection *pgx.Conn) {
+type sConstraint struct {
+	tableName string
+	columnName string
+}
+
+// This will only return column name for constrains that have one column as the primary key for the table
+func getColumnConstraintInfo(schemaName string) (sConstraintInfo []sConstraint, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	qStmt1 := "SELECT tc.table_schema, tc.table_name, COUNT (tc.table_name) FROM information_schema.table_constraints tc " +
@@ -19,14 +27,20 @@ func getColumnConstrainInfo(schemaName string, dbConnection *pgx.Conn) {
 		"WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = $1 " +
 		"GROUP BY tc.table_schema, tc.table_name HAVING COUNT (tc.table_name) = 1;"
 
-	tbRows, err := dbConnection.Query(context.Background(), qStmt1, myHarvest.SchemaName)
+	var tbRows pgx.Rows
+	var err error
+	if dsConnValues.ConnType == SINGLECONN {
+		tbRows, err = dbConnPtr.Query(context.Background(), qStmt1, schemaName)
+	} else {
+		tbRows, err = dbPoolPtr.Query(context.Background(), qStmt1, schemaName)
+	}
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	var wSchema bool = true
+	var firstList bool = true
 	var qStmt2 strings.Builder
-	qStmt2.WriteString("SELECT table_schema, table_name, column_name FROM information_schema.constraint_column_usage WHERE table_schema ")
+	qStmt2.WriteString("SELECT table_name, column_name FROM information_schema.constraint_column_usage WHERE table_schema ")
 
 	for tbRows.Next() {
 		schTbColumns, err := tbRows.Values()
@@ -34,48 +48,58 @@ func getColumnConstrainInfo(schemaName string, dbConnection *pgx.Conn) {
 			log.Fatalln(err)
 		}
 
-		if wSchema {
+		if firstList {
 			qStmt2.WriteString(fmt.Sprintf("= '%v' AND table_name IN (", schTbColumns[0]))
 			qStmt2.WriteString(fmt.Sprintf("'%v'", schTbColumns[1]))
-			wSchema = false
+			firstList = false
 		} else {
 			qStmt2.WriteString(fmt.Sprintf(", '%v'", schTbColumns[1]))
 		}
 
 	}
-	defer tbRows.Close()
+	if dsConnValues.ConnType == SINGLECONN {
+		tbRows.Close()
+	} else {
+		defer tbRows.Close()
+	}
 	qStmt2.WriteString(");")
-	fmt.Println(qStmt2)
 
-	rows, err := dbConnection.Query(context.Background(), qStmt2.String())
+	if dsConnValues.ConnType == SINGLECONN {
+		tbRows, err = dbConnPtr.Query(context.Background(), qStmt2.String())
+	} else {
+		tbRows, err = dbPoolPtr.Query(context.Background(), qStmt2.String())
+	}
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	for rows.Next() {
-		columnValues, err := rows.Values()
+	var constraintRow []interface{}
+	var tRowInfo sConstraint
+	for tbRows.Next() {
+		constraintRow, err = tbRows.Values()
 		if err != nil {
 			log.Fatalln(err)
 		}
-		pkList[columnValues[2].(string)] = pkInfo{schemaName: columnValues[0].(string), tableName: columnValues[1].(string)}
+		tRowInfo.tableName = constraintRow[0].(string)
+		tRowInfo.columnName = constraintRow[1].(string)
+		sConstraintInfo = append(sConstraintInfo, tRowInfo)
 	}
-	rows.Close()
+	defer tbRows.Close()
 
-	fmt.Println(pkList)
+	return
 }
 
 func getKeyColumnInfo(schemaName string, dbConnection *pgxpool.Conn) {
 	sLogger.DebugMethod()
 
-	qStmt1 := "SELECT tc.table_schema, tc.table_name, COUNT (tc.table_name) FROM information_schema.table_constraints tc " +
-		"INNER JOIN information_schema.constraint_column_usage ccu ON tc.table_schema = ccu.table_schema and tc.table_name = ccu.table_name " +
-		"WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = $1 " +
-		"GROUP BY tc.table_schema, tc.table_name HAVING COUNT (tc.table_name) = 1;"
+	// qStmt1 := "SELECT tc.table_schema, tc.table_name, COUNT (tc.table_name) FROM information_schema.table_constraints tc " +
+	// 	"INNER JOIN information_schema.constraint_column_usage ccu ON tc.table_schema = ccu.table_schema and tc.table_name = ccu.table_name " +
+	// 	"WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = $1 " +
+	// 	"GROUP BY tc.table_schema, tc.table_name HAVING COUNT (tc.table_name) = 1;"
 
-	tbRows, err := dbConnection.Query(context.Background(), qStmt1, myHarvest.SchemaName)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+	// tbRows, err := dbConnection.Query(context.Background(), qStmt1, schemaName)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
 
 }
