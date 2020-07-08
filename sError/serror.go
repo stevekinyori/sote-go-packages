@@ -50,7 +50,7 @@ var (
 	EmptyMap = make(map[string]string)
 )
 
-var SErrors = map[int]SoteError{
+var soteErrors = map[int]SoteError{
 	100000: {100000, UserError, 0, "None", "Item already exists", EmptyMap, ""},
 	100100: {100100, UserError, 2, "List Of users roles, Requested action", "Your roles %v are not authorized to %v", EmptyMap, ""},
 	109999: {109999, UserError, 1, "Item name", "No %v was/were found", EmptyMap, ""},
@@ -166,26 +166,26 @@ var SErrors = map[int]SoteError{
 		609999	Parameter name
 		700000	List of required parameters
 */
-func GetSError(code int, params []interface{}, errorDetails map[string]string) (fmttdError SoteError) {
+func GetSError(code int, params []interface{}, errorDetails map[string]string) (soteErr SoteError) {
 	sLogger.DebugMethod()
 
-	fmttdError = SErrors[code]
-	if fmttdError.ErrCode != code {
+	soteErr = soteErrors[code]
+	if soteErr.ErrCode != code {
 		s := make([]interface{}, 1)
 		s[0] = code
-		fmttdError = GetSError(410000, s, errorDetails)
-	} else if fmttdError.ParamCount != len(params) {
+		soteErr = GetSError(410000, s, errorDetails)
+	} else if soteErr.ParamCount != len(params) {
 		s := make([]interface{}, 2)
-		s[0] = fmttdError.ParamCount
+		s[0] = soteErr.ParamCount
 		s[1] = len(params)
-		fmttdError = GetSError(230060, s, errorDetails)
+		soteErr = GetSError(230060, s, errorDetails)
 	} else {
-		if fmttdError.ParamCount == 0 {
-			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg)
-			fmttdError.ErrorDetails = errorDetails
+		if soteErr.ParamCount == 0 {
+			soteErr.FmtErrMsg = fmt.Sprintf(soteErr.FmtErrMsg)
+			soteErr.ErrorDetails = errorDetails
 		} else {
-			fmttdError.FmtErrMsg = fmt.Sprintf(fmttdError.FmtErrMsg, params)
-			fmttdError.ErrorDetails = errorDetails
+			soteErr.FmtErrMsg = fmt.Sprintf(soteErr.FmtErrMsg, params)
+			soteErr.ErrorDetails = errorDetails
 		}
 	}
 	return
@@ -236,14 +236,14 @@ func GenMarkDown() (markDown string) {
 
 	// Sort the Keys from SError map
 	var errorKeys []int
-	for _, i2 := range SErrors {
+	for _, i2 := range soteErrors {
 		errorKeys = append(errorKeys, i2.ErrCode.(int))
 	}
 	sort.Ints(errorKeys)
 	// Generate the markdown syntax
 	markDown = MarkDownTitleBar
 	for _, i2 := range errorKeys {
-		x := SErrors[i2]
+		x := soteErrors[i2]
 		markDown += fmt.Sprintf("| %v | %v | %v | %v |\n", x.ErrCode, x.ErrType, x.ParamDescription, x.FmtErrMsg)
 	}
 	return
@@ -258,14 +258,14 @@ func GenErrorLisRequiredParams() (funcComments string) {
 
 	// Sort the Keys from SError map
 	var errorKeys []int
-	for _, i2 := range SErrors {
+	for _, i2 := range soteErrors {
 		errorKeys = append(errorKeys, i2.ErrCode.(int))
 	}
 	sort.Ints(errorKeys)
 	// Generate the plain text
 	funcComments = FuncCommentsHeader
 	for _, i2 := range errorKeys {
-		if x := SErrors[i2]; x.ParamCount > 0 {
+		if x := soteErrors[i2]; x.ParamCount > 0 {
 			funcComments += fmt.Sprintf("\t\t%v\t%v\n", x.ErrCode, x.ParamDescription)
 		}
 	}
