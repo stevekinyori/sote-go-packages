@@ -1,8 +1,8 @@
+// All functions use the dbConnPtr or dbPoolPtr which are established using sconnection.
 package sDatabase
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/jackc/pgx/v4"
@@ -10,14 +10,13 @@ import (
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
-// This function gets a list of tables for the supplied schema. This function uses
-// the dbConnPtr or dbPoolPtr which are established using sconnection.
-func getTables(schemaName string) (soteErr sError.SoteError){
+// This function gets a list of tables for the supplied schema.
+func getTables(schemaName string) (tableList []string, soteErr sError.SoteError){
 	sLogger.DebugMethod()
 
 	if soteErr = ConnectionEstablished(); soteErr.ErrCode == nil {
 
-		qStmt := "SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema = $1;"
+		qStmt := "SELECT table_name FROM information_schema.tables WHERE table_schema = $1;"
 
 		var tbRows pgx.Rows
 		var err error
@@ -30,16 +29,16 @@ func getTables(schemaName string) (soteErr sError.SoteError){
 			log.Fatalln(err)
 		}
 
-		var tableData []interface{}
+		var tableRow []interface{}
 		for tbRows.Next() {
-			tableData, err = tbRows.Values()
+			tableRow, err = tbRows.Values()
+			tableList = append(tableList, tableRow[0].(string))
 			if err != nil {
 				log.Fatalln(err)
 			}
+
 		}
 		defer tbRows.Close()
-
-		fmt.Println(tableData)
 	}
 
 	return
