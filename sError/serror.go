@@ -118,6 +118,7 @@ var soteErrors = map[int]SoteError{
 	//
 	800000: {800000, GeneralError, 0, "None", "An error has occurred that is not expected.", EmptyMap, ""},
 	800100: {800100, GeneralError, 0, "None", "Postgres error has occurred that is not expected.", EmptyMap, ""},
+	800199: {800199, GeneralError, 0, "None", "Postgres is not responding over TCP. Container may not be running.", EmptyMap, ""},
 }
 
 /*
