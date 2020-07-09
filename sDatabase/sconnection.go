@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"gitlab.com/soteapps/packages/v2020/sError"
 	"gitlab.com/soteapps/packages/v2020/sLogger"
@@ -62,7 +63,7 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 				panic("sError.ConvertErr Failed")
 			}
 			sLogger.Info(sError.GetSError(800100, nil, errDetails).FmtErrMsg)
-			panic("MakeConnection Failed")
+			panic("sDatabase.sconnection.GetConnection Failed")
 		}
 	}
 
@@ -95,10 +96,34 @@ func ToJSONString(dsConnValues ConnValues) (jsonString string, soteErr sError.So
 
 	jsonConnValues, err := json.Marshal(dsConnValues)
 	if err != nil {
-		sLogger.Info(sError.GetSError(400100, buildParams([]string{"dsConnValues", "struct"}), nil).FmtErrMsg)
+		soteErr = sError.GetSError(400100, buildParams([]string{"dsConnValues", "struct"}), nil)
+		sLogger.Info(soteErr.FmtErrMsg)
+	} else {
+		jsonString = string(jsonConnValues)
 	}
 
-	jsonString = string(jsonConnValues)
+	return
+}
+
+// Verify that the pointer to the database connection is active.
+func VerifyConnection(tConnInfo ConnInfo) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if tConnInfo.dbPoolPtr == nil {
+		soteErr = sError.GetSError(602999, nil, nil)
+		sLogger.Info(soteErr.FmtErrMsg)
+	} else {
+		qStmt := "SELECT * FROM pg_stat_activity WHERE datname = $1 and state = 'active';"
+
+		var tbRows pgx.Rows
+		var err error
+		tbRows, err = tConnInfo.dbPoolPtr.Query(context.Background(), qStmt, tConnInfo.dsConnValues.DBName)
+		if err != nil {
+			soteErr = sError.GetSError(602999, nil, nil)
+			sLogger.Info(soteErr.FmtErrMsg)
+		}
+		defer tbRows.Close()
+	}
 
 	return
 }

@@ -18,6 +18,26 @@ func TestSetConnectionValues(t *testing.T) {
 		t.Fail()
 	}
 }
+func TestVerifyConnection(t *testing.T) {
+	var tConnInfo ConnInfo
+	soteErr := VerifyConnection(tConnInfo)
+	if soteErr.ErrCode != 602999 {
+		t.Errorf("VerifyConnection Failed: Expected 602999 error code.")
+		t.Fail()
+	}
+
+	tConnInfo, soteErr = GetConnection("sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	if soteErr.ErrCode != nil {
+		t.Errorf("setConnectionValues Failed: Expected a nil error code.")
+		t.Fail()
+	}
+
+	soteErr = VerifyConnection(tConnInfo)
+	if soteErr.ErrCode != nil {
+		t.Errorf("VerifyConnection Failed: Expected a nil error code.")
+		t.Fail()
+	}
+}
 func TestGetConnection(t *testing.T) {
 	_, soteErr := GetConnection("sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
