@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -23,8 +24,8 @@ const (
 )
 
 type ConnInfo struct {
-	dbPoolPtr    *pgxpool.Pool
-	dsConnValues ConnValues
+	DBPoolPtr    *pgxpool.Pool
+	DSConnValues ConnValues
 }
 
 type ConnValues struct {
@@ -49,21 +50,24 @@ type ConnValues struct {
 func GetConnection(dbName, user, password, host, sslMode string, port, timeout int) (dbConnInfo ConnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if dbConnInfo.dsConnValues, soteErr = setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
+	if dbConnInfo.DSConnValues, soteErr = setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
 		panic("Invalid connection parameters for database: " + soteErr.FmtErrMsg)
 	} else {
 		var err error
-		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.dsConnValues.DBName, dbConnInfo.dsConnValues.User, dbConnInfo.dsConnValues.Password, dbConnInfo.dsConnValues.Host,
-			dbConnInfo.dsConnValues.Port, dbConnInfo.dsConnValues.Timeout, dbConnInfo.dsConnValues.SSLMode)
-		dbConnInfo.dbPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString)
-		if err != nil {
-			errDetails, soteErr := sError.ConvertErr(err)
-			if soteErr.ErrCode != nil {
-				sLogger.Info(soteErr.FmtErrMsg)
-				panic("sError.ConvertErr Failed")
+		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.DSConnValues.DBName, dbConnInfo.DSConnValues.User, dbConnInfo.DSConnValues.Password, dbConnInfo.DSConnValues.Host,
+			dbConnInfo.DSConnValues.Port, dbConnInfo.DSConnValues.Timeout, dbConnInfo.DSConnValues.SSLMode)
+		if dbConnInfo.DBPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString); err != nil {
+			if strings.Contains(err.Error(), "dial") {
+
+			} else {
+				errDetails, soteErr := sError.ConvertErr(err)
+				if soteErr.ErrCode != nil {
+					sLogger.Info(soteErr.FmtErrMsg)
+					panic("sError.ConvertErr Failed")
+				}
+				sLogger.Info(sError.GetSError(800100, nil, errDetails).FmtErrMsg)
+				panic("sDatabase.sconnection.GetConnection Failed")
 			}
-			sLogger.Info(sError.GetSError(800100, nil, errDetails).FmtErrMsg)
-			panic("sDatabase.sconnection.GetConnection Failed")
 		}
 	}
 
@@ -91,12 +95,12 @@ func setConnectionValues(dbName, user, password, host, sslMode string, port, tim
 
 // This will convert the connection values used to connect to the Sote database into
 // a JSON string.
-func ToJSONString(dsConnValues ConnValues) (jsonString string, soteErr sError.SoteError) {
+func ToJSONString(DSConnValues ConnValues) (jsonString string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	jsonConnValues, err := json.Marshal(dsConnValues)
+	jsonConnValues, err := json.Marshal(DSConnValues)
 	if err != nil {
-		soteErr = sError.GetSError(400100, buildParams([]string{"dsConnValues", "struct"}), nil)
+		soteErr = sError.GetSError(400100, buildParams([]string{"DSConnValues", "struct"}), nil)
 		sLogger.Info(soteErr.FmtErrMsg)
 	} else {
 		jsonString = string(jsonConnValues)
@@ -109,7 +113,7 @@ func ToJSONString(dsConnValues ConnValues) (jsonString string, soteErr sError.So
 func VerifyConnection(tConnInfo ConnInfo) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if tConnInfo.dbPoolPtr == nil {
+	if tConnInfo.DBPoolPtr == nil {
 		soteErr = sError.GetSError(602999, nil, nil)
 		sLogger.Info(soteErr.FmtErrMsg)
 	} else {
@@ -117,7 +121,7 @@ func VerifyConnection(tConnInfo ConnInfo) (soteErr sError.SoteError) {
 
 		var tbRows pgx.Rows
 		var err error
-		tbRows, err = tConnInfo.dbPoolPtr.Query(context.Background(), qStmt, tConnInfo.dsConnValues.DBName)
+		tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt, tConnInfo.DSConnValues.DBName)
 		if err != nil {
 			soteErr = sError.GetSError(602999, nil, nil)
 			sLogger.Info(soteErr.FmtErrMsg)

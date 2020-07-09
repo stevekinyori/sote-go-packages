@@ -59,7 +59,7 @@ func TestToJSONString(t *testing.T) {
 	}
 
 	var dbConnJSONString string
-	if dbConnJSONString, soteErr = ToJSONString(dbConnInfo.dsConnValues); soteErr.ErrCode != nil {
+	if dbConnJSONString, soteErr = ToJSONString(dbConnInfo.DSConnValues); soteErr.ErrCode != nil {
 		t.Errorf("ToJSONString Failed: Please Investigate")
 		t.Fail()
 	}
