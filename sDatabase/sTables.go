@@ -14,9 +14,7 @@ import (
 func getTables(schemaName string, tConnInfo ConnInfo) (tableList []string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if tConnInfo.dbPoolPtr == nil {
-		soteErr = sError.GetSError(602999, nil, sError.EmptyMap)
-	} else {
+	if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
 		qStmt := "SELECT table_name FROM information_schema.tables WHERE table_schema = $1;"
 
 		var tbRows pgx.Rows

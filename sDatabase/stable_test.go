@@ -18,10 +18,11 @@ func TestGetTables(t *testing.T) {
 	}
 
 	var tableList []string
-	if tableList, soteErr = getTables("sote",  tConnInfo); soteErr.ErrCode != nil {
+	if tableList, soteErr = getTables("sote", tConnInfo); soteErr.ErrCode != nil {
 		t.Errorf("Get Tables Failed: Expected error code to be nil")
 		t.Fail()
 	}
+
 	if len(tableList) == 0 {
 		t.Errorf("Get Tables Failed: Expected at least one table name to be returned")
 		t.Fail()
