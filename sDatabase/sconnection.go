@@ -1,21 +1,18 @@
+// This is a wrapper for github.com/jackc/pgx/v4 connection.  We are wrapping this
+// so that all Sote Go developers connect to Sote databases the same way.
 package sDatabase
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"gitlab.com/soteapps/packages/v2020/sError"
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 const (
-	// Connection types
-	SINGLECONN = "SINGLE"
-	POOLCONN   = "POOL"
 	// SSL Modes
 	SSLMODEDISABLE  = "disable"
 	SSLMODEALLOW    = "allow"
@@ -24,14 +21,12 @@ const (
 	DSCONNFORMAT    = "dbname=%v user=%v password=%v host=%v port=%v connect_timeout=%v sslmode=%v"
 )
 
-var (
-	dsConnValues ConnValues
+type SConnInfo struct {
 	dbPoolPtr    *pgxpool.Pool
-	dbConnPtr    *pgx.Conn
-)
+	dsConnValues ConnValues
+}
 
 type ConnValues struct {
-	ConnType string `json:"connType"`
 	DBName   string `json:"dbName"`
 	User     string `json:"user"`
 	Password string `json:"password"`
@@ -41,11 +36,8 @@ type ConnValues struct {
 	SSLMode  string `json:"sslMode"`
 }
 
-// This will return a pointer to the database connection based on the type requested.
+// This will create a connection to a database and populate the pointer based on the type of connection
 //
-//   connType (Forced to upper case)
-//     single for a connection that only allows one action at a time
-//     pool   for a connection that only multiple concurrent uses
 //   dbName   Name of the Postgres database
 //   user     User that connection will use to authenticate
 //   password Users password for authentication
@@ -53,24 +45,16 @@ type ConnValues struct {
 //   sslMode  Type of encryption used for the connection (https://www.postgresql.org/docs/12/libpq-ssl.html for version 12)
 //   port     Interface the connection communicates with Postgres
 //   timeout  Number of seconds a request must complete (3 seconds is normal setting)
-func GetConnection(connType, dbName, user, password, host, sslMode string, port, timeout int) (soteErr sError.SoteError) {
+func GetConnection(dbName, user, password, host, sslMode string, port, timeout int) (dbConnInfo SConnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if soteErr := setConnectionValues(connType, dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
+	if dbConnInfo.dsConnValues, soteErr = setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
 		panic("Invalid connection parameters for database: " + soteErr.FmtErrMsg)
 	} else {
 		var err error
-		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dsConnValues.DBName, dsConnValues.User, dsConnValues.Password, dsConnValues.Host, dsConnValues.Port, dsConnValues.Timeout, dsConnValues.SSLMode)
-		switch dsConnValues.ConnType {
-		case SINGLECONN:
-			dbConnPtr, err = pgx.Connect(context.Background(), dsConnString)
-		case POOLCONN:
-			dbPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString)
-		default:
-			params := make([]interface{}, 1)
-			params[0] = connType
-			soteErr = sError.GetSError(602100, params, sError.EmptyMap)
-		}
+		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.dsConnValues.DBName, dbConnInfo.dsConnValues.User, dbConnInfo.dsConnValues.Password, dbConnInfo.dsConnValues.Host,
+			dbConnInfo.dsConnValues.Port, dbConnInfo.dsConnValues.Timeout, dbConnInfo.dsConnValues.SSLMode)
+		dbConnInfo.dbPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString)
 		if err != nil {
 			errDetails, soteErr := sError.ConvertErr(err)
 			if soteErr.ErrCode != nil {
@@ -78,15 +62,16 @@ func GetConnection(connType, dbName, user, password, host, sslMode string, port,
 				panic("sError.ConvertErr Failed")
 			}
 			sLogger.Info(sError.GetSError(800100, nil, errDetails).FmtErrMsg)
-			panic("GetConnection Failed")
+			panic("MakeConnection Failed")
 		}
+		defer dbConnInfo.dbPoolPtr.Close()
 	}
 
 	return
 }
 
-// This will set the connection values so GetConnection can be called.
-func setConnectionValues(connType, dbName, user, password, host, sslMode string, port, timeout int) (soteErr sError.SoteError) {
+// This will set the connection values so GetConnection can be execute.
+func setConnectionValues(dbName, user, password, host, sslMode string, port, timeout int) (tConnInfo ConnValues, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	switch sslMode {
@@ -99,21 +84,22 @@ func setConnectionValues(connType, dbName, user, password, host, sslMode string,
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
-	dsConnValues = ConnValues{strings.ToUpper(connType), dbName, user, password, host, port, timeout, sslMode}
+	tConnInfo = ConnValues{dbName, user, password, host, port, timeout, sslMode}
 
 	return
 }
 
-// This will return the connection values in JSON format
-func GetConnectionValuesJSON() (jsonString string) {
+// This will convert the connection values used to connect to the Sote database into
+// a JSON string.
+func ToJSONString(dsConnValues ConnValues) (jsonString string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	jsonObj, err := json.Marshal(dsConnValues)
+	jsonConnValues, err := json.Marshal(dsConnValues)
 	if err != nil {
 		sLogger.Info(sError.GetSError(400100, buildParams([]string{"dsConnValues", "struct"}), nil).FmtErrMsg)
 	}
 
-	jsonString = string(jsonObj)
+	jsonString = string(jsonConnValues)
 
 	return
 }
@@ -124,17 +110,6 @@ func buildParams(values []string) (s []interface{}) {
 	s = make([]interface{}, len(values))
 	for i, v := range values {
 		s[i] = v
-	}
-
-	return
-}
-
-// This will determine if a single or pool connection to a database has been established
-func ConnectionEstablished() (soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	if dbPoolPtr == nil && dbConnPtr == nil {
-		soteErr = sError.GetSError(602999, nil, sError.EmptyMap)
 	}
 
 	return
