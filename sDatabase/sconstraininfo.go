@@ -1,4 +1,4 @@
-// All functions use the dbConnPtr or dbPoolPtr which are established using sconnection.
+// All functions use the dbConnPtr or DBPoolPtr which are established using sconnection.
 package sDatabase
 
 import (
@@ -13,13 +13,13 @@ import (
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
-type sConstraint struct {
+type SConstraint struct {
 	tableName  string
 	columnName string
 }
 
 // This will only return column name for constrains that have one column as the primary key for the table
-func GetSingleColumnConstraintInfo(schemaName string, tConnInfo ConnInfo) (sConstraintInfo []sConstraint, soteErr sError.SoteError) {
+func GetSingleColumnConstraintInfo(schemaName string, tConnInfo ConnInfo) (SConstraintInfo []SConstraint, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
@@ -30,7 +30,7 @@ func GetSingleColumnConstraintInfo(schemaName string, tConnInfo ConnInfo) (sCons
 
 		var tbRows pgx.Rows
 		var err error
-		tbRows, err = tConnInfo.dbPoolPtr.Query(context.Background(), qStmt1, schemaName)
+		tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt1, schemaName)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -57,13 +57,13 @@ func GetSingleColumnConstraintInfo(schemaName string, tConnInfo ConnInfo) (sCons
 		defer tbRows.Close()
 		qStmt2.WriteString(");")
 
-		tbRows, err = tConnInfo.dbPoolPtr.Query(context.Background(), qStmt2.String())
+		tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt2.String())
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		var constraintRow []interface{}
-		var tRowInfo sConstraint
+		var tRowInfo SConstraint
 		for tbRows.Next() {
 			constraintRow, err = tbRows.Values()
 			if err != nil {
@@ -71,7 +71,7 @@ func GetSingleColumnConstraintInfo(schemaName string, tConnInfo ConnInfo) (sCons
 			}
 			tRowInfo.tableName = constraintRow[0].(string)
 			tRowInfo.columnName = constraintRow[1].(string)
-			sConstraintInfo = append(sConstraintInfo, tRowInfo)
+			SConstraintInfo = append(SConstraintInfo, tRowInfo)
 		}
 		defer tbRows.Close()
 	}

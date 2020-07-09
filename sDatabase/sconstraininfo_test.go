@@ -11,7 +11,7 @@ func TestGetSingleColumnConstraintInfo(t *testing.T) {
 		t.Fail()
 	}
 
-	var myConstraints []sConstraint
+	var myConstraints []SConstraint
 	if myConstraints, soteErr = GetSingleColumnConstraintInfo("sote", tConnInfo); len(myConstraints) == 0 {
 		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should not be empty")
 	}

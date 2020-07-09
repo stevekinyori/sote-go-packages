@@ -6,7 +6,7 @@ import (
 
 func TestGetTables(t *testing.T) {
 	var tConnInfo ConnInfo
-	if _, soteErr := getTables("sote", tConnInfo); soteErr.ErrCode != 602999 {
+	if _, soteErr := GetTableList("sote", tConnInfo); soteErr.ErrCode != 602999 {
 		t.Errorf("Get Tables Failed: Expected error code of 602999")
 		t.Fail()
 	}
@@ -18,7 +18,7 @@ func TestGetTables(t *testing.T) {
 	}
 
 	var tableList []string
-	if tableList, soteErr = getTables("sote", tConnInfo); soteErr.ErrCode != nil {
+	if tableList, soteErr = GetTableList("sote", tConnInfo); soteErr.ErrCode != nil {
 		t.Errorf("Get Tables Failed: Expected error code to be nil")
 		t.Fail()
 	}

@@ -1,4 +1,4 @@
-// All functions use the dbConnPtr or dbPoolPtr which are established using sconnection.
+// All functions use the dbConnPtr or DBPoolPtr which are established using sconnection.
 package sDatabase
 
 import (
@@ -11,7 +11,7 @@ import (
 )
 
 // This function gets a list of tables for the supplied schema.
-func getTables(schemaName string, tConnInfo ConnInfo) (tableList []string, soteErr sError.SoteError) {
+func GetTableList(schemaName string, tConnInfo ConnInfo) (tableList []string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
@@ -19,7 +19,7 @@ func getTables(schemaName string, tConnInfo ConnInfo) (tableList []string, soteE
 
 		var tbRows pgx.Rows
 		var err error
-		tbRows, err = tConnInfo.dbPoolPtr.Query(context.Background(), qStmt, schemaName)
+		tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt, schemaName)
 		if err != nil {
 			log.Fatalln(err)
 		}
