@@ -14,77 +14,67 @@ import (
 )
 
 type sConstraint struct {
-	tableName string
+	tableName  string
 	columnName string
 }
 
 // This will only return column name for constrains that have one column as the primary key for the table
-func getColumnConstraintInfo(schemaName string) (sConstraintInfo []sConstraint, soteErr sError.SoteError) {
+func GetSingleColumnConstraintInfo(schemaName string, tConnInfo ConnInfo) (sConstraintInfo []sConstraint, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	qStmt1 := "SELECT tc.table_schema, tc.table_name, COUNT (tc.table_name) FROM information_schema.table_constraints tc " +
-		"INNER JOIN information_schema.constraint_column_usage ccu ON tc.table_schema = ccu.table_schema and tc.table_name = ccu.table_name " +
-		"WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = $1 " +
-		"GROUP BY tc.table_schema, tc.table_name HAVING COUNT (tc.table_name) = 1;"
+	if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
+		qStmt1 := "SELECT tc.table_schema, tc.table_name, COUNT (tc.table_name) FROM information_schema.table_constraints tc " +
+			"INNER JOIN information_schema.constraint_column_usage ccu ON tc.table_schema = ccu.table_schema and tc.table_name = ccu.table_name " +
+			"WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = $1 " +
+			"GROUP BY tc.table_schema, tc.table_name HAVING COUNT (tc.table_name) = 1;"
 
-	var tbRows pgx.Rows
-	var err error
-	if dsConnValues.ConnType == SINGLECONN {
-		tbRows, err = dbConnPtr.Query(context.Background(), qStmt1, schemaName)
-	} else {
-		tbRows, err = dbPoolPtr.Query(context.Background(), qStmt1, schemaName)
-	}
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	var firstList bool = true
-	var qStmt2 strings.Builder
-	qStmt2.WriteString("SELECT table_name, column_name FROM information_schema.constraint_column_usage WHERE table_schema ")
-
-	for tbRows.Next() {
-		schTbColumns, err := tbRows.Values()
+		var tbRows pgx.Rows
+		var err error
+		tbRows, err = tConnInfo.dbPoolPtr.Query(context.Background(), qStmt1, schemaName)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
-		if firstList {
-			qStmt2.WriteString(fmt.Sprintf("= '%v' AND table_name IN (", schTbColumns[0]))
-			qStmt2.WriteString(fmt.Sprintf("'%v'", schTbColumns[1]))
-			firstList = false
-		} else {
-			qStmt2.WriteString(fmt.Sprintf(", '%v'", schTbColumns[1]))
+		var firstList bool = true
+		var qStmt2 strings.Builder
+		qStmt2.WriteString("SELECT table_name, column_name FROM information_schema.constraint_column_usage WHERE table_schema ")
+
+		for tbRows.Next() {
+			schTbColumns, err := tbRows.Values()
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			if firstList {
+				qStmt2.WriteString(fmt.Sprintf("= '%v' AND table_name IN (", schTbColumns[0]))
+				qStmt2.WriteString(fmt.Sprintf("'%v'", schTbColumns[1]))
+				firstList = false
+			} else {
+				qStmt2.WriteString(fmt.Sprintf(", '%v'", schTbColumns[1]))
+			}
+
+		}
+		defer tbRows.Close()
+		qStmt2.WriteString(");")
+
+		tbRows, err = tConnInfo.dbPoolPtr.Query(context.Background(), qStmt2.String())
+		if err != nil {
+			log.Fatalln(err)
 		}
 
-	}
-	if dsConnValues.ConnType == SINGLECONN {
-		tbRows.Close()
-	} else {
+		var constraintRow []interface{}
+		var tRowInfo sConstraint
+		for tbRows.Next() {
+			constraintRow, err = tbRows.Values()
+			if err != nil {
+				log.Fatalln(err)
+			}
+			tRowInfo.tableName = constraintRow[0].(string)
+			tRowInfo.columnName = constraintRow[1].(string)
+			sConstraintInfo = append(sConstraintInfo, tRowInfo)
+		}
 		defer tbRows.Close()
 	}
-	qStmt2.WriteString(");")
-
-	if dsConnValues.ConnType == SINGLECONN {
-		tbRows, err = dbConnPtr.Query(context.Background(), qStmt2.String())
-	} else {
-		tbRows, err = dbPoolPtr.Query(context.Background(), qStmt2.String())
-	}
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	var constraintRow []interface{}
-	var tRowInfo sConstraint
-	for tbRows.Next() {
-		constraintRow, err = tbRows.Values()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		tRowInfo.tableName = constraintRow[0].(string)
-		tRowInfo.columnName = constraintRow[1].(string)
-		sConstraintInfo = append(sConstraintInfo, tRowInfo)
-	}
-	defer tbRows.Close()
 
 	return
 }

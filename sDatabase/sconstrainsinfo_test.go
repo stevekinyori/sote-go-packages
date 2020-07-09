@@ -4,15 +4,15 @@ import (
 	"testing"
 )
 
-func TestGetColumnConstraintInfo(t *testing.T) {
-	soteErr := GetConnection("single", "sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+func TestGetSingleColumnConstraintInfo(t *testing.T) {
+	tConnInfo, soteErr := GetConnection("sote_development", "sote", "password", "localhost", "disable", 5442, 3)
 	if soteErr.ErrCode != nil {
-		t.Errorf("Get Connection Failed: Should have returned a pointer to the single database connection")
+		t.Errorf("GetConnection Failed: Please investigate")
 		t.Fail()
 	}
 
 	var myConstraints []sConstraint
-	if myConstraints, soteErr = getColumnConstraintInfo("sote"); len(myConstraints) == 0 {
-		t.Errorf("Test Get Column Constraint Info Failed: myContraints should not be empty")
+	if myConstraints, soteErr = GetSingleColumnConstraintInfo("sote", tConnInfo); len(myConstraints) == 0 {
+		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should not be empty")
 	}
 }
