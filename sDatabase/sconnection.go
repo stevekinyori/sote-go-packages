@@ -21,7 +21,7 @@ const (
 	DSCONNFORMAT    = "dbname=%v user=%v password=%v host=%v port=%v connect_timeout=%v sslmode=%v"
 )
 
-type SConnInfo struct {
+type ConnInfo struct {
 	dbPoolPtr    *pgxpool.Pool
 	dsConnValues ConnValues
 }
@@ -36,7 +36,7 @@ type ConnValues struct {
 	SSLMode  string `json:"sslMode"`
 }
 
-// This will create a connection to a database and populate the pointer based on the type of connection
+// This will create a connection to a database and populate ConnInfo
 //
 //   dbName   Name of the Postgres database
 //   user     User that connection will use to authenticate
@@ -45,7 +45,7 @@ type ConnValues struct {
 //   sslMode  Type of encryption used for the connection (https://www.postgresql.org/docs/12/libpq-ssl.html for version 12)
 //   port     Interface the connection communicates with Postgres
 //   timeout  Number of seconds a request must complete (3 seconds is normal setting)
-func GetConnection(dbName, user, password, host, sslMode string, port, timeout int) (dbConnInfo SConnInfo, soteErr sError.SoteError) {
+func GetConnection(dbName, user, password, host, sslMode string, port, timeout int) (dbConnInfo ConnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if dbConnInfo.dsConnValues, soteErr = setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
