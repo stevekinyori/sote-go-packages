@@ -64,7 +64,6 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 			sLogger.Info(sError.GetSError(800100, nil, errDetails).FmtErrMsg)
 			panic("MakeConnection Failed")
 		}
-		defer dbConnInfo.dbPoolPtr.Close()
 	}
 
 	return
