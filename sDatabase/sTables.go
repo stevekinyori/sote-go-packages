@@ -11,20 +11,17 @@ import (
 )
 
 // This function gets a list of tables for the supplied schema.
-func getTables(schemaName string) (tableList []string, soteErr sError.SoteError){
+func getTables(schemaName string, tConnInfo ConnInfo) (tableList []string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if soteErr = ConnectionEstablished(); soteErr.ErrCode == nil {
-
+	if tConnInfo.dbPoolPtr == nil {
+		soteErr = sError.GetSError(602999, nil, sError.EmptyMap)
+	} else {
 		qStmt := "SELECT table_name FROM information_schema.tables WHERE table_schema = $1;"
 
 		var tbRows pgx.Rows
 		var err error
-		if dsConnValues.ConnType == SINGLECONN {
-			tbRows, err = dbConnPtr.Query(context.Background(), qStmt, schemaName)
-		} else {
-			tbRows, err = dbPoolPtr.Query(context.Background(), qStmt, schemaName)
-		}
+		tbRows, err = tConnInfo.dbPoolPtr.Query(context.Background(), qStmt, schemaName)
 		if err != nil {
 			log.Fatalln(err)
 		}
