@@ -213,6 +213,11 @@ func Test602030Error(t *testing.T) {
 	s := buildParams([]string{"CONNECTION_TYPE"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test605020Error(t *testing.T) {
+	var errCode = 605020
+	s := buildParams([]string{"KID"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test609999Error(t *testing.T) {
 	var errCode = 609999
 	s := buildParams([]string{"START_VARIABLE_MISSING"})
@@ -224,14 +229,14 @@ func Test700000Error(t *testing.T) {
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
 func TestGenMarkDown(t *testing.T) {
-	if x := GenMarkDown(); !strings.Contains(x, MarkDownTitleBar) {
+	if x := GenMarkDown(); !strings.Contains(x, MARKDOWNTITLEBAR) {
 		t.Errorf("GenMarkDown doesn't have the correct header, so there appears something wrong with the code.")
 	} else {
 		println(x)
 	}
 }
 func TestGenErrorListRequiredParams(t *testing.T) {
-	if x := GenErrorLisRequiredParams(); !strings.Contains(x, FuncCommentsHeader) {
+	if x := GenErrorLisRequiredParams(); !strings.Contains(x, FUNCCOMMENTSHEADER) {
 		t.Errorf("GenMarkDown doesn't have the correct header, so there appears something wrong with the code.")
 	} else {
 		println(x)
@@ -250,7 +255,7 @@ func validateReply(t *testing.T, errCode int, params []interface{}, x SoteError)
 		t.Errorf("Error Code Tested: %v return %v error code when called.", errCode, x.ErrCode)
 		t.Fail()
 	}
-	for i, _ := range params {
+	for i := range params {
 		if !strings.Contains(x.FmtErrMsg, params[i].(string)) {
 			t.Errorf("Error Code Tested: %v - The %v was not found in the FmtErrMsg property returned", errCode, params[i])
 		}
