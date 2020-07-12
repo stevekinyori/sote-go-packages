@@ -238,6 +238,20 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 }
 
 /*
+This will convert an array of strings to a param list for sError.GetSError
+ */
+func BuildParams(values []string) (s []interface{}) {
+	sLogger.DebugMethod()
+
+	s = make([]interface{}, len(values))
+	for i, v := range values {
+		s[i] = v
+	}
+
+	return
+}
+
+/*
 	This will generate the markdown syntax that can be published on a Wiki page.  This makes
 	this code the master source of Sote Error messages
 */
