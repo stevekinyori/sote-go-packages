@@ -88,7 +88,7 @@ func setConnectionValues(dbName, user, password, host, sslMode string, port, tim
 	case SSLMODEPREFER:
 	case SSLMODEREQUIRED:
 	default:
-		soteErr = sError.GetSError(602020, buildParams([]string{sslMode}), nil)
+		soteErr = sError.GetSError(602020, sError.BuildParams([]string{sslMode}), nil)
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
@@ -104,7 +104,7 @@ func ToJSONString(DSConnValues ConnValues) (jsonString string, soteErr sError.So
 
 	jsonConnValues, err := json.Marshal(DSConnValues)
 	if err != nil {
-		soteErr = sError.GetSError(400100, buildParams([]string{"DSConnValues", "struct"}), nil)
+		soteErr = sError.GetSError(400100, sError.BuildParams([]string{"DSConnValues", "struct"}), nil)
 		sLogger.Info(soteErr.FmtErrMsg)
 	} else {
 		jsonString = string(jsonConnValues)
@@ -131,17 +131,6 @@ func VerifyConnection(tConnInfo ConnInfo) (soteErr sError.SoteError) {
 			sLogger.Info(soteErr.FmtErrMsg)
 		}
 		defer tbRows.Close()
-	}
-
-	return
-}
-
-func buildParams(values []string) (s []interface{}) {
-	sLogger.DebugMethod()
-
-	s = make([]interface{}, len(values))
-	for i, v := range values {
-		s[i] = v
 	}
 
 	return
