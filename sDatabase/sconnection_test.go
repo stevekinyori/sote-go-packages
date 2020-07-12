@@ -4,10 +4,15 @@ import (
 	"testing"
 )
 
-func TestSetConnectionStringInvalidSSLMode(t *testing.T) {
+func TestSetConnectionValue(t *testing.T) {
 	_, soteErr := setConnectionValues("dbName", "User", "Password", "Host", "INVALID", 1, 1)
 	if soteErr.ErrCode != 602020 {
 		t.Errorf("setConnectionValues Failed: Error code is not for an invalid sslMode.")
+		t.Fail()
+	}
+	_, soteErr = setConnectionValues("dbName", "User", "Password", "Host", "disable", 1, 1)
+	if soteErr.ErrCode != nil {
+		t.Errorf("setConnectionValues Failed: Expected a nil error code.")
 		t.Fail()
 	}
 }
