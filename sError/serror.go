@@ -113,6 +113,7 @@ var soteErrors = map[int]SoteError{
 	600000: {600000, CONFIGURATIONISSUE, 0, "None", ".env files are missing", EmptyMap, ""},
 	600010: {600010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", "%v file was not found. Message return: %v", EmptyMap, ""},
 	601000: {601000, CONFIGURATIONISSUE, 1, "Environment name", "environment variable is missing (%v)", EmptyMap, ""},
+	601010: {601010, CONFIGURATIONISSUE, 1, "Environment name", "environment value (%v) is invalid", EmptyMap, ""},
 	602000: {602000, CONFIGURATIONISSUE, 3, "Database name, Database driver name, Port value", "Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
 	602010: {602010, CONFIGURATIONISSUE, 0, "None", "Unable to pass database authentication", EmptyMap, ""},
 	602020: {602020, CONFIGURATIONISSUE, 1, "SSL Mode", "Only disable, allow, prefer and required are supported.", EmptyMap, ""},
