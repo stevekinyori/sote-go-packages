@@ -30,6 +30,7 @@ const (
 	PRODUCTION  = "production"
 	//
 	AWSREGIONIKEY = "AWS_REGION"
+	USERPOOLIDKEY = "COGNITO_USER_POOL_ID"
 	DBPASSWORDKEY = "DATABASE_PASSWORD"
 	DBHOSTKEY     = ""
 	DBUSERKEY     = ""
@@ -92,13 +93,7 @@ func initParameters(tApplication, tEnvironment, key string) (soteErr sError.Sote
 			pFilter      []*ssm.ParameterStringFilter
 			pKeys        []*string
 		)
-		if tApplication == "" {
-			path = ROOTPATH
-		} else if tEnvironment == "" {
-			path = ROOTPATH + "/" + tApplication
-		} else {
-			path = ROOTPATH + "/" + tApplication + "/" + tEnvironment
-		}
+		path = setPath(tApplication, tEnvironment)
 
 		ssmPathInput.SetPath(path)
 		ssmPathInput.Recursive = pTrue
@@ -250,8 +245,7 @@ func GetDBSSLMode(tApplication, tEnvironment string) (dbSSLMode string, soteErr 
 }
 
 /*
-This will retrieve the AWS Region parameter that is in AWS System Manager service for the ROOTPATH and
-application.
+This will retrieve the AWS Region parameter that is in AWS System Manager service for the ROOTPATH
 */
 func GetRegion() (region string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -261,6 +255,44 @@ func GetRegion() (region string, soteErr sError.SoteError) {
 			region = *pSSMPathOutput.Parameters[0].Value
 		} else {
 			soteErr = sError.GetSError(109999, sError.BuildParams([]string{AWSREGIONIKEY}), sError.EmptyMap)
+		}
+	}
+
+	return
+}
+
+/*
+This will retrieve the cognito user pool id parameter that is in AWS System Manager service for the ROOTPATH and
+environment.
+*/
+func GetUserPoolId(tEnvironment string) (userPoolId string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if soteErr = initParameters("", tEnvironment, USERPOOLIDKEY); soteErr.ErrCode == nil {
+		if name := *pSSMPathOutput.Parameters[0].Name; name == USERPOOLIDKEY {
+			userPoolId = *pSSMPathOutput.Parameters[0].Value
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{USERPOOLIDKEY}), sError.EmptyMap)
+		}
+	}
+
+	return
+}
+
+func setPath(tApplication, tEnvironment string) (path string) {
+	sLogger.DebugMethod()
+
+	if tApplication == "" && tEnvironment == "" {
+		path = ROOTPATH
+	} else {
+		if tApplication == "" && tEnvironment != "" {
+			path = ROOTPATH + "/" + tEnvironment
+		} else {
+			if tApplication != "" && tEnvironment == "" {
+				path = ROOTPATH + "/" + tApplication
+			} else {
+				path = ROOTPATH + "/" + tApplication + "/" + tEnvironment
+			}
 		}
 	}
 
