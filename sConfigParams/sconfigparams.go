@@ -25,6 +25,7 @@ const (
 	DEMO        = "demo"
 	PRODUCTION  = "production"
 	//
+	AWSREGIONIKEY = "AWS_REGION"
 	DBPASSWORDKEY = "DATABASE_PASSWORD"
 	DBHOSTKEY     = ""
 	DBUSERKEY     = ""
@@ -66,6 +67,8 @@ Environment is validated against 'development', 'staging', 'demo' and 'productio
 func initParameters(tApplication, tEnvironment, key string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
+	var err error
+
 	switch tEnvironment {
 	case DEVELOPMENT:
 	case STAGING:
@@ -77,14 +80,20 @@ func initParameters(tApplication, tEnvironment, key string) (soteErr sError.Sote
 
 	if soteErr.ErrCode == nil {
 		var (
-			err          error
+			path         string
 			ssmPathInput ssm.GetParametersByPathInput
-			path         = ROOTPATH + "/" + tApplication + "/" + tEnvironment
-			pathWithKey  = path + "/" + key
 			filter       ssm.ParameterStringFilter
 			pFilter      []*ssm.ParameterStringFilter
 			pKeys        []*string
 		)
+		if tApplication == "" {
+			path = ROOTPATH
+		} else if tEnvironment == "" {
+			path = ROOTPATH + "/" + tApplication
+		} else {
+			path = ROOTPATH + "/" + tApplication + "/" + tEnvironment
+		}
+
 		ssmPathInput.SetPath(path)
 		ssmPathInput.Recursive = pTrue
 		ssmPathInput.WithDecryption = pTrue
@@ -97,15 +106,11 @@ func initParameters(tApplication, tEnvironment, key string) (soteErr sError.Sote
 			ssmPathInput.SetParameterFilters(pFilter)
 		}
 		if pSSMPathOutput, err = awsService.GetParametersByPath(&ssmPathInput); len(pSSMPathOutput.String()) == 0 {
-			if len(key) > 0 {
-				soteErr = sError.GetSError(109999, sError.BuildParams([]string{pathWithKey}), sError.EmptyMap)
-			} else {
-				soteErr = sError.GetSError(109999, sError.BuildParams([]string{path}), sError.EmptyMap)
-			}
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{path}), sError.EmptyMap)
 		}
-		if err != nil {
-			log.Fatalln(err)
-		}
+	}
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	return
@@ -208,6 +213,21 @@ func GetDBSSLMode(tApplication, tEnvironment string) (dbSSLMode string, soteErr 
 	if soteErr = initParameters(tApplication, tEnvironment, DBSSLMODEKEY); soteErr.ErrCode == nil {
 		dbSSLMode = *pSSMPathOutput.Parameters[0].Value
 	}
+
+	return
+}
+
+/*
+This will retrieve the AWS Region parameter that is in AWS System Manager service for the ROOTPATH and
+application.
+*/
+func GetRegion() (region string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	// if soteErr = initParameters(nil, nil, AWSREGIONIKEY); soteErr.ErrCode == nil {
+	// 	region = *pSSMPathOutput.Parameters[0].Value
+	region = "eu-west-1"
+	// }
 
 	return
 }
