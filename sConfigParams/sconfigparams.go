@@ -5,6 +5,10 @@ RESTRICTIONS:
     * Program must have access to a .aws/credentials file in the default locate.
     * This will only access system parameters that start with '/sote' (ROOTPATH).
     * You can only request a single key per call
+
+NOTES:
+    When the filter is not found in the result set from the GetParametersByPath call, the whole result
+    set is returned.
 */
 package sConfigParams
 
@@ -69,13 +73,15 @@ func initParameters(tApplication, tEnvironment, key string) (soteErr sError.Sote
 
 	var err error
 
-	switch tEnvironment {
-	case DEVELOPMENT:
-	case STAGING:
-	case DEMO:
-	case PRODUCTION:
-	default:
-		soteErr = sError.GetSError(601010, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
+	if tEnvironment != "" {
+		switch tEnvironment {
+		case DEVELOPMENT:
+		case STAGING:
+		case DEMO:
+		case PRODUCTION:
+		default:
+			soteErr = sError.GetSError(601010, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
+		}
 	}
 
 	if soteErr.ErrCode == nil {
@@ -105,6 +111,7 @@ func initParameters(tApplication, tEnvironment, key string) (soteErr sError.Sote
 			filter.SetValues(pKeys)
 			ssmPathInput.SetParameterFilters(pFilter)
 		}
+		// If there are any parameters that match the path, a result set will be return by the GetParametersByPath call.
 		if pSSMPathOutput, err = awsService.GetParametersByPath(&ssmPathInput); len(pSSMPathOutput.String()) == 0 {
 			soteErr = sError.GetSError(109999, sError.BuildParams([]string{path}), sError.EmptyMap)
 		}
@@ -142,7 +149,11 @@ func GetDBPassword(tApplication, tEnvironment string) (dbPassword string, soteEr
 	sLogger.DebugMethod()
 
 	if soteErr = initParameters(tApplication, strings.ToLower(tEnvironment), DBPASSWORDKEY); soteErr.ErrCode == nil {
-		dbPassword = *pSSMPathOutput.Parameters[0].Value
+		if name := *pSSMPathOutput.Parameters[0].Name; name != DBPASSWORDKEY {
+			dbPassword = *pSSMPathOutput.Parameters[0].Value
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBPASSWORDKEY}), sError.EmptyMap)
+		}
 	}
 
 	return
@@ -156,8 +167,13 @@ func GetDBHost(tApplication, tEnvironment string) (dbHost string, soteErr sError
 	sLogger.DebugMethod()
 
 	if soteErr = initParameters(tApplication, strings.ToLower(tEnvironment), DBHOSTKEY); soteErr.ErrCode == nil {
-		dbHost = *pSSMPathOutput.Parameters[0].Value
+		if name := *pSSMPathOutput.Parameters[0].Name; name == DBHOSTKEY {
+			dbHost = *pSSMPathOutput.Parameters[0].Value
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBHOSTKEY}), sError.EmptyMap)
+		}
 	}
+
 	return
 }
 
@@ -169,7 +185,11 @@ func GetDBUser(tApplication, tEnvironment string) (dbUser string, soteErr sError
 	sLogger.DebugMethod()
 
 	if soteErr = initParameters(tApplication, strings.ToLower(tEnvironment), DBUSERKEY); soteErr.ErrCode == nil {
-		dbUser = *pSSMPathOutput.Parameters[0].Value
+		if name := *pSSMPathOutput.Parameters[0].Name; name == DBUSERKEY {
+			dbUser = *pSSMPathOutput.Parameters[0].Value
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBUSERKEY}), sError.EmptyMap)
+		}
 	}
 
 	return
@@ -183,7 +203,11 @@ func GetDBPort(tApplication, tEnvironment string) (dbPort string, soteErr sError
 	sLogger.DebugMethod()
 
 	if soteErr = initParameters(tApplication, strings.ToLower(tEnvironment), DBPORTKEY); soteErr.ErrCode == nil {
-		dbPort = *pSSMPathOutput.Parameters[0].Value
+		if name := *pSSMPathOutput.Parameters[0].Name; name == DBPORTKEY {
+			dbPort = *pSSMPathOutput.Parameters[0].Value
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBPORTKEY}), sError.EmptyMap)
+		}
 	}
 
 	return
@@ -197,7 +221,11 @@ func GetDBName(tApplication, tEnvironment string) (dbName string, soteErr sError
 	sLogger.DebugMethod()
 
 	if soteErr = initParameters(tApplication, strings.ToLower(tEnvironment), DBNAMEKEY); soteErr.ErrCode == nil {
-		dbName = *pSSMPathOutput.Parameters[0].Value
+		if name := *pSSMPathOutput.Parameters[0].Name; name == DBNAMEKEY {
+			dbName = *pSSMPathOutput.Parameters[0].Value
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBNAMEKEY}), sError.EmptyMap)
+		}
 	}
 
 	return
@@ -211,7 +239,11 @@ func GetDBSSLMode(tApplication, tEnvironment string) (dbSSLMode string, soteErr 
 	sLogger.DebugMethod()
 
 	if soteErr = initParameters(tApplication, tEnvironment, DBSSLMODEKEY); soteErr.ErrCode == nil {
-		dbSSLMode = *pSSMPathOutput.Parameters[0].Value
+		if name := *pSSMPathOutput.Parameters[0].Name; name == DBSSLMODEKEY {
+			dbSSLMode = *pSSMPathOutput.Parameters[0].Value
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBSSLMODEKEY}), sError.EmptyMap)
+		}
 	}
 
 	return
@@ -224,10 +256,13 @@ application.
 func GetRegion() (region string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	// if soteErr = initParameters(nil, nil, AWSREGIONIKEY); soteErr.ErrCode == nil {
-	// 	region = *pSSMPathOutput.Parameters[0].Value
-	region = "eu-west-1"
-	// }
+	if soteErr = initParameters("", "", AWSREGIONIKEY); soteErr.ErrCode == nil {
+		if name := *pSSMPathOutput.Parameters[0].Name; name == AWSREGIONIKEY {
+			region = *pSSMPathOutput.Parameters[0].Value
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{AWSREGIONIKEY}), sError.EmptyMap)
+		}
+	}
 
 	return
 }
