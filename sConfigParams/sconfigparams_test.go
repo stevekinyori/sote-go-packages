@@ -14,7 +14,7 @@ const (
 func TestGetParameters(t *testing.T) {
 	parameters := make(map[string]interface{})
 	var soteErr sError.SoteError
-	if parameters, soteErr = GetParameters(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if parameters, soteErr = GetParameters(API, STAGING); soteErr.ErrCode != nil {
 		t.Errorf("GetParameters failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if len(parameters) == 0 {
@@ -24,7 +24,7 @@ func TestGetParameters(t *testing.T) {
 func TestGetDBPassword(t *testing.T) {
 	var parameters string
 	var soteErr sError.SoteError
-	if parameters, soteErr = GetDBPassword(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if parameters, soteErr = GetDBPassword(API, STAGING); soteErr.ErrCode != nil {
 		t.Errorf("TestGetDBPassword failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if len(parameters) == 0 {
@@ -34,7 +34,7 @@ func TestGetDBPassword(t *testing.T) {
 func TestGetDBName(t *testing.T) {
 	var parameters string
 	var soteErr sError.SoteError
-	if parameters, soteErr = GetDBName(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if parameters, soteErr = GetDBName(API, STAGING); soteErr.ErrCode != nil {
 		t.Errorf("GetDBName failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if len(parameters) == 0 {
@@ -44,7 +44,7 @@ func TestGetDBName(t *testing.T) {
 func TestGetDBHost(t *testing.T) {
 	var parameters string
 	var soteErr sError.SoteError
-	if parameters, soteErr = GetDBHost(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if parameters, soteErr = GetDBHost(API, STAGING); soteErr.ErrCode != nil {
 		t.Errorf("GetDBHost failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if len(parameters) == 0 {
@@ -54,7 +54,7 @@ func TestGetDBHost(t *testing.T) {
 func TestGetDBPort(t *testing.T) {
 	var parameters string
 	var soteErr sError.SoteError
-	if parameters, soteErr = GetDBPort(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if parameters, soteErr = GetDBPort(API, STAGING); soteErr.ErrCode != nil {
 		t.Errorf("GetDBPort failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if len(parameters) == 0 {
@@ -64,7 +64,7 @@ func TestGetDBPort(t *testing.T) {
 func TestGetDBSSLMode(t *testing.T) {
 	var parameters string
 	var soteErr sError.SoteError
-	if parameters, soteErr = GetDBSSLMode(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if parameters, soteErr = GetDBSSLMode(API, STAGING); soteErr.ErrCode != nil {
 		t.Errorf("GetDBSSLMode failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if len(parameters) == 0 {
@@ -74,7 +74,7 @@ func TestGetDBSSLMode(t *testing.T) {
 func TestGetDBUser(t *testing.T) {
 	var parameters string
 	var soteErr sError.SoteError
-	if parameters, soteErr = GetDBUser(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if parameters, soteErr = GetDBUser(API, STAGING); soteErr.ErrCode != nil {
 		t.Errorf("GetDBUser failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if len(parameters) == 0 {
@@ -89,5 +89,15 @@ func TestGetRegion(t *testing.T) {
 	}
 	if len(parameters) == 0 {
 		t.Error("GetParameters failed: Expected parameters to have at least one entry")
+	}
+}
+func TestGetUserPoolId(t *testing.T) {
+	var parameters string
+	var soteErr sError.SoteError
+	if parameters, soteErr = GetUserPoolId(STAGING); soteErr.ErrCode != nil {
+		t.Errorf("GetUserPoolId failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if len(parameters) == 0 {
+		t.Error("GetUserPoolId failed: Expected parameters to have at least one entry")
 	}
 }
