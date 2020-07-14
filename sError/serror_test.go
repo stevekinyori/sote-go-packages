@@ -63,6 +63,11 @@ func Test200512Error(t *testing.T) {
 	s := BuildParams([]string{"PARAMETER_NAME", "PARAMETER_NAME"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test200513Error(t *testing.T) {
+	var errCode = 200513
+	s := BuildParams([]string{"PARAMETER_NAME"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test201000Error(t *testing.T) {
 	var errCode = 201000
 	s := BuildParams([]string{"DETAILED_MESSAGE"})

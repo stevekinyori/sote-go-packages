@@ -66,6 +66,7 @@ var soteErrors = map[int]SoteError{
 	200510: {200510, PROCESSERROR, 3, "Parameter name, Field name, Field value", "%v can't be updated because %v is set to %v", EmptyMap, ""},
 	200511: {200511, PROCESSERROR, 2, "Parameter name, Another parameter name", "%v and %v must both be populated or null", EmptyMap, ""},
 	200512: {200512, PROCESSERROR, 2, "Parameter name, Another parameter name", "%v and %v must both be populated", EmptyMap, ""},
+	200513: {200513, PROCESSERROR, 1, "Parameter name", "%v must be populated", EmptyMap, ""},
 	201000: {201000, PROCESSERROR, 1, "Info returned from HTTP/HTTPS Request", "Bad HTTP/HTTPS Request - %v", EmptyMap, ""},
 	201005: {201005, PROCESSERROR, 0, "None", "Invalid Claim", EmptyMap, ""},
 	202000: {202000, PROCESSERROR, 1, "Environment Name", "The API you are calling is not available in this environment (%v)", EmptyMap, ""},
@@ -144,6 +145,8 @@ var soteErrors = map[int]SoteError{
 		200500	Thing being changed
 		200510	Parameter name, Field name, Field value
 		200511	Parameter name, Another parameter name
+		200512	Parameter name, Another parameter name
+		200513	Parameter name
 		201000	Info returned from HTTP/HTTPS Request
 		202000	Environment Name
 		230050	Name, Application/Package name
@@ -167,17 +170,19 @@ var soteErrors = map[int]SoteError{
 		400105	Data Structure Name, Data Structure Type
 		400110	Parameter name
 		400111	Parameter name, Application/Package name
-		405110	Thing being changed. System Id for the thing
+		405110	Thing being changed, System Id for the thing
 		405120	JSON array name, Thing being changed, System Id for the thing
 		410000	Error message number
 		600010	File name, Message returned from Open
 		601000	Environment name
+		601010	Environment name
 		602000	Database name, Database driver name, Port value
 		602020	SSL Mode
 		602030	Connection Type
 		605020	Kid
 		609999	Parameter name
-		700000	List of required parameters*/
+		700000	List of required parameters
+*/
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (soteErr SoteError) {
 	sLogger.DebugMethod()
 
@@ -241,7 +246,7 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 
 /*
 This will convert an array of strings to a param list for sError.GetSError
- */
+*/
 func BuildParams(values []string) (s []interface{}) {
 	sLogger.DebugMethod()
 
