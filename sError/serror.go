@@ -100,7 +100,7 @@ var soteErrors = map[int]SoteError{
 	400110: {400110, CONTENTERROR, 1, "Parameter name", "%v could't be parsed - Invalid JSON error", EmptyMap, ""},
 	400111: {400111, CONTENTERROR, 2, "Parameter name, Application/Package name", "%v could't be converted to a map/keyed array - %v", EmptyMap, ""},
 	401000: {401000, CONTENTERROR, 0, "None", "Column must have a non-null value. Details: ", EmptyMap, ""},
-	405110: {405110, CONTENTERROR, 2, "Thing being changed. System Id for the thing", "No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
+	405110: {405110, CONTENTERROR, 2, "Thing being changed, System Id for the thing", "No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
 	405120: {405120, CONTENTERROR, 3, "JSON array name, Thing being changed, System Id for the thing", "The %v was empty for %v with id %v", EmptyMap, ""},
 	410000: {410000, CONTENTERROR, 1, "Error message number", "%v error message is missing from sError package", EmptyMap, ""},
 	//
