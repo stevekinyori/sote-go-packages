@@ -65,6 +65,7 @@ var soteErrors = map[int]SoteError{
 	200500: {200500, PROCESSERROR, 1, "Thing being changed", "You are making changes to a canceled or completed %v", EmptyMap, ""},
 	200510: {200510, PROCESSERROR, 3, "Parameter name, Field name, Field value", "%v can't be updated because %v is set to %v", EmptyMap, ""},
 	200511: {200511, PROCESSERROR, 2, "Parameter name, Another parameter name", "%v and %v must both be populated or null", EmptyMap, ""},
+	200512: {200512, PROCESSERROR, 2, "Parameter name, Another parameter name", "%v and %v must both be populated", EmptyMap, ""},
 	201000: {201000, PROCESSERROR, 1, "Info returned from HTTP/HTTPS Request", "Bad HTTP/HTTPS Request - %v", EmptyMap, ""},
 	201005: {201005, PROCESSERROR, 0, "None", "Invalid Claim", EmptyMap, ""},
 	202000: {202000, PROCESSERROR, 1, "Environment Name", "The API you are calling is not available in this environment (%v)", EmptyMap, ""},
