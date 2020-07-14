@@ -124,6 +124,7 @@ var soteErrors = map[int]SoteError{
 	605000: {605000, CONFIGURATIONISSUE, 0, "None", "Unexpected signing method", EmptyMap, ""},
 	605010: {605010, CONFIGURATIONISSUE, 0, "None", "kid header not found", EmptyMap, ""},
 	605020: {605020, CONFIGURATIONISSUE, 1, "Kid", "key (%v) was not found in token", EmptyMap, ""},
+	605030: {605030, CONFIGURATIONISSUE, 1, "Environment name", "Pull of public key set failed for %v", EmptyMap, ""},
 	609999: {609999, CONFIGURATIONISSUE, 1, "Parameter name", "Start up parameter is missing (%v)", EmptyMap, ""},
 	//
 	700000: {700000, APICONTRACTERROR, 1, "List of required parameters", "Call doesn't match API signature. Caller must provide the following parameter names: %v", EmptyMap, ""},
@@ -180,6 +181,7 @@ var soteErrors = map[int]SoteError{
 		602020	SSL Mode
 		602030	Connection Type
 		605020	Kid
+		605030	Environment name
 		609999	Parameter name
 		700000	List of required parameters
 */
