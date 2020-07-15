@@ -228,6 +228,11 @@ func Test605020Error(t *testing.T) {
 	s := BuildParams([]string{"KID"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test605021Error(t *testing.T) {
+	var errCode = 605021
+	s := BuildParams([]string{"KID"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test605030Error(t *testing.T) {
 	var errCode = 605030
 	s := BuildParams([]string{"ENVIRONMENT"})
