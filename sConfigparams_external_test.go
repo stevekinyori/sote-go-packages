@@ -24,7 +24,7 @@ func TestGetParametersFound(t *testing.T) {
 }
 func TestGetParametersNotFound(t *testing.T) {
 	var soteErr sError.SoteError
-	if _, soteErr = sConfigParams.GetParameters(API, "SCOTT"); soteErr.ErrCode != nil {
+	if _, soteErr = sConfigParams.GetParameters(API, "SCOTT"); soteErr.ErrCode == nil {
 		t.Errorf("GetParameters failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if _, soteErr = sConfigParams.GetParameters("SCOTT", sConfigParams.STAGING); soteErr.ErrCode == nil {
