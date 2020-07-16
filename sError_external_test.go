@@ -58,6 +58,16 @@ func Test200511Error(t *testing.T) {
 	s := sError.BuildParams([]string{"PARAMETER_NAME", "PARAMETER_NAME"})
 	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
+func Test200512Error(t *testing.T) {
+	var errCode = 200512
+	s := sError.BuildParams([]string{"PARAMETER_NAME", "PARAMETER_NAME"})
+	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
+}
+func Test200513Error(t *testing.T) {
+	var errCode = 200513
+	s := sError.BuildParams([]string{"PARAMETER_NAME", "PARAMETER_NAME"})
+	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
+}
 func Test201000Error(t *testing.T) {
 	var errCode = 201000
 	s := sError.BuildParams([]string{"DETAILED_MESSAGE"})
@@ -85,7 +95,7 @@ func Test310000Error(t *testing.T) {
 }
 func Test310005Error(t *testing.T) {
 	var errCode = 310005
-	s := sError.BuildParams([]string{"ITEM_NAME"})
+	s := sError.BuildParams([]string{"KEY_NAME"})
 	params := make([]interface{}, 1)
 	params[0] = "KEY_NAME"
 	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
@@ -213,6 +223,21 @@ func Test602020Error(t *testing.T) {
 func Test602030Error(t *testing.T) {
 	var errCode = 602030
 	s := sError.BuildParams([]string{"CONNECTION_TYPE"})
+	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
+}
+func Test605020Error(t *testing.T) {
+	var errCode = 605020
+	s := sError.BuildParams([]string{"KID"})
+	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
+}
+func Test605021Error(t *testing.T) {
+	var errCode = 605021
+	s := sError.BuildParams([]string{"KID"})
+	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
+}
+func Test605030Error(t *testing.T) {
+	var errCode = 605030
+	s := sError.BuildParams([]string{"ENVIRONMENT"})
 	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
 func Test609999Error(t *testing.T) {
