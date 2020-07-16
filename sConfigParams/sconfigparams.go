@@ -72,8 +72,10 @@ doesn't support pulling more than the first 10 parameters based on the path
 func GetParameters(tApplication, tEnvironment string) (parameters map[string]interface{}, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
+	var pSSMPathOutput *ssm.GetParametersByPathOutput
+
 	parameters = make(map[string]interface{})
-	if pSSMPathOutput, soteErr := listParameters(tApplication, strings.ToLower(tEnvironment)); soteErr.ErrCode == nil {
+	if pSSMPathOutput, soteErr = listParameters(tApplication, strings.ToLower(tEnvironment)); soteErr.ErrCode == nil {
 		for _, pParameter := range pSSMPathOutput.Parameters {
 			parameters[*pParameter.Name] = *pParameter.Value
 		}
