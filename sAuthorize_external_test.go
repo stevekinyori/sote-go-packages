@@ -1,8 +1,9 @@
-package sAuthorize
+package packages
 
 import (
 	"testing"
 
+	"gitlab.com/soteapps/packages/v2020/sAuthorize"
 	"gitlab.com/soteapps/packages/v2020/sConfigParams"
 	"gitlab.com/soteapps/packages/v2020/sError"
 )
@@ -14,7 +15,7 @@ const (
 
 func TestValidToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TESTTOKENEXPIRED); soteErr.ErrCode != 500050 {
+	if soteErr = sAuthorize.ValidToken(sConfigParams.DEVELOPMENT, TESTTOKENEXPIRED); soteErr.ErrCode != 500050 {
 		t.Errorf("ValidToken failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 }
