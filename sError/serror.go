@@ -111,6 +111,7 @@ var soteErrors = map[int]SoteError{
 	500020: {500020, PERMISSIONERROR, 0, "None", "token_use is not valid", EmptyMap, ""},
 	500030: {500030, PERMISSIONERROR, 0, "None", "client is not valid", EmptyMap, ""},
 	500040: {500040, PERMISSIONERROR, 0, "None", "client is not valid for this application", EmptyMap, ""},
+	500050: {500050, PERMISSIONERROR, 0, "None", "Token is expired", EmptyMap, ""},
 	//
 	600000: {600000, CONFIGURATIONISSUE, 0, "None", ".env files are missing", EmptyMap, ""},
 	600010: {600010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", "%v file was not found. Message return: %v", EmptyMap, ""},
