@@ -12,11 +12,15 @@ rm sDatabase/coverage.out 2> /dev/null; go test sDatabase/* -coverprofile sDatab
 go test sError_external_test.go
 go test sLogger_external_test.go
 go test sDatabase_external_test.go
+go test sConfigParams_external_test.go
+go test sAuthorize_external_test.go
 
 # To output the results from the -coverprofile, using the following command
 go tool cover -func=sError/coverage.out > coverage_review.out
 go tool cover -func=sLogger/coverage.out >> coverage_review.out
 go tool cover -func=sDatabase/coverage.out >> coverage_review.out
+go tool cover -func=sConfigParams/coverage.out >> coverage_review.out
+go tool cover -func=sAuthorize/coverage.out >> coverage_review.out
 
 # Review the coverage totals for 70% compliance
 grep '^total' coverage_review.out | awk '/[0-6][0-9]./ { print "FAILED: Coverage must be 70% or higher" }'
