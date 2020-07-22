@@ -235,7 +235,7 @@ func Test605021Error(t *testing.T) {
 }
 func Test605030Error(t *testing.T) {
 	var errCode = 605030
-	s := BuildParams([]string{"ENVIRONMENT"})
+	s := BuildParams([]string{"REGION", "ENVIRONMENT"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
 func Test609999Error(t *testing.T) {

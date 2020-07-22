@@ -112,6 +112,8 @@ var soteErrors = map[int]SoteError{
 	500030: {500030, PERMISSIONERROR, 0, "None", "client is not valid", EmptyMap, ""},
 	500040: {500040, PERMISSIONERROR, 0, "None", "client is not valid for this application", EmptyMap, ""},
 	500050: {500050, PERMISSIONERROR, 0, "None", "Token is expired", EmptyMap, ""},
+	500060: {500060, PERMISSIONERROR, 1, "Claim names", "These claims are invalid: %v", EmptyMap, ""},
+	500070: {500070, PERMISSIONERROR, 0, "None", "Required claim is missing", EmptyMap, ""},
 	//
 	600000: {600000, CONFIGURATIONISSUE, 0, "None", ".env files are missing", EmptyMap, ""},
 	600010: {600010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", "%v file was not found. Message return: %v", EmptyMap, ""},
@@ -126,7 +128,7 @@ var soteErrors = map[int]SoteError{
 	605010: {605010, CONFIGURATIONISSUE, 0, "None", "kid header not found", EmptyMap, ""},
 	605020: {605020, CONFIGURATIONISSUE, 1, "Kid", "key (%v) was not found in token", EmptyMap, ""},
 	605021: {605021, CONFIGURATIONISSUE, 1, "Kid", "Kid (%v) was not found in public key set", EmptyMap, ""},
-	605030: {605030, CONFIGURATIONISSUE, 1, "Environment name", "Failed to fetch remote JWK (status = 404) for %v", EmptyMap, ""},
+	605030: {605030, CONFIGURATIONISSUE, 2, "Region, Environment", "Failed to fetch remote JWK (status = 404) for %v region %v environment", EmptyMap, ""},
 	609999: {609999, CONFIGURATIONISSUE, 1, "Parameter name", "Start up parameter is missing (%v)", EmptyMap, ""},
 	//
 	700000: {700000, APICONTRACTERROR, 1, "List of required parameters", "Call doesn't match API signature. Caller must provide the following parameter names: %v", EmptyMap, ""},
