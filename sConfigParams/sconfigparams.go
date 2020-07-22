@@ -31,6 +31,7 @@ const (
 	// System Manager Parameter Keys
 	AWSREGIONIKEY = "AWS_REGION"
 	USERPOOLIDKEY = "COGNITO_USER_POOL_ID"
+	CLIENTIDKEY   = "COGNITO_CLIENT_ID"
 	DBPASSWORDKEY = "DATABASE_PASSWORD"
 	DBHOSTKEY     = "DB_HOST"
 	DBUSERKEY     = "DB_USERNAME"
@@ -202,6 +203,22 @@ func GetUserPoolId(tEnvironment string) (userPoolId string, soteErr sError.SoteE
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
 	} else {
 		userPoolId, soteErr = getParameter("", strings.ToLower(tEnvironment), USERPOOLIDKEY)
+	}
+
+	return
+}
+
+/*
+This will retrieve the cognito client id for the allocation that is in AWS System Manager service for the ROOTPATH and
+environment.
+*/
+func GetClientId(tApplication, tEnvironment string) (clientId string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if tApplication == "" || tEnvironment == "" {
+		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
+	} else {
+		clientId, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), CLIENTIDKEY)
 	}
 
 	return
