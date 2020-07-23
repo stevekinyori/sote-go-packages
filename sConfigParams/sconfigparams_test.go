@@ -94,3 +94,20 @@ func TestGetClientId(t *testing.T) {
 		t.Errorf("GetClientId failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 }
+func TestValidateEnvironment(t *testing.T) {
+	if soteErr := ValidateEnvironment(DEVELOPMENT); soteErr.ErrCode != nil {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if soteErr := ValidateEnvironment(STAGING); soteErr.ErrCode != nil {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if soteErr := ValidateEnvironment(DEMO); soteErr.ErrCode != nil {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if soteErr := ValidateEnvironment(PRODUCTION); soteErr.ErrCode != nil {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if soteErr := ValidateEnvironment("BAD_ENV"); soteErr.ErrCode != 601010 {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be 601010: %v", soteErr.ErrCode)
+	}
+}

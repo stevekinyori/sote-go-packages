@@ -275,7 +275,7 @@ func listParameters(tApplication, tEnvironment string) (pSSMPathOutput *ssm.GetP
 
 	var err error
 
-	if soteErr = validateEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = ValidateEnvironment(tEnvironment); soteErr.ErrCode == nil {
 		var (
 			path         = setPath(tApplication, tEnvironment)
 			ssmPathInput ssm.GetParametersByPathInput

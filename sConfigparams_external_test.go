@@ -89,3 +89,20 @@ func TestGetUserPoolId(t *testing.T) {
 		t.Errorf("GetUserPoolId failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 }
+func TestValidateEnvironment(t *testing.T) {
+	if soteErr := sConfigParams.ValidateEnvironment(sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if soteErr := sConfigParams.ValidateEnvironment(sConfigParams.STAGING); soteErr.ErrCode != nil {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if soteErr := sConfigParams.ValidateEnvironment(sConfigParams.DEMO); soteErr.ErrCode != nil {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if soteErr := sConfigParams.ValidateEnvironment(sConfigParams.PRODUCTION); soteErr.ErrCode != nil {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
+	}
+	if soteErr := sConfigParams.ValidateEnvironment("BAD_ENV"); soteErr.ErrCode != 601010 {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be 601010: %v", soteErr.ErrCode)
+	}
+}
