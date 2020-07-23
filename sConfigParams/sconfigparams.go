@@ -225,12 +225,13 @@ func GetClientId(tApplication, tEnvironment string) (clientId string, soteErr sE
 }
 
 /*
-The Environment is validated against 'development', 'staging', 'demo' and 'production' (case sensitive values)
+The Environment is validated against 'development', 'staging', 'demo' and 'production'. The value supplied
+will be forced to lower case.
 */
-func validateEnvironment(tEnvironment string) (soteErr sError.SoteError) {
+func ValidateEnvironment(tEnvironment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	switch tEnvironment {
+	switch strings.ToLower(tEnvironment) {
 	case DEVELOPMENT:
 	case STAGING:
 	case DEMO:
