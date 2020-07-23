@@ -25,8 +25,8 @@ func TestValidToken(t *testing.T) {
 }
 func TestInValidSignatureToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 500055 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500055: %v", soteErr.ErrCode)
+	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 500050 && soteErr.ErrCode != 500055 {
+		t.Errorf("ValidToken failed: Expected soteErr to be 500050 or 500055: %v", soteErr.ErrCode)
 	}
 }
 func TestInValidToken(t *testing.T) {
