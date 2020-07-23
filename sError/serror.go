@@ -154,6 +154,7 @@ var soteErrors = map[int]SoteError{
 		200511	Parameter name, Another parameter name
 		200512	Parameter name, Another parameter name
 		200513	Parameter name
+		200514	Parameter name, Another parameter name, Another parameter name
 		201000	Info returned from HTTP/HTTPS Request
 		202000	Environment Name
 		230050	Name, Application/Package name
@@ -180,6 +181,7 @@ var soteErrors = map[int]SoteError{
 		405110	Thing being changed, System Id for the thing
 		405120	JSON array name, Thing being changed, System Id for the thing
 		410000	Error message number
+		500060	Claim names
 		600010	File name, Message returned from Open
 		601000	Environment name
 		601010	Environment name
@@ -188,7 +190,7 @@ var soteErrors = map[int]SoteError{
 		602030	Connection Type
 		605020	Kid
 		605021	Kid
-		605030	Environment name
+		605030	Region, Environment
 		609999	Parameter name
 		700000	List of required parameters
 */
