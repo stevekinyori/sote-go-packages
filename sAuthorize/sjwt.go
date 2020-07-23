@@ -52,9 +52,7 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 
 		if holdSoteErr.ErrCode == nil {
 			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-				if soteErr = validateClaims(claims, tApplication, tEnvironment); soteErr.ErrCode != nil {
-					// ????? holdSoteErr = sError.GetSError(500050, nil, sError.EmptyMap)  Token has expired
-				}
+				holdSoteErr = validateClaims(claims, tApplication, tEnvironment)
 			} else {
 				holdSoteErr = sError.GetSError(500055, nil, sError.EmptyMap)
 			}
@@ -132,7 +130,10 @@ This checks if the claim in the token are valid
 func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	var claimCount int = 0
+	var (
+		claimCount         int = 0
+		region, userPoolId string
+	)
 
 	for key, claim := range claims {
 		if soteErr.ErrCode == nil {
@@ -155,18 +156,19 @@ func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (so
 				}
 			case "iss":
 				claimCount++
-				if region, soteErr := sConfigParams.GetRegion(); soteErr.ErrCode == nil {
-					if userPoolId, soteErr := sConfigParams.GetUserPoolId(tEnvironment); soteErr.ErrCode == nil {
+				if region, soteErr = sConfigParams.GetRegion(); soteErr.ErrCode == nil {
+					if userPoolId, soteErr = sConfigParams.GetUserPoolId(tEnvironment); soteErr.ErrCode == nil {
 						issuerURL := "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId
 						if claim != issuerURL {
 							soteErr = sError.GetSError(500060, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 							sLogger.Info(soteErr.FmtErrMsg)
+						} else {
+							sLogger.Info("Claim (iss) was found")
 						}
 					} else {
 						soteErr = sError.GetSError(500060, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 						sLogger.Info(soteErr.FmtErrMsg)
 					}
-					sLogger.Info("Claim (iss) was found")
 				} else {
 					soteErr = sError.GetSError(500060, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 					sLogger.Info(soteErr.FmtErrMsg)
