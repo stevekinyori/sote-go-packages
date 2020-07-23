@@ -29,7 +29,13 @@ go tool cover -func=sDatabase/coverage.out >> coverage_review.out
 go tool cover -func=sConfigParams/coverage.out >> coverage_review.out
 go tool cover -func=sAuthorize/coverage.out >> coverage_review.out
 
-# Review the coverage totals for 70% compliance
-grep '^total' coverage_review.out | awk '/[0-6][0-9]./ { print "FAILED: Coverage must be 70% or higher" }'; exit 1
-grep '^total' coverage_review.out | awk '/[1,7-9][0-9]./ { print "PASSED: Coverage over 70%" }'
+# Review the coverage totals for 70%+ compliance
+read RC <<< $( grep '^total' coverage_review.out | awk '/[0-6][0-9]./ {print 1}' )
+if [[ "$RC" = "1" ]]; then
+    echo "FAILED: At least one components coverage is less than 70%"
+    exit 1
+else
+    echo "PASSED: All components coverage is 70% or higher"
+    exit 0
+fi
 echo "For details, look at coverage_review.out"
