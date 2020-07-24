@@ -62,9 +62,12 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 			dbConnInfo.DSConnValues.Port, dbConnInfo.DSConnValues.Timeout, dbConnInfo.DSConnValues.SSLMode)
 		if dbConnInfo.DBPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString); err != nil {
 			if strings.Contains(err.Error(), "dial") {
-
+				soteErr = sError.GetSError(602999, nil, sError.EmptyMap)
+				sLogger.Info(soteErr.FmtErrMsg)
+				panic("pgxpool.Connect Failed: Database maybe offline")
 			} else {
-				errDetails, soteErr := sError.ConvertErr(err)
+				var errDetails = make(map[string]string)
+				errDetails, soteErr = sError.ConvertErr(err)
 				if soteErr.ErrCode != nil {
 					sLogger.Info(soteErr.FmtErrMsg)
 					panic("sError.ConvertErr Failed")
