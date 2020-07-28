@@ -13,17 +13,17 @@ var (
 func getAWSParams() (soteErr sError.SoteError) {
 	AppEnvironment, soteErr = sConfigParams.GetEnvironmentAppEnvironment()
 	if soteErr.ErrCode == nil {
-		DBName, soteErr = sConfigParams.GetDBName("API", AppEnvironment)
+		DBName, soteErr = sConfigParams.GetDBName("api", AppEnvironment)
 		if soteErr.ErrCode == nil {
-			DBUser, soteErr = sConfigParams.GetDBUser("API", AppEnvironment)
+			DBUser, soteErr = sConfigParams.GetDBUser("api", AppEnvironment)
 			if soteErr.ErrCode == nil {
-				DBPassword, soteErr = sConfigParams.GetDBPassword("API", AppEnvironment)
+				DBPassword, soteErr = sConfigParams.GetDBPassword("api", AppEnvironment)
 				if soteErr.ErrCode == nil {
-					DBHost, soteErr = sConfigParams.GetDBHost("API", AppEnvironment)
+					DBHost, soteErr = sConfigParams.GetDBHost("api", AppEnvironment)
 					if soteErr.ErrCode == nil {
-						DBSSLMode, soteErr = sConfigParams.GetDBSSLMode("API", AppEnvironment)
+						DBSSLMode, soteErr = sConfigParams.GetDBSSLMode("api", AppEnvironment)
 						if soteErr.ErrCode == nil {
-							DBPort, soteErr = sConfigParams.GetDBPort("API", AppEnvironment)
+							DBPort, soteErr = sConfigParams.GetDBPort("api", AppEnvironment)
 						}
 					}
 				}
