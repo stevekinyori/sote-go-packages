@@ -131,6 +131,7 @@ var soteErrors = map[int]SoteError{
 	605020: {605020, CONFIGURATIONISSUE, 1, "Kid", "key (%v) was not found in token", EmptyMap, ""},
 	605021: {605021, CONFIGURATIONISSUE, 1, "Kid", "Kid (%v) was not found in public key set", EmptyMap, ""},
 	605030: {605030, CONFIGURATIONISSUE, 2, "Region, Environment", "Failed to fetch remote JWK (status = 404) for %v region %v environment", EmptyMap, ""},
+	609998: {609998, CONFIGURATIONISSUE, 1, "Parameter name", "Start up parameter is out of value range (%v)", EmptyMap, ""},
 	609999: {609999, CONFIGURATIONISSUE, 1, "Parameter name", "Start up parameter is missing (%v)", EmptyMap, ""},
 	//
 	700000: {700000, APICONTRACTERROR, 1, "List of required parameters", "Call doesn't match API signature. Caller must provide the following parameter names: %v", EmptyMap, ""},

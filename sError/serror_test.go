@@ -238,6 +238,11 @@ func Test605030Error(t *testing.T) {
 	s := BuildParams([]string{"REGION", "ENVIRONMENT"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test609998Error(t *testing.T) {
+	var errCode = 609998
+	s := BuildParams([]string{"START_VARIABLE_OUT_OF_RANGE"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test609999Error(t *testing.T) {
 	var errCode = 609999
 	s := BuildParams([]string{"START_VARIABLE_MISSING"})
