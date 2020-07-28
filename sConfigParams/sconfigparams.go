@@ -1,7 +1,10 @@
 /*
-This will query System Manager Parameter store for the path and (optional) key provided.
+This will retrieve any configuration parameter that is used by Sote.  Areas are environment
+variables and System Manager Parameters. For System Manager Parameter they must be stored in
+the path and (optional) key provided.
 
 RESTRICTIONS:
+    AWS functions:
     * Program must have access to a .aws/credentials file in the default locate.
     * This will only access system parameters that start with '/sote' (ROOTPATH).
     * You can only request a single key per call
@@ -14,6 +17,7 @@ package sConfigParams
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -24,6 +28,9 @@ import (
 )
 
 const (
+	// Environment variables
+	APPENV    = "APP_ENVIRONMENT"
+	AWSREGION = "AWS_REGION"
 	// Environments
 	STAGING     = "staging"
 	DEVELOPMENT = "development"
@@ -366,6 +373,45 @@ func getParameter(tApplication, tEnvironment, key string) (returnValue interface
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{name}), sError.EmptyMap)
 	} else {
 		returnValue = *pSSMParamOutput.Parameter.Value
+	}
+
+	return
+}
+
+/*
+This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
+the function will return an error code for not found.
+*/
+func GetEnvironmentAWSRegion() (envValue string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	envValue, soteErr = GetEnvironmentVariable(AWSREGIONIKEY)
+
+	return
+}
+
+/*
+This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
+the function will return an error code for not found.
+*/
+func GetEnvironmentAppEnvironment() (envValue string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	envValue, soteErr = GetEnvironmentVariable(APPENV)
+
+	return
+}
+
+/*
+Get the requested environment variable. If the environment variable is not found or the value is empty,
+the function will return an error code for not found.
+*/
+func GetEnvironmentVariable(key string) (envValue string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	envValue = os.Getenv(key)
+	if envValue = os.Getenv(key); len(envValue) == 0 {
+		soteErr = sError.GetSError(109999, sError.BuildParams([]string{key}), sError.EmptyMap)
 	}
 
 	return

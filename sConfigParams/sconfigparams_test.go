@@ -8,7 +8,7 @@ import (
 
 const (
 	// Application values
-	API string = "api"
+	API  string = "api"
 	SDCC string = "sdcc"
 )
 
@@ -142,5 +142,19 @@ func TestValidateEnvironment(t *testing.T) {
 	}
 	if soteErr := ValidateEnvironment(""); soteErr.ErrCode != 601010 {
 		t.Errorf("ValidateEnvironment failed: Expected soteErr to be 601010: %v", soteErr.FmtErrMsg)
+	}
+}
+func TestGetEnvironmentVariable(t *testing.T) {
+	if _, soteErr := GetEnvironmentVariable(APPENV); soteErr.ErrCode != nil {
+		t.Errorf("GetEnvironmentVariable failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetEnvironmentVariable(AWSREGION); soteErr.ErrCode != nil {
+		t.Errorf("GetEnvironmentVariable failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetEnvironmentAWSRegion(); soteErr.ErrCode != nil {
+		t.Errorf("GetEnvironmentAWSRegion failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetEnvironmentAppEnvironment(); soteErr.ErrCode != nil {
+		t.Errorf("GetEnvironmentAppEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 }
