@@ -192,6 +192,7 @@ var soteErrors = map[int]SoteError{
 		605020	Kid > key (%v) was not found in token
 		605021	Kid > Kid (%v) was not found in public key set
 		605030	Region, Environment > Failed to fetch remote JWK (status = 404) for %v region %v environment
+		609998	Parameter name > Start up parameter is out of value range (%v)
 		609999	Parameter name > Start up parameter is missing (%v)
 		700000	List of required parameters > Call doesn't match API signature. Caller must provide the following parameter names: %v
 */
