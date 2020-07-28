@@ -144,55 +144,55 @@ var soteErrors = map[int]SoteError{
 	This will return the formatted message using the supplied code and parameters
 
 	Error Code with requiring parameters:
-		100100	List Of users roles, Requested action
-		109999	Item name
-		200200	Parameter name, Data type of parameter
-		200250	Parameter name, Parameter value, List of values allowed
-		200260	Other parameter name, Parameter name, Parameter value
-		200500	Thing being changed
-		200510	Parameter name, Field name, Field value
-		200511	Parameter name, Another parameter name
-		200512	Parameter name, Another parameter name
-		200513	Parameter name
-		200514	Parameter name, Another parameter name, Another parameter name
-		201000	Info returned from HTTP/HTTPS Request
-		202000	Environment Name
-		230050	Name, Application/Package name
-		230060	Provided parameter count, Expected parameter count
-		310000	Key name
-		310005	Key name
-		320000	List of required parameters
-		400000	Field name, Field value
-		400005	Field name, Minimal length
-		400010	Field name, Field value
-		400020	Field name, Field value
-		400030	Field name, Field value
-		400040	Field name, Field value
-		400050	Field name, Field value
-		400060	Field name, Field value
-		400065	Field name, Field value
-		400070	Field name, Field value
-		400080	Field name, Field value
-		400090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size
-		400100	Parameter name, Data Structure Type
-		400105	Data Structure Name, Data Structure Type
-		400110	Parameter name
-		400111	Parameter name, Application/Package name
-		405110	Thing being changed, System Id for the thing
-		405120	JSON array name, Thing being changed, System Id for the thing
-		410000	Error message number
-		500060	Claim names
-		600010	File name, Message returned from Open
-		601000	Environment name
-		601010	Environment name
-		602000	Database name, Database driver name, Port value
-		602020	SSL Mode
-		602030	Connection Type
-		605020	Kid
-		605021	Kid
-		605030	Region, Environment
-		609999	Parameter name
-		700000	List of required parameters
+		100100	List Of users roles, Requested action > Your roles %v are not authorized to %v
+		109999	Item name > No %v was/were found
+		200200	Parameter name, Data type of parameter > %v must be of type %v
+		200250	Parameter name, Parameter value, List of values allowed > %v (%v) must contain one of these values: %v
+		200260	Other parameter name, Parameter name, Parameter value > %v must be provided when %v is set to (%v)
+		200500	Thing being changed > You are making changes to a canceled or completed %v
+		200510	Parameter name, Field name, Field value > %v can't be updated because %v is set to %v
+		200511	Parameter name, Another parameter name > %v and %v must both be populated or null
+		200512	Parameter name, Another parameter name > %v and %v must both be populated
+		200513	Parameter name > %v must be populated
+		200514	Parameter name, Another parameter name, Another parameter name > %v, %v and %v must both be populated
+		201000	Info returned from HTTP/HTTPS Request > Bad HTTP/HTTPS Request - %v
+		202000	Environment Name > The API you are calling is not available in this environment (%v)
+		230050	Name, Application/Package name > Number of parameters defined in the %v is not support by %v
+		230060	Provided parameter count, Expected parameter count > Number of parameters provided (%v) doesn't match the number expected (%v)
+		310000	Key name > Upper or lower case %v key is missing
+		310005	Key name > Upper or lower case %v keys value is missing
+		320000	List of required parameters > Message doesn't match signature. Sender must provide the following parameter names: %v
+		400000	Field name, Field value > %v (%v) is not numeric
+		400005	Field name, Minimal length > %v must a value greater than %v
+		400010	Field name, Field value > %v (%v) is not a string
+		400020	Field name, Field value > %v (%v) is not a float
+		400030	Field name, Field value > %v (%v) is not a array
+		400040	Field name, Field value > %v (%v) is not a json string
+		400050	Field name, Field value > %v (%v) is not a valid email address
+		400060	Field name, Field value > %v (%v) contains special characters which are not allowed
+		400065	Field name, Field value > %v (%v) contains special characters other than underscore
+		400070	Field name, Field value > %v (%v) is not a valid date
+		400080	Field name, Field value > %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu
+		400090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size > %v (%v) is too %v. %v size: %v Actual size: %v
+		400100	Parameter name, Data Structure Type > %v could't be converted to an %v - JSON conversion error
+		400105	Data Structure Name, Data Structure Type > %v (%v) could't be converted to JSON - JSON conversion error
+		400110	Parameter name > %v could't be parsed - Invalid JSON error
+		400111	Parameter name, Application/Package name > %v could't be converted to a map/keyed array - %v
+		405110	Thing being changed, System Id for the thing > No update is needed. No fields where changed for %v with id %v
+		405120	JSON array name, Thing being changed, System Id for the thing > The %v was empty for %v with id %v
+		410000	Error message number > %v error message is missing from sError package
+		500060	Claim names > These claims are invalid: %v
+		600010	File name, Message returned from Open > %v file was not found. Message return: %v
+		601000	Environment name > environment variable is missing (%v)
+		601010	Environment name > environment value (%v) is invalid
+		602000	Database name, Database driver name, Port value > Unable to connect to database %v using driver %v on port %v
+		602020	SSL Mode > Only disable, allow, prefer and required are supported.
+		602030	Connection Type > Only single or pool are supported.
+		605020	Kid > key (%v) was not found in token
+		605021	Kid > Kid (%v) was not found in public key set
+		605030	Region, Environment > Failed to fetch remote JWK (status = 404) for %v region %v environment
+		609999	Parameter name > Start up parameter is missing (%v)
+		700000	List of required parameters > Call doesn't match API signature. Caller must provide the following parameter names: %v
 */
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (soteErr SoteError) {
 	sLogger.DebugMethod()
@@ -308,7 +308,7 @@ func GenErrorLisRequiredParams() (funcComments string) {
 	funcComments = FUNCCOMMENTSHEADER
 	for _, i2 := range errorKeys {
 		if x := soteErrors[i2]; x.ParamCount > 0 {
-			funcComments += fmt.Sprintf("\t\t%v\t%v\n", x.ErrCode, x.ParamDescription)
+			funcComments += fmt.Sprintf("\t\t%v\t%v > %v\n", x.ErrCode, x.ParamDescription, x.FmtErrMsg)
 		}
 	}
 	return
