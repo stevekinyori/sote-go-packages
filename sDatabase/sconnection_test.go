@@ -3,14 +3,11 @@ package sDatabase
 import (
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2020/sConfigParams"
 	"gitlab.com/soteapps/packages/v2020/sError"
 )
 
 var (
 	tConnInfo                                                ConnInfo
-	awsRegion, dbName, dbUser, dbPassword, dbHost, dbSSLMode string
-	dbPort                                                   int
 	soteErr                                                  sError.SoteError
 )
 
@@ -46,7 +43,7 @@ func TestVerifyConnection(t *testing.T) {
 		t.Fatal()
 	}
 
-	tConnInfo, soteErr = GetConnection(dbName, dbUser, dbPassword, dbHost, dbSSLMode, dbPort, 3)
+	tConnInfo, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("setConnectionValues Failed: Expected a nil error code.")
 		t.Fail()
@@ -64,7 +61,7 @@ func TestToJSONString(t *testing.T) {
 		t.Fatal()
 	}
 
-	tConnInfo, soteErr = GetConnection(dbName, dbUser, dbPassword, dbHost, dbSSLMode, dbPort, 3)
+	tConnInfo, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("GetConnection Failed: Please Investigate")
 		t.Fail()
@@ -80,27 +77,4 @@ func TestToJSONString(t *testing.T) {
 		t.Errorf("ToJSONString Failed: Please Investigate")
 		t.Fail()
 	}
-}
-func getAWSParams() (soteErr sError.SoteError) {
-	awsRegion, soteErr = sConfigParams.GetEnvironmentAWSRegion()
-	if soteErr.ErrCode == nil {
-		dbName, soteErr = sConfigParams.GetDBName("API", awsRegion)
-		if soteErr.ErrCode == nil {
-			dbUser, soteErr = sConfigParams.GetDBUser("API", awsRegion)
-			if soteErr.ErrCode == nil {
-				dbPassword, soteErr = sConfigParams.GetDBPassword("API", awsRegion)
-				if soteErr.ErrCode == nil {
-					dbHost, soteErr = sConfigParams.GetDBHost("API", awsRegion)
-					if soteErr.ErrCode == nil {
-						dbSSLMode, soteErr = sConfigParams.GetDBSSLMode("API", awsRegion)
-						if soteErr.ErrCode == nil {
-							dbPort, soteErr = sConfigParams.GetDBPort("API", awsRegion)
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return
 }
