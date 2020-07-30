@@ -29,7 +29,7 @@ func getAWSParams() (soteErr sError.SoteError) {
 				}
 			}
 		}
-	}
+	} 
 
 	return
 }
