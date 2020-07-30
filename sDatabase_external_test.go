@@ -16,7 +16,12 @@ func TestVerifyConnection(t *testing.T) {
 		t.Fail()
 	}
 
-	tConnInfo, soteErr = sDatabase.GetConnection("sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	if soteErr = sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("GetAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
+
+	tConnInfo, soteErr = sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("setConnectionValues Failed: Expected a nil error code.")
 		t.Fail()
@@ -29,14 +34,19 @@ func TestVerifyConnection(t *testing.T) {
 	}
 }
 func TestToJSONString(t *testing.T) {
-	dbConnInfo, soteErr := sDatabase.GetConnection("sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("GetAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
+
+	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("GetConnection Failed: Please Investigate")
 		t.Fail()
 	}
 
 	var dbConnJSONString string
-	if dbConnJSONString, soteErr = sDatabase.ToJSONString(dbConnInfo.DSConnValues); soteErr.ErrCode != nil {
+	if dbConnJSONString, soteErr = sDatabase.ToJSONString(tConnInfo.DSConnValues); soteErr.ErrCode != nil {
 		t.Errorf("ToJSONString Failed: Please Investigate")
 		t.Fail()
 	}
@@ -50,7 +60,12 @@ func TestToJSONString(t *testing.T) {
 // sconstraintinfo
 //
 func TestGetSingleColumnConstraintInfo(t *testing.T) {
-	tConnInfo, soteErr := sDatabase.GetConnection("sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("GetAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
+
+	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("GetConnection Failed: Please investigate")
 		t.Fail()
@@ -71,7 +86,12 @@ func TestGetTables(t *testing.T) {
 		t.Fail()
 	}
 
-	tConnInfo, soteErr := sDatabase.GetConnection("sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("GetAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
+
+	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("Get Connection Failed: Please Investigate")
 		t.Fail()
