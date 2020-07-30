@@ -5,7 +5,12 @@ import (
 )
 
 func TestGetSingleColumnConstraintInfo(t *testing.T) {
-	tConnInfo, soteErr := GetConnection("sote_development", "sote", "password", "localhost", "disable", 5442, 3)
+	if soteErr = getAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
+
+	tConnInfo, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("GetConnection Failed: Please investigate")
 		t.Fail()
