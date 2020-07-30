@@ -64,7 +64,6 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 			if strings.Contains(err.Error(), "dial") {
 				soteErr = sError.GetSError(602999, nil, sError.EmptyMap)
 				sLogger.Info(soteErr.FmtErrMsg)
-				panic("pgxpool.Connect Failed: Database maybe offline")
 			} else {
 				var errDetails = make(map[string]string)
 				errDetails, soteErr = sError.ConvertErr(err)

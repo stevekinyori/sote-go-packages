@@ -54,6 +54,14 @@ func TestVerifyConnection(t *testing.T) {
 		t.Errorf("VerifyConnection Failed: Expected a nil error code.")
 		t.Fail()
 	}
+
+	// This will test the condition that no database is available to connect
+	tConnInfo, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, 65000, 3)
+	if soteErr.ErrCode != 602999 {
+		t.Errorf("setConnectionValues Failed: Expected 602999 error code.")
+		t.Fail()
+	}
+
 }
 func TestToJSONString(t *testing.T) {
 	if soteErr = getAWSParams(); soteErr.ErrCode != nil {
