@@ -10,7 +10,7 @@ var (
 	DBPort                                                   int
 )
 
-func getAWSParams() (soteErr sError.SoteError) {
+func GetAWSParams() (soteErr sError.SoteError) {
 	AppEnvironment, soteErr = sConfigParams.GetEnvironmentAppEnvironment()
 	if soteErr.ErrCode == nil {
 		DBName, soteErr = sConfigParams.GetDBName("api", AppEnvironment)

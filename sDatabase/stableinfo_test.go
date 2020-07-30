@@ -11,7 +11,7 @@ func TestGetTables(t *testing.T) {
 		t.Fail()
 	}
 
-	if soteErr = getAWSParams(); soteErr.ErrCode != nil {
+	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
 		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
 		t.Fatal()
 	}

@@ -38,8 +38,8 @@ func TestVerifyConnection(t *testing.T) {
 		t.Fail()
 	}
 
-	if soteErr = getAWSParams(); soteErr.ErrCode != nil {
-		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 		t.Fatal()
 	}
 
@@ -64,8 +64,8 @@ func TestVerifyConnection(t *testing.T) {
 
 }
 func TestToJSONString(t *testing.T) {
-	if soteErr = getAWSParams(); soteErr.ErrCode != nil {
-		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 		t.Fatal()
 	}
 
