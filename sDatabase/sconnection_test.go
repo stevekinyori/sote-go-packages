@@ -31,7 +31,6 @@ func TestSetConnectionValues(t *testing.T) {
 	}
 }
 func TestVerifyConnection(t *testing.T) {
-
 	soteErr = VerifyConnection(tConnInfo)
 	if soteErr.ErrCode != 602999 {
 		t.Errorf("VerifyConnection Failed: Expected 602999 error code.")
