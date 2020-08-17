@@ -18,6 +18,17 @@ type SColumnInfo struct {
 	ColDataType string
 }
 
+const (
+	// S was added to the name to prevent conflicts
+	SBOOLEAN = "boolean"
+	SDATE = "date"
+	SBIGINT = "bigint"
+	STIMESTAMPZONE = "timestamp with time zone"
+	SCHARACTERVARYING = "character varying"
+	SINTEGER = "integer"
+	STEXT = "text"
+)
+
 // This function gets column information for the supplied schema and table.
 func GetColumnInfo(schemaName, tableName string, tConnInfo ConnInfo) (tableColumnInfo []SColumnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
