@@ -131,7 +131,7 @@ func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (so
 	sLogger.DebugMethod()
 
 	var (
-		claimCount         int = 0
+		claimCount         = 0
 		region, userPoolId string
 	)
 
