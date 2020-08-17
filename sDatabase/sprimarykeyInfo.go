@@ -54,7 +54,6 @@ func pkPrimer(schemaName string, dbConnInfo ConnInfo) {
 	}
 	defer tbRows.Close()
 	qStmt2.WriteString(");")
-	fmt.Println(qStmt2)
 
 	rows, err := dbConnInfo.DBPoolPtr.Query(context.Background(), qStmt2.String())
 	if err != nil {
@@ -71,7 +70,10 @@ func pkPrimer(schemaName string, dbConnInfo ConnInfo) {
 	rows.Close()
 }
 
-func pkLookup(tSchemaName, sTableName, sColumnName string, dbConnInfo ConnInfo, test bool) (schemaName, tableName string, soteErr sError.SoteError) {
+/*
+Using this function will return the table where the column is a primary key
+ */
+func pkLookup(tSchemaName, sTableName, sColumnName string, dbConnInfo ConnInfo, test bool) (tableName string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if len(pkList) == 0 {
