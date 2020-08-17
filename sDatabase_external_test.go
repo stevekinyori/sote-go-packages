@@ -5,6 +5,12 @@ import (
 
 	"gitlab.com/soteapps/packages/v2020/sDatabase"
 )
+
+const (
+	TESTSCHEMA     = "sotetest"
+	REFERENCETABLE = "referencetable"
+)
+
 //
 // sconnection
 //
@@ -91,7 +97,7 @@ func TestGetTables(t *testing.T) {
 		t.Fatal()
 	}
 
-	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
+	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 1)
 	if soteErr.ErrCode != nil {
 		t.Errorf("Get Connection Failed: Please Investigate")
 		t.Fail()
@@ -105,6 +111,35 @@ func TestGetTables(t *testing.T) {
 
 	if len(tableList) == 0 {
 		t.Errorf("Get Tables Failed: Expected at least one table name to be returned")
+		t.Fail()
+	}
+}
+func TestGetColumnInfo(t *testing.T) {
+	var tConnInfo sDatabase.ConnInfo
+	if _, soteErr := sDatabase.GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != 602999 {
+		t.Errorf("GetColumnInfo Failed: Expected error code of 602999")
+		t.Fail()
+	}
+
+	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
+
+	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 1)
+	if soteErr.ErrCode != nil {
+		t.Errorf("GetConnection Failed: Please Investigate")
+		t.Fail()
+	}
+
+	var columnInfo []sDatabase.SColumnInfo
+	if columnInfo, soteErr = sDatabase.GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != nil {
+		t.Errorf("GetTableList Failed: Expected error code to be nil")
+		t.Fail()
+	}
+
+	if len(columnInfo) == 0 {
+		t.Errorf("GetColumnInfo Failed: Expected at least one column's info to be returned")
 		t.Fail()
 	}
 }
