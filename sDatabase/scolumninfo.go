@@ -12,10 +12,10 @@ import (
 
 type SColumnInfo struct {
 	// Col was added to the name to prevent conflicts
-	colName     string
-	colDefault  string
-	colNullable string
-	colDataType string
+	ColName     string
+	ColDefault  string
+	ColNullable string
+	ColDataType string
 }
 
 // This function gets column information for the supplied schema and table.
@@ -39,14 +39,14 @@ func GetColumnInfo(schemaName, tableName string, tConnInfo ConnInfo) (tableColum
 			if err != nil {
 				log.Fatalln(err)
 			}
-			tRowInfo.colName = columnRow[0].(string)
+			tRowInfo.ColName = columnRow[0].(string)
 			if columnRow[1] == nil {
-				tRowInfo.colDefault = ""
+				tRowInfo.ColDefault = ""
 			} else {
-				tRowInfo.colDefault = columnRow[1].(string)
+				tRowInfo.ColDefault = columnRow[1].(string)
 			}
-			tRowInfo.colNullable = columnRow[2].(string)
-			tRowInfo.colDataType = columnRow[3].(string)
+			tRowInfo.ColNullable = columnRow[2].(string)
+			tRowInfo.ColDataType = columnRow[3].(string)
 			tableColumnInfo = append(tableColumnInfo, tRowInfo)
 		}
 		defer colRows.Close()
