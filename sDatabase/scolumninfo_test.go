@@ -5,12 +5,13 @@ import (
 )
 
 const (
+	TESTSCHEMA     = "sotetest"
 	REFERENCETABLE = "referencetable"
 )
 
 func TestGetColumnInfo(t *testing.T) {
 	var tConnInfo ConnInfo
-	if _, soteErr := GetColumnInfo("sote", REFERENCETABLE, tConnInfo); soteErr.ErrCode != 602999 {
+	if _, soteErr := GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != 602999 {
 		t.Errorf("GetColumnInfo Failed: Expected error code of 602999")
 		t.Fail()
 	}
@@ -26,14 +27,14 @@ func TestGetColumnInfo(t *testing.T) {
 		t.Fail()
 	}
 
-	var tableList []string
-	if tableList, soteErr = GetTableList("sote", tConnInfo); soteErr.ErrCode != nil {
+	var columnInfo []SColumnInfo
+	if columnInfo, soteErr = GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != nil {
 		t.Errorf("GetTableList Failed: Expected error code to be nil")
 		t.Fail()
 	}
 
-	if len(tableList) == 0 {
-		t.Errorf("GetTableList Failed: Expected at least one table name to be returned")
+	if len(columnInfo) == 0 {
+		t.Errorf("GetColumnInfo Failed: Expected at least one column's info to be returned")
 		t.Fail()
 	}
 }
