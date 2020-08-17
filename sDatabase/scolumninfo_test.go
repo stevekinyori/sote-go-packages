@@ -36,5 +36,10 @@ func TestGetColumnInfo(t *testing.T) {
 	if len(columnInfo) == 0 {
 		t.Errorf("GetColumnInfo Failed: Expected at least one column's info to be returned")
 		t.Fail()
+	} else {
+		if columnInfo[0].ColName == "" {
+			t.Errorf("GetColumnInfo Failed: Expected the column name to be returned")
+			t.Fail()
+		}
 	}
 }
