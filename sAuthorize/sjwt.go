@@ -41,12 +41,15 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 
 			return nil, nil
 		})
-		if err != nil {
+		if err.Error() != "" {
 			if strings.Contains(err.Error(), "expired") {
 				holdSoteErr = sError.GetSError(500050, nil, sError.EmptyMap)
 			}
 			if strings.Contains(err.Error(), "invalid type") {
 				holdSoteErr = sError.GetSError(500055, nil, sError.EmptyMap)
+			}
+			if strings.Contains(err.Error(), "invalid number of segments") {
+				holdSoteErr = sError.GetSError(500056, nil, sError.EmptyMap)
 			}
 		}
 
