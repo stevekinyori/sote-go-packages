@@ -60,6 +60,9 @@ func GetColumnInfo(schemaName, tableName string, tConnInfo ConnInfo) (tableColum
 			tRowInfo.ColDataType = columnRow[3].(string)
 			tableColumnInfo = append(tableColumnInfo, tRowInfo)
 		}
+		if len(colRows.RawValues()) == 0 {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{schemaName + "." + tableName}), nil)
+		}
 		defer colRows.Close()
 	}
 
