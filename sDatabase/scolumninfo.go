@@ -20,13 +20,13 @@ type SColumnInfo struct {
 
 const (
 	// S was added to the name to prevent conflicts
-	SBOOLEAN = "boolean"
-	SDATE = "date"
-	SBIGINT = "bigint"
-	STIMESTAMPZONE = "timestamp with time zone"
+	SBOOLEAN          = "boolean"
+	SDATE             = "date"
+	SBIGINT           = "bigint"
+	STIMESTAMPZONE    = "timestamp with time zone"
 	SCHARACTERVARYING = "character varying"
-	SINTEGER = "integer"
-	STEXT = "text"
+	SINTEGER          = "integer"
+	STEXT             = "text"
 )
 
 // This function gets column information for the supplied schema and table.
@@ -61,6 +61,25 @@ func GetColumnInfo(schemaName, tableName string, tConnInfo ConnInfo) (tableColum
 			tableColumnInfo = append(tableColumnInfo, tRowInfo)
 		}
 		defer colRows.Close()
+	}
+
+	return
+}
+
+func ValidateDataType(dataType string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	switch dataType {
+	case SBIGINT:
+	case SBOOLEAN:
+	case SCHARACTERVARYING:
+	case SDATE:
+	case SINTEGER:
+	case STEXT:
+	case STIMESTAMPZONE:
+	default:
+		soteErr = sError.GetSError(401010, nil, nil)
+		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
 	return
