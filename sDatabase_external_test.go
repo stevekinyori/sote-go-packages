@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	TESTSCHEMA     = "sotetest"
-	REFERENCETABLE = "referencetable"
+	TESTSCHEMA           = "information_schema"
+	REFERENCETABLE       = "columns"
 )
 
 //
@@ -62,6 +62,7 @@ func TestToJSONString(t *testing.T) {
 		t.Fail()
 	}
 }
+
 //
 // sconstraintinfo
 //
@@ -78,10 +79,11 @@ func TestGetSingleColumnConstraintInfo(t *testing.T) {
 	}
 
 	var myConstraints []sDatabase.SConstraint
-	if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo("sote", tConnInfo); len(myConstraints) == 0 {
-		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should not be empty")
+	if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo(TESTSCHEMA, tConnInfo); len(myConstraints) > 0 {
+		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should be empty")
 	}
 }
+
 //
 // stableinfo
 //
@@ -104,7 +106,7 @@ func TestGetTables(t *testing.T) {
 	}
 
 	var tableList []string
-	if tableList, soteErr = sDatabase.GetTableList("sote", tConnInfo); soteErr.ErrCode != nil {
+	if tableList, soteErr = sDatabase.GetTableList(TESTSCHEMA, tConnInfo); soteErr.ErrCode != nil {
 		t.Errorf("Get Tables Failed: Expected error code to be nil")
 		t.Fail()
 	}
@@ -147,5 +149,4 @@ func TestGetColumnInfo(t *testing.T) {
 			t.Fail()
 		}
 	}
-
 }

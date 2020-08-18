@@ -1,13 +1,20 @@
 package sDatabase
 
 import (
+	"strconv"
 	"testing"
+
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 const (
-	TESTSCHEMA     = "sotetest"
-	REFERENCETABLE = "referencetable"
+	TESTSCHEMA     = "information_schema"
+	REFERENCETABLE = "columns"
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("scolumninfo_test.go")
+}
 
 func TestGetColumnInfo(t *testing.T) {
 	var tConnInfo ConnInfo
@@ -29,7 +36,7 @@ func TestGetColumnInfo(t *testing.T) {
 
 	var columnInfo []SColumnInfo
 	if columnInfo, soteErr = GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != nil {
-		t.Errorf("GetTableList Failed: Expected error code to be nil")
+		t.Errorf("GetColumnInfo Failed: Expected error code to be nil [" + strconv.Itoa(soteErr.ErrCode.(int)) + "]")
 		t.Fail()
 	}
 
