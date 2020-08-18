@@ -2,7 +2,13 @@ package sDatabase
 
 import (
 	"testing"
+
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("stableinfo_test.go")
+}
 
 func TestGetTables(t *testing.T) {
 	var tConnInfo ConnInfo

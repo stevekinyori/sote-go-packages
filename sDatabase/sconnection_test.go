@@ -4,12 +4,17 @@ import (
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2020/sError"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 var (
 	tConnInfo                                                ConnInfo
 	soteErr                                                  sError.SoteError
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("sconnection_test.go")
+}
 
 func TestSetConnectionValue(t *testing.T) {
 	_, soteErr := setConnectionValues("dbName", "User", "Password", "Host", "INVALID", 1, 1)

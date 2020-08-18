@@ -3,7 +3,13 @@ package sDatabase
 import (
 	"fmt"
 	"testing"
+
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("sprimarykeyInfo_test.go")
+}
 
 func TestPKPrimer(t *testing.T) {
 	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2020/sError"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 const (
@@ -11,6 +12,10 @@ const (
 	API  string = "api"
 	SDCC string = "sdcc"
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("sconfigparams_test.go")
+}
 
 func TestGetParametersFound(t *testing.T) {
 	parameters := make(map[string]interface{})
