@@ -7,6 +7,7 @@ import (
 	"github.com/lestrrat-go/jwx/jwk"
 	"gitlab.com/soteapps/packages/v2020/sConfigParams"
 	"gitlab.com/soteapps/packages/v2020/sError"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
 const (
@@ -19,6 +20,10 @@ const (
 	// Application
 	SDCC = "sdcc"
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("sjwt_test.go")
+}
 
 func TestValidToken(t *testing.T) {
 	var soteErr sError.SoteError
