@@ -57,23 +57,25 @@ func GetSingleColumnConstraintInfo(schemaName string, tConnInfo ConnInfo) (SCons
 		defer tbRows.Close()
 		qStmt2.WriteString(");")
 
-		tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt2.String())
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		var constraintRow []interface{}
-		var tRowInfo SConstraint
-		for tbRows.Next() {
-			constraintRow, err = tbRows.Values()
+		if len(tbRows.RawValues()) > 0 {
+			tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt2.String())
 			if err != nil {
 				log.Fatalln(err)
 			}
-			tRowInfo.tableName = constraintRow[0].(string)
-			tRowInfo.columnName = constraintRow[1].(string)
-			SConstraintInfo = append(SConstraintInfo, tRowInfo)
+
+			var constraintRow []interface{}
+			var tRowInfo SConstraint
+			for tbRows.Next() {
+				constraintRow, err = tbRows.Values()
+				if err != nil {
+					log.Fatalln(err)
+				}
+				tRowInfo.tableName = constraintRow[0].(string)
+				tRowInfo.columnName = constraintRow[1].(string)
+				SConstraintInfo = append(SConstraintInfo, tRowInfo)
+			}
+			defer tbRows.Close()
 		}
-		defer tbRows.Close()
 	}
 
 	return
