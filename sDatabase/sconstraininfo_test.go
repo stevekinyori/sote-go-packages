@@ -2,7 +2,13 @@ package sDatabase
 
 import (
 	"testing"
+
+	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("sconstraininfo_test.go")
+}
 
 func TestGetSingleColumnConstraintInfo(t *testing.T) {
 	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
@@ -16,8 +22,9 @@ func TestGetSingleColumnConstraintInfo(t *testing.T) {
 		t.Fail()
 	}
 
+	// TODO This should be len(myConstraints) == 0.  When the sotetest data structures are installed using the test.sh, this must be changed
 	var myConstraints []SConstraint
-	if myConstraints, soteErr = GetSingleColumnConstraintInfo("sote", tConnInfo); len(myConstraints) == 0 {
-		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should not be empty")
+	if myConstraints, soteErr = GetSingleColumnConstraintInfo(TESTSCHEMA, tConnInfo); len(myConstraints) > 0 {
+		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should be empty")
 	}
 }

@@ -78,6 +78,7 @@ func TestGetSingleColumnConstraintInfo(t *testing.T) {
 		t.Fail()
 	}
 
+	// TODO This should be len(myConstraints) == 0.  When the sotetest data structures are installed using the test.sh, this must be changed
 	var myConstraints []sDatabase.SConstraint
 	if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo(TESTSCHEMA, tConnInfo); len(myConstraints) > 0 {
 		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should be empty")
