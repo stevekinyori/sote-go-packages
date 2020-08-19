@@ -17,12 +17,12 @@ func TestGetTables(t *testing.T) {
 		t.Fail()
 	}
 
-	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
+	if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
 		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
 		t.Fatal()
 	}
 
-	tConnInfo, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
+	tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("GetConnection Failed: Please Investigate")
 		t.Fail()

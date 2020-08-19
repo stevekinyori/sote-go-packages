@@ -3,13 +3,7 @@ package sDatabase
 import (
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2020/sError"
 	"gitlab.com/soteapps/packages/v2020/sLogger"
-)
-
-var (
-	tConnInfo                                                ConnInfo
-	soteErr                                                  sError.SoteError
 )
 
 func init() {
@@ -36,7 +30,8 @@ func TestSetConnectionValues(t *testing.T) {
 	}
 }
 func TestVerifyConnection(t *testing.T) {
-	soteErr = VerifyConnection(tConnInfo)
+	var tConnInfo ConnInfo
+	soteErr := VerifyConnection(tConnInfo)
 	if soteErr.ErrCode != 602999 {
 		t.Errorf("VerifyConnection Failed: Expected 602999 error code.")
 		t.Fail()
@@ -68,12 +63,12 @@ func TestVerifyConnection(t *testing.T) {
 
 }
 func TestToJSONString(t *testing.T) {
-	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
+	if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
 		t.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 		t.Fatal()
 	}
 
-	tConnInfo, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
+	tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	if soteErr.ErrCode != nil {
 		t.Errorf("GetConnection Failed: Please Investigate")
 		t.Fail()
