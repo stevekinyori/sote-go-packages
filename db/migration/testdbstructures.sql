@@ -1,3 +1,5 @@
+DROP SCHEMA sotetest CASCADE;
+
 CREATE SCHEMA sotetest AUTHORIZATION sote;
 
 /*
