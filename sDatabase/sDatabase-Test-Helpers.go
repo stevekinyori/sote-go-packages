@@ -5,25 +5,34 @@ import (
 	"gitlab.com/soteapps/packages/v2020/sError"
 )
 
+const (
+	API = "api"
+)
+
 var (
-	AppEnvironment, DBName, DBUser, DBPassword, DBHost, DBSSLMode string
-	DBPort                                                   int
+	DBName         string
+	DBUser         string
+	DBPassword     string
+	DBHost         string
+	DBSSLMode      string
+	AppEnvironment string
+	DBPort         int
 )
 
 func GetAWSParams() (soteErr sError.SoteError) {
 	AppEnvironment, soteErr = sConfigParams.GetEnvironmentAppEnvironment()
 	if soteErr.ErrCode == nil {
-		DBName, soteErr = sConfigParams.GetDBName("api", AppEnvironment)
+		DBName, soteErr = sConfigParams.GetDBName(API, AppEnvironment)
 		if soteErr.ErrCode == nil {
-			DBUser, soteErr = sConfigParams.GetDBUser("api", AppEnvironment)
+			DBUser, soteErr = sConfigParams.GetDBUser(API, AppEnvironment)
 			if soteErr.ErrCode == nil {
-				DBPassword, soteErr = sConfigParams.GetDBPassword("api", AppEnvironment)
+				DBPassword, soteErr = sConfigParams.GetDBPassword(API, AppEnvironment)
 				if soteErr.ErrCode == nil {
-					DBHost, soteErr = sConfigParams.GetDBHost("api", AppEnvironment)
+					DBHost, soteErr = sConfigParams.GetDBHost(API, AppEnvironment)
 					if soteErr.ErrCode == nil {
-						DBSSLMode, soteErr = sConfigParams.GetDBSSLMode("api", AppEnvironment)
+						DBSSLMode, soteErr = sConfigParams.GetDBSSLMode(API, AppEnvironment)
 						if soteErr.ErrCode == nil {
-							DBPort, soteErr = sConfigParams.GetDBPort("api", AppEnvironment)
+							DBPort, soteErr = sConfigParams.GetDBPort(API, AppEnvironment)
 						}
 					}
 				}
