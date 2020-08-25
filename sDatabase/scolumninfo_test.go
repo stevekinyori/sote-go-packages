@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	TESTSCHEMA     = "information_schema"
-	REFERENCETABLE = "columns"
+	TESTINFOSCHEMA  = "information_schema"
+	INFOSCHEMATABLE = "columns"
 )
 
 func init() {
@@ -18,7 +18,7 @@ func init() {
 
 func TestGetColumnInfo(t *testing.T) {
 	var tConnInfo ConnInfo
-	if _, soteErr := GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != 602999 {
+	if _, soteErr := GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 602999 {
 		t.Errorf("GetColumnInfo Failed: Expected error code of 602999")
 		t.Fail()
 	}
@@ -35,7 +35,7 @@ func TestGetColumnInfo(t *testing.T) {
 	}
 
 	var columnInfo []SColumnInfo
-	if columnInfo, soteErr = GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != nil {
+	if columnInfo, soteErr = GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != nil {
 		t.Errorf("GetColumnInfo Failed: Expected error code to be nil [" + strconv.Itoa(soteErr.ErrCode.(int)) + "]")
 		t.Fail()
 	}
