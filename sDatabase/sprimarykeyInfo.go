@@ -73,7 +73,7 @@ func pkPrimer(schemaName string, dbConnInfo ConnInfo) {
 /*
 Using this function will return the table where the column is a primary key
  */
-func pkLookup(tSchemaName, sTableName, sColumnName string, dbConnInfo ConnInfo, test bool) (tableName string, soteErr sError.SoteError) {
+func PKLookup(tSchemaName, sTableName, sColumnName string, dbConnInfo ConnInfo, test bool) (tableName string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if len(pkList) == 0 {
