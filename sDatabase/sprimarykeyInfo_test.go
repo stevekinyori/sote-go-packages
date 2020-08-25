@@ -1,12 +1,19 @@
 package sDatabase
 
 import (
-	"fmt"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
+const (
+	SOTETESTSCHEMA = "sotetest"
+	REFERENCETABLE = "referencetable"
+	REFTBLCOLUMNNAME = "reference_name"
+	PARENTCHILDTABLE = "parentchildtable"
+	PCTBLCOLUMNNAME = "reference_name"
+	SELF = "self"
+)
 func init() {
 	sLogger.SetLogMessagePrefix("sprimarykeyInfo_test.go")
 }
@@ -43,9 +50,11 @@ func TestPKLookup(t *testing.T) {
 		t.Errorf("pkPrimer Failed: Expected the pkList to have at least one entry.")
 	}
 
-	if tbName, soteErr := pkLookup("sotetest", "referencetable", "reference_name", tConnInfo, false); soteErr.ErrCode != nil {
-		t.Errorf("pkLookup Failed: Expected error code to be nil.")
-	} else {
-		fmt.Println(tbName)
+	if tbName, soteErr := PKLookup(SOTETESTSCHEMA, REFERENCETABLE, REFTBLCOLUMNNAME, tConnInfo, false); soteErr.ErrCode != nil && tbName != SELF {
+		t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be self.")
+	}
+
+	if tbName, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo, false); soteErr.ErrCode != nil && tbName != REFERENCETABLE {
+		t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
 	}
 }
