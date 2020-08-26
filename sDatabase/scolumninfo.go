@@ -33,37 +33,47 @@ const (
 func GetColumnInfo(schemaName, tableName string, tConnInfo ConnInfo) (tableColumnInfo []SColumnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
-		qStmt := "SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2;"
+	if len(schemaName) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Schema name: " + schemaName}), nil)
+	}
 
-		var colRows pgx.Rows
-		var err error
-		colRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt, schemaName, tableName)
-		if err != nil {
-			log.Fatalln(err)
-		}
+	if len(tableName) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Schema name: " + tableName}), nil)
+	}
 
-		var columnRow []interface{}
-		var tRowInfo SColumnInfo
-		for colRows.Next() {
-			columnRow, err = colRows.Values()
+	if soteErr.ErrCode == nil {
+		if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
+			qStmt := "SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2;"
+
+			var colRows pgx.Rows
+			var err error
+			colRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt, schemaName, tableName)
 			if err != nil {
 				log.Fatalln(err)
 			}
-			tRowInfo.ColName = columnRow[0].(string)
-			if columnRow[1] == nil {
-				tRowInfo.ColDefault = ""
-			} else {
-				tRowInfo.ColDefault = columnRow[1].(string)
+
+			var columnRow []interface{}
+			var tRowInfo SColumnInfo
+			for colRows.Next() {
+				columnRow, err = colRows.Values()
+				if err != nil {
+					log.Fatalln(err)
+				}
+				tRowInfo.ColName = columnRow[0].(string)
+				if columnRow[1] == nil {
+					tRowInfo.ColDefault = ""
+				} else {
+					tRowInfo.ColDefault = columnRow[1].(string)
+				}
+				tRowInfo.ColNullable = columnRow[2].(string)
+				tRowInfo.ColDataType = columnRow[3].(string)
+				tableColumnInfo = append(tableColumnInfo, tRowInfo)
 			}
-			tRowInfo.ColNullable = columnRow[2].(string)
-			tRowInfo.ColDataType = columnRow[3].(string)
-			tableColumnInfo = append(tableColumnInfo, tRowInfo)
+			if len(colRows.RawValues()) == 0 {
+				soteErr = sError.GetSError(109999, sError.BuildParams([]string{schemaName + "." + tableName}), nil)
+			}
+			defer colRows.Close()
 		}
-		if len(colRows.RawValues()) == 0 {
-			soteErr = sError.GetSError(109999, sError.BuildParams([]string{schemaName + "." + tableName}), nil)
-		}
-		defer colRows.Close()
 	}
 
 	return
