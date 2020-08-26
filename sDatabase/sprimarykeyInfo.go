@@ -73,16 +73,35 @@ func pkPrimer(schemaName string, dbConnInfo ConnInfo) {
 /*
 Using this function will return the table where the column is a primary key
 */
-func PKLookup(tSchemaName, sTableName, sColumnName string, dbConnInfo ConnInfo, test bool) (tableName string, soteErr sError.SoteError) {
+func PKLookup(tSchemaName, sTableName, sColumnName string, dbConnInfo ConnInfo) (tableName string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if len(pkList) == 0 {
-		pkPrimer(tSchemaName, dbConnInfo)
-	} else {
-		if pkList[sColumnName].tableName == sTableName {
-			tableName = "self"
-		} else {
-			tableName = pkList[sColumnName].tableName
+	if len(tSchemaName) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Schema name: " + tSchemaName}), nil)
+	}
+	if soteErr.ErrCode == nil && len(sTableName) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Table name: " + sTableName}), nil)
+	}
+	if soteErr.ErrCode == nil && len(sColumnName) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Column Name name: " + sColumnName}), nil)
+	}
+
+	if soteErr.ErrCode == nil {
+		if soteErr = VerifyConnection(dbConnInfo); soteErr.ErrCode == nil {
+			if len(pkList) == 0 {
+				pkPrimer(tSchemaName, dbConnInfo)
+				if len(pkList) == 0 {
+					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"PK INFO for" + tSchemaName}), sError.EmptyMap)
+				}
+			}
+
+			if soteErr.ErrCode == nil || tSchemaName == pkList[sColumnName].schemaName {
+				if pkList[sColumnName].tableName == sTableName {
+					tableName = "self"
+				} else {
+					tableName = pkList[sColumnName].tableName
+				}
+			}
 		}
 	}
 
