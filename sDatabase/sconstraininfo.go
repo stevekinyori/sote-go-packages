@@ -25,7 +25,6 @@ func GetSingleColumnConstraintInfo(schemaName string, tConnInfo ConnInfo) (SCons
 	if len(schemaName) == 0 {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Schema name: " + schemaName}), nil)
 	} else {
-
 		if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
 			qStmt1 := "SELECT tc.table_schema, tc.table_name, COUNT (tc.table_name) FROM information_schema.table_constraints tc " +
 				"INNER JOIN information_schema.constraint_column_usage ccu ON tc.table_schema = ccu.table_schema and tc.table_name = ccu.table_name " +
