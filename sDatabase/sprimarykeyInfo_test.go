@@ -85,18 +85,18 @@ func TestPKLookupEmptyValues(t *testing.T) {
 	}
 
 	if _, soteErr := PKLookup(EMPTYVALUE, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 200513 {
-		t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
+		t.Errorf("pkLookup Failed: Expected error code to be 200513.")
 	}
 	if _, soteErr := PKLookup(SOTETESTSCHEMA, EMPTYVALUE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 200513 {
-		t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
+		t.Errorf("pkLookup Failed: Expected error code to be 200513.")
 	}
 	if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, EMPTYVALUE, tConnInfo); soteErr.ErrCode != 200513 {
-		t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
+		t.Errorf("pkLookup Failed: Expected error code to be 200513.")
 	}
 }
 func TestNoConnection(t *testing.T) {
 	var tConnInfo = ConnInfo{nil, ConnValues{}}
 	if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 602999 {
-		t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
+		t.Errorf("pkLookup Failed: Expected error code to be 602999.")
 	}
 }

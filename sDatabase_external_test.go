@@ -7,8 +7,15 @@ import (
 )
 
 const (
-	TESTSCHEMA           = "information_schema"
-	REFERENCETABLE       = "columns"
+	TESTINFOSCHEMA  = "information_schema"
+	INFOSCHEMATABLE = "columns"
+	SOTETESTSCHEMA   = "sotetest"
+	REFERENCETABLE   = "referencetable"
+	REFTBLCOLUMNNAME = "reference_name"
+	PARENTCHILDTABLE = "parentchildtable"
+	PCTBLCOLUMNNAME  = "reference_name"
+	EMPTYVALUE       = ""
+	SELF             = "self"
 )
 
 //
@@ -78,10 +85,20 @@ func TestGetSingleColumnConstraintInfo(t *testing.T) {
 		t.Fail()
 	}
 
-	// TODO This should be len(myConstraints) == 0.  When the sotetest data structures are installed using the test.sh, this must be changed
 	var myConstraints []sDatabase.SConstraint
-	if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo(TESTSCHEMA, tConnInfo); len(myConstraints) > 0 {
-		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should be empty")
+	if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); len(myConstraints) == 0 {
+		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should not be empty")
+	}
+	if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo(EMPTYVALUE, tConnInfo); soteErr.ErrCode != 200513 {
+		t.Errorf("pkLookup Failed: Expected error code to be 200513.")
+
+	}
+}
+func TestGetSingleColumnConstraintInfoNoConn(t *testing.T) {
+	var tConnInfo = sDatabase.ConnInfo{nil, sDatabase.ConnValues{}}
+	if _, soteErr := sDatabase.GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); soteErr.ErrCode != 602999 {
+		t.Errorf("pkLookup Failed: Expected error code to be 602999.")
+
 	}
 }
 
@@ -107,7 +124,7 @@ func TestGetTables(t *testing.T) {
 	}
 
 	var tableList []string
-	if tableList, soteErr = sDatabase.GetTableList(TESTSCHEMA, tConnInfo); soteErr.ErrCode != nil {
+	if tableList, soteErr = sDatabase.GetTableList(SOTETESTSCHEMA, tConnInfo); soteErr.ErrCode != nil {
 		t.Errorf("Get Tables Failed: Expected error code to be nil")
 		t.Fail()
 	}
@@ -117,9 +134,13 @@ func TestGetTables(t *testing.T) {
 		t.Fail()
 	}
 }
+
+//
+// scolumninfo
+//
 func TestGetColumnInfo(t *testing.T) {
 	var tConnInfo sDatabase.ConnInfo
-	if _, soteErr := sDatabase.GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != 602999 {
+	if _, soteErr := sDatabase.GetColumnInfo(SOTETESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != 602999 {
 		t.Errorf("GetColumnInfo Failed: Expected error code of 602999")
 		t.Fail()
 	}
@@ -136,7 +157,7 @@ func TestGetColumnInfo(t *testing.T) {
 	}
 
 	var columnInfo []sDatabase.SColumnInfo
-	if columnInfo, soteErr = sDatabase.GetColumnInfo(TESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != nil {
+	if columnInfo, soteErr = sDatabase.GetColumnInfo(SOTETESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != nil {
 		t.Errorf("GetTableList Failed: Expected error code to be nil")
 		t.Fail()
 	}
@@ -149,5 +170,51 @@ func TestGetColumnInfo(t *testing.T) {
 			t.Errorf("GetColumnInfo Failed: Expected the column name to be returned")
 			t.Fail()
 		}
+	}
+}
+
+//
+// sprimarykeyinfo
+//
+func TestPKLookup(t *testing.T) {
+	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
+
+	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
+	if soteErr.ErrCode != nil {
+		t.Errorf("GetConnection Failed: Please investigate")
+		t.Fail()
+	}
+
+	if tbName, soteErr := sDatabase.PKLookup(SOTETESTSCHEMA, REFERENCETABLE, REFTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != nil && tbName != SELF {
+		t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be self.")
+	}
+
+	if tbName, soteErr := sDatabase.PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != nil && tbName != REFERENCETABLE {
+		t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
+	}
+}
+func TestPKLookupEmptyValues(t *testing.T) {
+	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
+
+	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
+	if soteErr.ErrCode != nil {
+		t.Errorf("GetConnection Failed: Please investigate")
+		t.Fail()
+	}
+
+	if _, soteErr := sDatabase.PKLookup(EMPTYVALUE, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 200513 {
+		t.Errorf("pkLookup Failed: Expected error code to be 200513.")
+	}
+	if _, soteErr := sDatabase.PKLookup(SOTETESTSCHEMA, EMPTYVALUE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 200513 {
+		t.Errorf("pkLookup Failed: Expected error code to be 200513.")
+	}
+	if _, soteErr := sDatabase.PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, EMPTYVALUE, tConnInfo); soteErr.ErrCode != 200513 {
+		t.Errorf("pkLookup Failed: Expected error code to be 200513.")
 	}
 }

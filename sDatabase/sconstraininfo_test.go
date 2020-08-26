@@ -22,9 +22,19 @@ func TestGetSingleColumnConstraintInfo(t *testing.T) {
 		t.Fail()
 	}
 
-	// TODO This should be len(myConstraints) == 0.  When the sotetest data structures are installed using the test.sh, this must be changed
 	var myConstraints []SConstraint
-	if myConstraints, soteErr = GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); len(myConstraints) > 0 {
-		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should be empty")
+	if myConstraints, soteErr = GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); len(myConstraints) == 0 {
+		t.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should not be empty")
+	}
+	if myConstraints, soteErr = GetSingleColumnConstraintInfo(EMPTYVALUE, tConnInfo); soteErr.ErrCode != 200513 {
+		t.Errorf("pkLookup Failed: Expected error code to be 200513.")
+
+	}
+}
+func TestGetSingleColumnConstraintInfoNoConn(t *testing.T) {
+	var tConnInfo = ConnInfo{nil, ConnValues{}}
+	if _, soteErr := GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); soteErr.ErrCode != 602999 {
+		t.Errorf("pkLookup Failed: Expected error code to be 602999.")
+
 	}
 }
