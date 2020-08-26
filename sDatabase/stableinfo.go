@@ -14,26 +14,32 @@ import (
 func GetTableList(schemaName string, tConnInfo ConnInfo) (tableList []string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
-		qStmt := "SELECT table_name FROM information_schema.tables WHERE table_schema = $1;"
+	if len(schemaName) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Schema name: " + schemaName}), nil)
+	}
 
-		var tbRows pgx.Rows
-		var err error
-		tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt, schemaName)
-		if err != nil {
-			log.Fatalln(err)
-		}
+	if soteErr.ErrCode == nil {
+		if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode == nil {
+			qStmt := "SELECT table_name FROM information_schema.tables WHERE table_schema = $1;"
 
-		var tableRow []interface{}
-		for tbRows.Next() {
-			tableRow, err = tbRows.Values()
+			var tbRows pgx.Rows
+			var err error
+			tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt, schemaName)
 			if err != nil {
 				log.Fatalln(err)
 			}
-			tableList = append(tableList, tableRow[0].(string))
 
+			var tableRow []interface{}
+			for tbRows.Next() {
+				tableRow, err = tbRows.Values()
+				if err != nil {
+					log.Fatalln(err)
+				}
+				tableList = append(tableList, tableRow[0].(string))
+
+			}
+			defer tbRows.Close()
 		}
-		defer tbRows.Close()
 	}
 
 	return
