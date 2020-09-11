@@ -141,6 +141,7 @@ var soteErrors = map[int]SoteError{
 	800000: {800000, GENERALERROR, 0, "None", "An error has occurred that is not expected.", EmptyMap, ""},
 	800100: {800100, GENERALERROR, 0, "None", "Postgres error has occurred that is not expected.", EmptyMap, ""},
 	800199: {800199, GENERALERROR, 0, "None", "Postgres is not responding over TCP. Container may not be running.", EmptyMap, ""},
+	800500: {800500, GENERALERROR, 0, "None", "Synadia connection error has occurred that is not expected.", EmptyMap, ""},
 }
 
 /*
