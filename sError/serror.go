@@ -69,7 +69,7 @@ var soteErrors = map[int]SoteError{
 	200513: {200513, PROCESSERROR, 1, "Parameter name", "%v must be populated", EmptyMap, ""},
 	200514: {200514, PROCESSERROR, 3, "Parameter name, Another parameter name, Another parameter name", "%v, %v and %v must all be populated", EmptyMap, ""},
 	201000: {201000, PROCESSERROR, 1, "Info returned from HTTP/HTTPS Request", "Bad HTTP/HTTPS Request - %v", EmptyMap, ""},
-	// 201005: {201005, PROCESSERROR, 0, "None", "Invalid Claim", EmptyMap, ""},
+	// 201005: {201005, PROCESSERROR, 0, "None", "Invalid Claim", EmptyMap, ""},  REPLACED BY 500060
 	202000: {202000, PROCESSERROR, 1, "Environment Name", "The API you are calling is not available in this environment (%v)", EmptyMap, ""},
 	209500: {209500, PROCESSERROR, 0, "None", "QuickSight error - see Details", EmptyMap, ""},
 	209998: {209998, PROCESSERROR, 0, "None", "Database constraint error - see Details", EmptyMap, ""},
