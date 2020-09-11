@@ -54,7 +54,7 @@ var (
 // Ranges are not limited to a single error category.
 var soteErrors = map[int]SoteError{
 	100000: {100000, USERERROR, 0, "None", "Item already exists", EmptyMap, ""},
-	100100: {100100, USERERROR, 2, "List Of users roles, Requested action", "Your roles %v are not authorized to %v", EmptyMap, ""},
+	100100: {100100, USERERROR, 2, "List of users roles, Requested action", "Your roles %v are not authorized to %v", EmptyMap, ""},
 	109999: {109999, USERERROR, 1, "Item name", "No %v was/were found", EmptyMap, ""},
 	//
 	200000: {200000, PROCESSERROR, 0, "None", "Row has been updated since reading it, re-read the row", EmptyMap, ""},
@@ -128,6 +128,7 @@ var soteErrors = map[int]SoteError{
 	602020: {602020, CONFIGURATIONISSUE, 1, "SSL Mode", "Only disable, allow, prefer and required are supported.", EmptyMap, ""},
 	602030: {602030, CONFIGURATIONISSUE, 1, "Connection Type", "Only single or pool are supported.", EmptyMap, ""},
 	602999: {602999, CONFIGURATIONISSUE, 0, "None", "No database connection has been established", EmptyMap, ""},
+	603999: {603999, CONFIGURATIONISSUE, 0, "None", "No nats connection has been established", EmptyMap, ""},
 	605000: {605000, CONFIGURATIONISSUE, 0, "None", "Unexpected signing method", EmptyMap, ""},
 	605010: {605010, CONFIGURATIONISSUE, 0, "None", "kid header not found", EmptyMap, ""},
 	605020: {605020, CONFIGURATIONISSUE, 1, "Kid", "key (%v) was not found in token", EmptyMap, ""},
