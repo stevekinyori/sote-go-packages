@@ -143,8 +143,8 @@ var soteErrors = map[int]SoteError{
 	800100: {800100, GENERALERROR, 0, "None", "Postgres error has occurred that is not expected.", EmptyMap, ""},
 	800199: {800199, GENERALERROR, 0, "None", "Postgres is not responding over TCP. Container may not be running.", EmptyMap, ""},
 	805000: {805000, GENERALERROR, 0, "None", "Synadia connection error has occurred that is not expected.", EmptyMap, ""},
-	805299: {805299, GENERALERROR, 1, "None", "Stream load or creation error has occurred that is not expected. Stream Name: v%", EmptyMap, ""},
-	805599: {805599, GENERALERROR, 2, "None", "Consumer load or creation error has occurred that is not expected. Stream Name: v% Consumer Name: v%", EmptyMap, ""},
+	805299: {805299, GENERALERROR, 1, "None", "Stream load or creation error has occurred that is not expected. Stream Name: %v", EmptyMap, ""},
+	805599: {805599, GENERALERROR, 2, "None", "Consumer load or creation error has occurred that is not expected. Stream Name: %v Consumer Name: %v", EmptyMap, ""},
 }
 
 /*
@@ -201,8 +201,8 @@ var soteErrors = map[int]SoteError{
 		609998	Parameter name > Start up parameter is out of value range (%v)
 		609999	Parameter name > Start up parameter is missing (%v)
 		700000	List of required parameters > Call doesn't match API signature. Caller must provide the following parameter names: %v
-		805299	None > Stream load or creation error has occurred that is not expected. Stream Name: v%
-		805599	None > Consumer load or creation error has occurred that is not expected. Stream Name: v% Consumer Name: v%
+		805299	None > Stream load or creation error has occurred that is not expected. Stream Name: %v
+		805599	None > Consumer load or creation error has occurred that is not expected. Stream Name: %v Consumer Name: %v
 */
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (soteErr SoteError) {
 	sLogger.DebugMethod()
