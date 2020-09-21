@@ -8,8 +8,8 @@
 echo -n "Checking system config ."
 #
 # Checking to make sure environment variables are set correctly
-read RC1 <<< $( printenv | grep -i 'APP_ENVIRONMENT' | awk '/[development]./ || /[staging]./  || /[demo]./ || /[production]./ {print 0}' )
-read RC2 <<< $( printenv | grep -i 'AWS_REGION' | awk '/[eu-west-1]./ {print 0}' )
+read RC1 <<< "$( printenv | grep -i 'APP_ENVIRONMENT' | awk '/[development]./ || /[staging]./  || /[demo]./ || /[production]./ {print 0}' )"
+read RC2 <<< "$( printenv | grep -i 'AWS_REGION' | awk '/[eu-west-1]./ {print 0}' )"
 if [[ "$RC1" == "" || "$RC2" == "" ]]; then
     echo "SYSTEM IS NOT CONFIGURED: You must have APP_ENVIRONMENT and AWS_REGION set as environment variables."
     echo "    APP_ENVIRONMENT must be 'development', 'staging', 'demo' or 'production'"
@@ -62,7 +62,7 @@ echo -n 'sAuthorize ' 1>> /tmp/tmp_$$.out
 rm sAuthorize/coverage.out 2> /dev/null; go test sAuthorize/* -coverprofile sAuthorize/coverage.out 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
-read RC <<< $( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )
+read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )"
 if [[ "$RC" == "1" ]]; then
     echo "FAILED: At least one test didn't pass."
     exit 1
@@ -87,7 +87,7 @@ echo -n 'sAuthorize_external_test ' 1>> /tmp/tmp_$$.out
 go test sAuthorize_external_test.go 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
-read RC <<< $( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )
+read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )"
 if [[ "$RC" == "1" ]]; then
     echo "FAILED: At least one external test didn't pass."
     exit 1
@@ -107,7 +107,7 @@ go tool cover -func=sAuthorize/coverage.out >> coverage_review.out
 echo "Done"
 #
 # # Review the coverage totals for 70%+ compliance
-read RC <<< $( grep '^total' coverage_review.out | awk '/[0-6][0-9]./ {print 1}' )
+read RC <<< "$( grep '^total' coverage_review.out | awk '/[0-6][0-9]./ {print 1}' )"
 if [[ "$RC" == "1" ]]; then
     echo "FAILED: At least one components coverage is less than 70%"
     exit 1
