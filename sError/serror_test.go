@@ -253,6 +253,16 @@ func Test700000Error(t *testing.T) {
 	s := BuildParams([]string{"LIST_PARAMETERS"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test805299Error(t *testing.T) {
+	var errCode = 805299
+	s := BuildParams([]string{"PARAMETER"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
+func Test805699Error(t *testing.T) {
+	var errCode = 805599
+	s := BuildParams([]string{"PARAMETER", "ANOTHER_PARAMETER"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func TestGenMarkDown(t *testing.T) {
 	if x := GenMarkDown(); !strings.Contains(x, MARKDOWNTITLEBAR) {
 		t.Errorf("GenMarkDown doesn't have the correct header, so there appears something wrong with the code.")
