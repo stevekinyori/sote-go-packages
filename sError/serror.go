@@ -142,14 +142,16 @@ var soteErrors = map[int]SoteError{
 	800000: {800000, GENERALERROR, 0, "None", "An error has occurred that is not expected.", EmptyMap, ""},
 	800100: {800100, GENERALERROR, 0, "None", "Postgres error has occurred that is not expected.", EmptyMap, ""},
 	800199: {800199, GENERALERROR, 0, "None", "Postgres is not responding over TCP. Container may not be running.", EmptyMap, ""},
-	800500: {800500, GENERALERROR, 0, "None", "Synadia connection error has occurred that is not expected.", EmptyMap, ""},
+	805000: {805000, GENERALERROR, 0, "None", "Synadia connection error has occurred that is not expected.", EmptyMap, ""},
+	805299: {805299, GENERALERROR, 1, "None", "Stream load or creation error has occurred that is not expected. Stream Name: v%", EmptyMap, ""},
+	805599: {805599, GENERALERROR, 2, "None", "Consumer load or creation error has occurred that is not expected. Stream Name: v% Consumer Name: v%", EmptyMap, ""},
 }
 
 /*
 	This will return the formatted message using the supplied code and parameters
 
 	Error Code with requiring parameters:
-		100100	List Of users roles, Requested action > Your roles %v are not authorized to %v
+		100100	List of users roles, Requested action > Your roles %v are not authorized to %v
 		109999	Item name > No %v was/were found
 		200200	Parameter name, Data type of parameter > %v must be of type %v
 		200250	Parameter name, Parameter value, List of values allowed > %v (%v) must contain one of these values: %v
@@ -159,7 +161,7 @@ var soteErrors = map[int]SoteError{
 		200511	Parameter name, Another parameter name > %v and %v must both be populated or null
 		200512	Parameter name, Another parameter name > %v and %v must both be populated
 		200513	Parameter name > %v must be populated
-		200514	Parameter name, Another parameter name, Another parameter name > %v, %v and %v must both be populated
+		200514	Parameter name, Another parameter name, Another parameter name > %v, %v and %v must all be populated
 		201000	Info returned from HTTP/HTTPS Request > Bad HTTP/HTTPS Request - %v
 		202000	Environment Name > The API you are calling is not available in this environment (%v)
 		230050	Name, Application/Package name > Number of parameters defined in the %v is not support by %v
@@ -181,7 +183,7 @@ var soteErrors = map[int]SoteError{
 		400090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size > %v (%v) is too %v. %v size: %v Actual size: %v
 		400100	Parameter name, Data Structure Type > %v could't be converted to an %v - JSON conversion error
 		400105	Data Structure Name, Data Structure Type > %v (%v) could't be converted to JSON - JSON conversion error
-		400110	Parameter name > %v could't be parsed - Invalid JSON error
+		400110	Parameter name > %v couldn't be parsed - Invalid JSON error
 		400111	Parameter name, Application/Package name > %v could't be converted to a map/keyed array - %v
 		405110	Thing being changed, System Id for the thing > No update is needed. No fields where changed for %v with id %v
 		405120	JSON array name, Thing being changed, System Id for the thing > The %v was empty for %v with id %v
@@ -199,6 +201,8 @@ var soteErrors = map[int]SoteError{
 		609998	Parameter name > Start up parameter is out of value range (%v)
 		609999	Parameter name > Start up parameter is missing (%v)
 		700000	List of required parameters > Call doesn't match API signature. Caller must provide the following parameter names: %v
+		805299	None > Stream load or creation error has occurred that is not expected. Stream Name: v%
+		805599	None > Consumer load or creation error has occurred that is not expected. Stream Name: v% Consumer Name: v%
 */
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (soteErr SoteError) {
 	sLogger.DebugMethod()
