@@ -93,7 +93,7 @@ var (
 		335599: {335599, NATSERROR, 2, "Stream Name, Durable Name", ": Consumer creation encountered an error that is not expected. Stream Name: %v Durable Name: %v", EmptyMap, ""},
 		//
 		400000: {400000, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not numeric", EmptyMap, ""},
-		400005: {400005, CONTENTERROR, 2, "Field name, Minimal length", ": %v must a value greater than %v", EmptyMap, ""},
+		400005: {400005, CONTENTERROR, 2, "Field name, Minimal length", ": %v must have a value greater than %v", EmptyMap, ""},
 		400010: {400010, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a string", EmptyMap, ""},
 		400020: {400020, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a float", EmptyMap, ""},
 		400030: {400030, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a array", EmptyMap, ""},
