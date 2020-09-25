@@ -104,10 +104,11 @@ var (
 		400070: {400070, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid date", EmptyMap, ""},
 		400080: {400080, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap, ""},
 		400090: {400090, CONTENTERROR, 6, "Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size", ": %v (%v) is too %v. %v size: %v Actual size: %v", EmptyMap, ""},
-		400100: {400100, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v could't be converted to an %v - JSON conversion error", EmptyMap, ""},
-		400105: {400105, CONTENTERROR, 2, "Data Structure Name, Data Structure Type", ": %v (%v) could't be converted to JSON - JSON conversion error", EmptyMap, ""},
+		400095: {400095, CONTENTERROR, 4, "Field name, Field value, greater than value, less than value", ": %v (%v) must be greater than %v and less than %v", EmptyMap, ""},
+		400100: {400100, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v - JSON conversion error", EmptyMap, ""},
+		400105: {400105, CONTENTERROR, 2, "Data Structure Name, Data Structure Type", ": %v (%v) couldn't be converted to JSON - JSON conversion error", EmptyMap, ""},
 		400110: {400110, CONTENTERROR, 1, "Parameter name", ": %v couldn't be parsed - Invalid JSON error", EmptyMap, ""},
-		400111: {400111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v could't be converted to a map/keyed array - %v", EmptyMap, ""},
+		400111: {400111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v couldn't be converted to a map/keyed array - %v", EmptyMap, ""},
 		401000: {401000, CONTENTERROR, 0, "None", ": Column must have a non-null value. Details: ", EmptyMap, ""},
 		401010: {401010, CONTENTERROR, 0, "None", ": Column data type is not support or invalid. Details: ", EmptyMap, ""},
 		405110: {405110, CONTENTERROR, 2, "Thing being changed, System Id for the thing", ": No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
@@ -178,7 +179,7 @@ var (
 		335299	Stream Name > : Stream creation encountered an error that is not expected. Stream Name: %v
 		335599	Stream Name, Durable Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Durable Name: %v
 		400000	Field name, Field value > : %v (%v) is not numeric
-		400005	Field name, Minimal length > : %v must a value greater than %v
+		400005	Field name, Minimal length > : %v must have a value greater than %v
 		400010	Field name, Field value > : %v (%v) is not a string
 		400020	Field name, Field value > : %v (%v) is not a float
 		400030	Field name, Field value > : %v (%v) is not a array
@@ -189,10 +190,11 @@ var (
 		400070	Field name, Field value > : %v (%v) is not a valid date
 		400080	Field name, Field value > : %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu
 		400090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size > : %v (%v) is too %v. %v size: %v Actual size: %v
-		400100	Parameter name, Data Structure Type > : %v could't be converted to an %v - JSON conversion error
-		400105	Data Structure Name, Data Structure Type > : %v (%v) could't be converted to JSON - JSON conversion error
+		400095	Field name, Field value, greater than value, less than value > : %v (%v) must be greater than %v and less than %v
+		400100	Parameter name, Data Structure Type > : %v couldn't be converted to an %v - JSON conversion error
+		400105	Data Structure Name, Data Structure Type > : %v (%v) couldn't be converted to JSON - JSON conversion error
 		400110	Parameter name > : %v couldn't be parsed - Invalid JSON error
-		400111	Parameter name, Application/Package name > : %v could't be converted to a map/keyed array - %v
+		400111	Parameter name, Application/Package name > : %v couldn't be converted to a map/keyed array - %v
 		405110	Thing being changed, System Id for the thing > : No update is needed. No fields where changed for %v with id %v
 		405120	JSON array name, Thing being changed, System Id for the thing > : The %v was empty for %v with id %v
 		410000	Error message number > : %v error message is missing from sError package

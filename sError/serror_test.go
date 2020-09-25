@@ -173,6 +173,11 @@ func Test400090Error(t *testing.T) {
 	s := BuildParams([]string{"FIELD_NAME", "FIELD_VALUE", "SMALL_LARGE", "MIN_MAX", "SIZE_EXPECTED", "SIZE_PROVIDED"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test400095Error(t *testing.T) {
+	var errCode = 400095
+	s := BuildParams([]string{"FIELD_NAME", "FIELD_VALUE", "GREATER_THAN", "LESS_THAN"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test400100Error(t *testing.T) {
 	var errCode = 400100
 	s := BuildParams([]string{"PARAMETER_NAME", "DATA_STRUCTURE_TYPE"})
