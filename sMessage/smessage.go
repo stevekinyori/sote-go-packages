@@ -49,10 +49,12 @@ package sMessage
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/nats-io/jsm.go"
+	"github.com/nats-io/jsm.go/api"
 	"github.com/nats-io/nats.go"
 	"gitlab.com/soteapps/packages/v2020/sError"
 	"gitlab.com/soteapps/packages/v2020/sLogger"
@@ -85,9 +87,7 @@ func SetAllOptions(streamName, streamCredentialFile, streamCredentialToken strin
 func SetStreamName(streamName string) (opts []nats.Option, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if len(streamName) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamName"}), nil)
-	} else {
+	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
 		opts = []nats.Option{nats.Name(streamName)}
 	}
 
@@ -197,101 +197,6 @@ func Connect(url string, opts []nats.Option) (nc *nats.Conn, soteErr sError.Sote
 }
 
 /*
-	CreateConsumer will load a consumer or create one based on the combination of the stream and durable name
-		AckPolicy: Default value: none
-			value is set using: none, all, explicit
-			Sote defaults value: explicit
-			Sote immutable: yes
-		AckWait: Default value: -1s (forever)
-			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
-			Sote defaults value: 1s
-			Sote immutable: yes
-		DeliverPolicy: Default value: "" (pull based consumer)
-			value is set using: all, last, new or next, DeliverByStartSequence or DeliverByStartTime
-			Sote defaults value: all
-			Sote immutable: yes
-		DeliverySubject: Default value: instant
-			value is set using: instant, original
-			Sote defaults value: instant
-			Sote immutable: yes
-		Durable Name: Default value: ""
-			value is set using: <durable name>
-			example: TEST_CONSUMER_NAME, test_consumer_name, Test_Consumer_Name
-			Sote defaults value: Required, not set
-			Sote immutable: yes
-		FilterSubject: Default value: "" (all)
-			value is set using: <stream name>.<subject name>
-			example: TEST_STREAM_NAME.* for all messages from the TEST_STREAM_NAME stream, TEST_STREAM_NAME.cat for only cat messages
-			Sote defaults value: Required, not set
-			Sote immutable: yes
-		MaxDeliver: Default value: -1 (unlimited)
-			value is set using: >0
-			Sote defaults value: 3
-			Sote immutable: yes to values of 1,2 or 3
-		OptStartSeq: Default value: (Required when using DeliveryPolicy with DeliverByStartSequence
-			value is set using: >0
-			Sote defaults value: Not Supported
-			Sote immutable: no
-		ReplayPolicy: Default value: instant
-			value is set using: instant, original
-			Sote defaults value: instant
-			Sote immutable: yes
-		SampleFrequency: Default value: -1
-			value is set using: 0 to 100
-			Sote defaults value: Not Supported
-			Sote immutable: no
-		OptStartTime: Default value: Now
-			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
-			example: 1s, 1h, 1M, 1seconds, 1Months
-			Sote defaults value: Not Supported
-			Sote immutable: no
-		RateLimit: Default value: 0
-			value is set using: >0
-			Sote defaults value: Not Supported
-			Sote immutable: no
-*/
-func CreateConsumer(streamName, durableName, deliveryPolicy, deliverySubject, subjectFilter, replayPolicy string, maxDeliveries int, nc *nats.Conn) (consumer *jsm.Consumer,
-	soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var (
-		err error
-	)
-
-	if len(streamName) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamName"}), nil)
-	}
-	if len(durableName) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"durableName"}), nil)
-	}
-	if len(deliveryPolicy) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
-	}
-	if len(deliverySubject) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
-	}
-	if len(subjectFilter) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
-	}
-	if len(replayPolicy) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
-	}
-	if nc == nil {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Connect"}), nil)
-	}
-
-	if soteErr.ErrCode == nil {
-		consumer, err = jsm.LoadOrNewConsumer(streamName, durableName, jsm.FilterStreamBySubject(subjectFilter), jsm.ConsumerConnection(jsm.WithConnection(nc)))
-		if err != nil {
-			soteErr = sError.GetSError(805599, sError.BuildParams([]string{streamName, durableName}), nil)
-			log.Fatal(soteErr.FmtErrMsg)
-		}
-	}
-
-	return
-}
-
-/*
 	CreateLimitsStream will create a stream.  If it exists, it will return an error
 		Name: Required
 			value is set using: no spaces and case sensitive
@@ -326,7 +231,8 @@ func CreateLimitsStream(streamName, subjects, storage string, replicas int, nc *
 
 	if soteErr = validateStreamParams(streamName, subjects, nc); soteErr.ErrCode == nil {
 		if strings.ToLower(storage) == MEMORY || strings.ToLower(storage) == M {
-			stream, err = jsm.NewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)), jsm.LimitsRetention())
+			stream, err = jsm.NewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
+				jsm.LimitsRetention())
 		} else {
 			stream, err = jsm.NewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)), jsm.LimitsRetention())
 		}
@@ -394,14 +300,191 @@ func CreateWorkStream(streamName, subjects, storage string, replicas int, nc *na
 func DeleteStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if pStream != nil {
+	if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
 		err := pStream.Delete()
 		if err != nil {
-			soteErr = sError.GetSError(335280, nil, nil)
+			soteErr = sError.GetSError(805000, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
+	}
+
+	return
+}
+
+/*
+	LoadStream loads an existing stream by name
+*/
+func LoadStream(streamName string) (pStream *jsm.Stream, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		err error
+	)
+
+	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
+		pStream, err = jsm.LoadStream(streamName)
+		if err != nil {
+			soteErr = sError.GetSError(805000, nil, nil)
+			log.Fatal(soteErr.FmtErrMsg)
+		}
+	}
+
+	return
+}
+
+/*
+	StreamInfo loads an existing stream information
+*/
+func StreamInfo(pStream *jsm.Stream) (info *api.StreamInfo, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		err error
+	)
+
+	if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
+		info, err = pStream.LatestInformation()
+		if err != nil {
+			soteErr = sError.GetSError(805000, nil, nil)
+			log.Fatal(soteErr.FmtErrMsg)
+		}
+	}
+
+	return
+}
+
+/*
+	PurgeStream will remove all messages from the stream
+*/
+func PurgeStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
+		err := pStream.Purge()
+		if err != nil {
+			soteErr = sError.GetSError(805000, nil, nil)
+			log.Fatal(soteErr.FmtErrMsg)
+		}
+	}
+
+	return
+}
+
+/*
+	DeleteMessageFromStream will remove a message from the stream
+*/
+func DeleteMessageFromStream(pStream *jsm.Stream, sequenceNumber int) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if sequenceNumber <= 0 {
+		soteErr = sError.GetSError(400005, sError.BuildParams([]string{"sequenceNumber", "0"}), nil)
 	} else {
-		soteErr = sError.GetSError(335260, nil, nil)
+		// TODO Test what happens if there is no message with the sequence number
+		if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
+			err := pStream.DeleteMessage(sequenceNumber)
+			if err != nil {
+				if strings.Contains(err.Error(), "not found") {
+					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"sequenceNumber(" + strconv.Itoa(sequenceNumber) + ")"}), nil)
+				} else {
+					soteErr = sError.GetSError(805000, nil, nil)
+					log.Fatal(soteErr.FmtErrMsg)
+				}
+			}
+		}
+	}
+
+	return
+}
+
+/*
+	CreateConsumer will load a consumer or create one based on the combination of the stream and durable name
+		AckPolicy: Default value: none
+			value is set using: none, all, explicit
+			Sote defaults value: explicit
+			Sote immutable: yes
+		AckWait: Default value: -1s (forever)
+			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
+			Sote defaults value: 1s
+			Sote immutable: yes
+		DeliverPolicy: Default value: "" (pull based consumer)
+			value is set using: all, last, new or next, DeliverByStartSequence or DeliverByStartTime
+			Sote defaults value: all
+			Sote immutable: yes
+		DeliverySubject: Default value: instant
+			value is set using: instant, original
+			Sote defaults value: instant
+			Sote immutable: yes
+		Durable Name: Default value: ""
+			value is set using: <durable name>
+			example: TEST_CONSUMER_NAME, test_consumer_name, Test_Consumer_Name
+			Sote defaults value: Required, not set
+			Sote immutable: yes
+		FilterSubject: Default value: "" (all)
+			value is set using: <stream name>.<subject name>
+			example: TEST_STREAM_NAME.* for all messages from the TEST_STREAM_NAME stream, TEST_STREAM_NAME.cat for only cat messages
+			Sote defaults value: Required, not set
+			Sote immutable: yes
+		MaxDeliver: Default value: -1 (unlimited)
+			value is set using: >0
+			Sote defaults value: 3
+			Sote immutable: yes to values of 1,2 or 3
+		OptStartSeq: Default value: (Required when using DeliveryPolicy with DeliverByStartSequence
+			value is set using: >0
+			Sote defaults value: Not Supported
+			Sote immutable: no
+		ReplayPolicy: Default value: instant
+			value is set using: instant, original
+			Sote defaults value: instant
+			Sote immutable: yes
+		SampleFrequency: Default value: -1
+			value is set using: 0 to 100
+			Sote defaults value: Not Supported
+			Sote immutable: no
+		OptStartTime: Default value: Now
+			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
+			example: 1s, 1h, 1M, 1seconds, 1Months
+			Sote defaults value: Not Supported
+			Sote immutable: no
+		RateLimit: Default value: 0
+			value is set using: >0
+			Sote defaults value: Not Supported
+			Sote immutable: no
+*/
+func CreateConsumer(streamName, durableName, deliveryPolicy, deliverySubject, subjectFilter, replayPolicy string, maxDeliveries int, nc *nats.Conn) (consumer *jsm.Consumer,
+	soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		err error
+	)
+
+	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
+		if len(durableName) == 0 && soteErr.ErrCode == nil {
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"durableName"}), nil)
+		}
+		if len(deliveryPolicy) == 0 && soteErr.ErrCode == nil {
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
+		}
+		if len(deliverySubject) == 0 && soteErr.ErrCode == nil {
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
+		}
+		if len(subjectFilter) == 0 && soteErr.ErrCode == nil {
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
+		}
+		if len(replayPolicy) == 0 && soteErr.ErrCode == nil {
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
+		}
+		if soteErr.ErrCode == nil {
+			soteErr = validateConnection(nc)
+		}
+	}
+
+	if soteErr.ErrCode == nil {
+		consumer, err = jsm.LoadOrNewConsumer(streamName, durableName, jsm.FilterStreamBySubject(subjectFilter), jsm.ConsumerConnection(jsm.WithConnection(nc)))
+		if err != nil {
+			soteErr = sError.GetSError(805599, sError.BuildParams([]string{streamName, durableName}), nil)
+			log.Fatal(soteErr.FmtErrMsg)
+		}
 	}
 
 	return
@@ -410,16 +493,43 @@ func DeleteStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
 func validateStreamParams(streamName, subjects string, nc *nats.Conn) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
+	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil && len(subjects) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjects"}), nil)
+	}
+
+	if soteErr.ErrCode == nil {
+		soteErr = validateConnection(nc)
+	}
+
+	return
+}
+
+func validateConnection(nc *nats.Conn) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if nc == nil {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Connect"}), nil)
+	}
+
+	return
+
+}
+
+func validateStreamName(streamName string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
 	if len(streamName) == 0 {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamName"}), nil)
 	}
 
-	if len(subjects) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjects"}), nil)
-	}
+	return
+}
 
-	if nc == nil {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Connect"}), nil)
+func validateStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if pStream == nil {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Stream"}), nil)
 	}
 
 	return
@@ -427,7 +537,6 @@ func validateStreamParams(streamName, subjects string, nc *nats.Conn) (soteErr s
 
 func setReplicas(tReplicas int) (replicas int) {
 	sLogger.DebugMethod()
-
 
 	if tReplicas <= 0 {
 		replicas = 1
