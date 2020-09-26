@@ -97,30 +97,43 @@ func CreateConsumer(streamName, durableName, deliveryPolicy, deliverySubject, su
 	return
 }
 
-func LoadConsumer(streamName, durableName, nc *nats.Conn) (consumer *jsm.Consumer,
-	soteErr sError.SoteError) {
+func LoadConsumer(streamName, durableName string) (pConsumer *jsm.Consumer, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	return
-}
+	var (
+		err error
+	)
 
-func ConsumerInfo(streamName, durableName, deliveryPolicy, deliverySubject, subjectFilter, replayPolicy string, maxDeliveries int, nc *nats.Conn) (consumer *jsm.Consumer,
-	soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	return
-}
-
-func DeleteConsumer(streamName, durableName, deliveryPolicy, deliverySubject, subjectFilter, replayPolicy string, maxDeliveries int, nc *nats.Conn) (consumer *jsm.Consumer,
-	soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
-		err := pStream.Delete()
+	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
+		pConsumer, err = jsm.LoadConsumer(streamName, durableName)
 		if err != nil {
 			soteErr = sError.GetSError(805000, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
+	}
+
+	return
+}
+
+func DeleteConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if soteErr = validateConsumer(pConsumer); soteErr.ErrCode == nil {
+		err := pConsumer.Delete()
+		if err != nil {
+			soteErr = sError.GetSError(805000, nil, nil)
+			log.Fatal(soteErr.FmtErrMsg)
+		}
+	}
+
+	return
+}
+
+func validateConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if pConsumer == nil {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Consumer"}), nil)
 	}
 
 	return
