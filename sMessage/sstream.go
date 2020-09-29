@@ -20,7 +20,7 @@ const (
 )
 
 /*
-	CreateLimitsStream will create a stream.  If it exists, it will return an error
+	CreateLimitsStream will create a stream.  If it exists, it will load the stream
 		Name: Required
 			value is set using: no spaces and case sensitive
 			Sote defaults value: Required
@@ -45,7 +45,7 @@ const (
 			Sote defaults value: Limits
 			Sote immutable: yes
 */
-func CreateLimitsStream(streamName, subjects, storage string, replicas int, nc *nats.Conn) (stream *jsm.Stream, soteErr sError.SoteError) {
+func CreateOrLoadLimitsStream(streamName, subjects, storage string, replicas int, nc *nats.Conn) (stream *jsm.Stream, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -54,13 +54,13 @@ func CreateLimitsStream(streamName, subjects, storage string, replicas int, nc *
 
 	if soteErr = validateStreamParams(streamName, subjects, nc); soteErr.ErrCode == nil {
 		if strings.ToLower(storage) == MEMORY || strings.ToLower(storage) == M {
-			stream, err = jsm.NewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
+			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
 				jsm.LimitsRetention())
 		} else {
-			stream, err = jsm.NewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)), jsm.LimitsRetention())
+			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)), jsm.LimitsRetention())
 		}
 		if err != nil {
-			soteErr = sError.GetSError(335280, sError.BuildParams([]string{streamName}), nil)
+			soteErr = sError.GetSError(805000, sError.BuildParams([]string{streamName}), nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
 	}
@@ -69,7 +69,7 @@ func CreateLimitsStream(streamName, subjects, storage string, replicas int, nc *
 }
 
 /*
-	CreateWorkStream will create a stream.  If it exists, it will return an error
+	CreateOrLoadWorkStream will create a stream.  If it exists, it will load the stream.
 		Name: Required
 			value is set using: no spaces and case sensitive
 			Sote defaults value: Required
@@ -94,7 +94,7 @@ func CreateLimitsStream(streamName, subjects, storage string, replicas int, nc *
 			Sote defaults value: Limits
 			Sote immutable: yes
 */
-func CreateWorkStream(streamName, subjects, storage string, replicas int, nc *nats.Conn) (stream *jsm.Stream, soteErr sError.SoteError) {
+func CreateOrLoadWorkStream(streamName, subjects, storage string, replicas int, nc *nats.Conn) (stream *jsm.Stream, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -103,13 +103,13 @@ func CreateWorkStream(streamName, subjects, storage string, replicas int, nc *na
 
 	if soteErr = validateStreamParams(streamName, subjects, nc); soteErr.ErrCode == nil {
 		if strings.ToLower(storage) == MEMORY || strings.ToLower(storage) == M {
-			stream, err = jsm.NewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
+			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
 				jsm.LimitsRetention())
 		} else {
-			stream, err = jsm.NewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)), jsm.LimitsRetention())
+			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)), jsm.LimitsRetention())
 		}
 		if err != nil {
-			soteErr = sError.GetSError(335280, sError.BuildParams([]string{streamName}), nil)
+			soteErr = sError.GetSError(805000, sError.BuildParams([]string{streamName}), nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
 	}
@@ -125,27 +125,6 @@ func DeleteStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
 
 	if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
 		err := pStream.Delete()
-		if err != nil {
-			soteErr = sError.GetSError(805000, nil, nil)
-			log.Fatal(soteErr.FmtErrMsg)
-		}
-	}
-
-	return
-}
-
-/*
-	LoadStream loads an existing stream by name
-*/
-func LoadStream(streamName string) (pStream *jsm.Stream, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var (
-		err error
-	)
-
-	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
-		pStream, err = jsm.LoadStream(streamName)
 		if err != nil {
 			soteErr = sError.GetSError(805000, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
