@@ -1,3 +1,19 @@
+/*
+General information about the streams. (Gathered from https://github.com/nats-io/jetstream)
+STREAMS:
+	Limit streams are used to control the size of the stream.  Limited streams can be limited by the following parameters:
+		MaxAge of the message,
+		MaxBytes of the stream,
+		MaxMsgs that can be in the stream.
+	When one of these limits are reached the messages in the stream will be discarded based on the discard setting.  Discard
+	can be set to old or new.  Oldest record the newest record is removed.
+
+	Interest streams retain messages so long as there is a consumer active for the subject.  At this time, this is not support by
+	Sote sMessage wrapper. Interest stream limits of the age, size and count still apply as upper bounds.
+
+	Work or Work Queue streams will retain the messages until the message is consumed by any one consumer. The message is then
+	removed by the stream. Work stream limits of the age, size and count still apply as upper bounds.
+*/
 package sMessage
 
 import (
@@ -20,30 +36,16 @@ const (
 )
 
 /*
-	CreateLimitsStream will create a stream.  If it exists, it will load the stream
-		Name: Required
-			value is set using: no spaces and case sensitive
-			Sote defaults value: Required
-			Sote immutable: no
-		Replicas: Default value: 1
-			value is set using: >0
-			Sote defaults value: 1
-			Sote immutable: no
-		Storage: Required
-			value is set using: (f)ile, (m)emory
-			example: f, file, m, memory
-			Sote defaults value: f
-			Sote immutable: no
-		Subjects: Required
-			format of string: <subject>,<subject>,...
+	CreateLimitsStream will create a limits stream.  If it exists, it will load the stream
+	Required parameters:
+		streamName
+		subjects (Multiple subject are allowed with a comma separating values)
 			example: images,animals,cars,BILLS
- 			Sote defaults value: None
-			Sote immutable: no
-		--
-		Retention: Default value: Limits
-			value is set using: Limits, Interest, work queue, workq, work
-			Sote defaults value: Limits
-			Sote immutable: yes
+		storage
+			Sote defaults value: f
+		replicas
+			Sote defaults value: 1 (Sote Max value is 10)
+		nc (pointer to a Jetstream connection)
 */
 func CreateOrLoadLimitsStream(streamName, subjects, storage string, replicas int, nc *nats.Conn) (stream *jsm.Stream, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -57,7 +59,8 @@ func CreateOrLoadLimitsStream(streamName, subjects, storage string, replicas int
 			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
 				jsm.LimitsRetention())
 		} else {
-			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)), jsm.LimitsRetention())
+			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
+				jsm.LimitsRetention())
 		}
 		if err != nil {
 			soteErr = sError.GetSError(805000, sError.BuildParams([]string{streamName}), nil)
@@ -69,30 +72,16 @@ func CreateOrLoadLimitsStream(streamName, subjects, storage string, replicas int
 }
 
 /*
-	CreateOrLoadWorkStream will create a stream.  If it exists, it will load the stream.
-		Name: Required
-			value is set using: no spaces and case sensitive
-			Sote defaults value: Required
-			Sote immutable: no
-		Replicas: Default value: 1
-			value is set using: >0
-			Sote defaults value: 1
-			Sote immutable: no
-		Storage: Required
-			value is set using: (f)ile, (m)emory
-			example: f, file, m, memory
-			Sote defaults value: f
-			Sote immutable: no
-		Subjects: Required
-			format of string: <subject>,<subject>,...
+	CreateOrLoadWorkStream will create a work stream.  If it exists, it will load the stream
+	Required parameters:
+		streamName
+		subjects (Multiple subject are allowed with a comma separating values)
 			example: images,animals,cars,BILLS
- 			Sote defaults value: None
-			Sote immutable: no
-		--
-		Retention: Default value: Limits
-			value is set using: Limits, Interest, work queue, workq, work
-			Sote defaults value: Limits
-			Sote immutable: yes
+		storage
+			Sote defaults value: f
+		replicas
+			Sote defaults value: 1 (Sote Max value is 10)
+		nc (pointer to a Jetstream connection)
 */
 func CreateOrLoadWorkStream(streamName, subjects, storage string, replicas int, nc *nats.Conn) (stream *jsm.Stream, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -104,9 +93,10 @@ func CreateOrLoadWorkStream(streamName, subjects, storage string, replicas int, 
 	if soteErr = validateStreamParams(streamName, subjects, nc); soteErr.ErrCode == nil {
 		if strings.ToLower(storage) == MEMORY || strings.ToLower(storage) == M {
 			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
-				jsm.LimitsRetention())
+				jsm.WorkQueueRetention())
 		} else {
-			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)), jsm.LimitsRetention())
+			stream, err = jsm.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.StreamConnection(jsm.WithConnection(nc)),
+				jsm.WorkQueueRetention())
 		}
 		if err != nil {
 			soteErr = sError.GetSError(805000, sError.BuildParams([]string{streamName}), nil)
@@ -135,7 +125,7 @@ func DeleteStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
 }
 
 /*
-	StreamInfo loads an existing stream information
+	StreamInfo loads an existing stream's information
 */
 func StreamInfo(pStream *jsm.Stream) (info *api.StreamInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -248,6 +238,8 @@ func setReplicas(tReplicas int) (replicas int) {
 
 	if tReplicas <= 0 {
 		replicas = 1
+	} else if tReplicas > 10 {
+		replicas = 10
 	} else {
 		replicas = tReplicas
 	}
