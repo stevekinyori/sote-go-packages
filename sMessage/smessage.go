@@ -1,101 +1,56 @@
 /*
-	sMessage supports the following NATS.io objects
-		Stream:
-			Limits
-			Work
-		Consumer:
+NATS.io Jetstream default values are listed below. (Gathered from https://github.com/nats-io/jetstream)
+This are values that can be set.  sstream and consumer place limitation on the configurations that are possible from NATS.
 
-
-	NATS.io Jetstream default values and Sotes defaults. This are values that are set and not changed in this package.
 	STREAM SETTINGS:
 		Ack: Required for published
 			value is set using: true, false
-			Sote defaults value: true
-			Sote immutable: yes
 		Discard: Default value: old
 			value is set using: new, old
-			Sote defaults value: old
-			Sote immutable: yes
 		Duplicates: Default value: ""
 			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
 			example: 1s, 1h, 1M, 1seconds, 1Months
-			Sote defaults value: ""
-			Sote immutable: yes
 		MaxAge: Default value: -1 (unlimited)
 			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
 			example: 1s, 1h, 1M, 1seconds, 1Months
-			Sote defaults value: -1 (unlimited)
-			Sote immutable: yes
 		MaxBytes: Default value: -1 (unlimited)
 			value is set using: (B)ytes, (k)ilobytes, (m)egabytes
 			example: 512B, 1k, 1m
-			Sote defaults value: -1 (unlimited)
-			Sote immutable: yes
 		MaxConsumers: Default value: -1 (unlimited)
 			value is set using: >0
-			Sote defaults value: -1 (unlimited)
-			Sote immutable: yes
 		MaxMsgs: Required
 			value is set using: -1 (unlimited) or >0
-			Sote defaults value: -1 (unlimited)
-			Sote immutable: yes
 		MaxMsgSize: Default value: -1 (unlimited)
 			value is set using: (B)ytes, (k)ilobytes, (m)egabytes
 			example: 512B, 1k, 1m
-			Sote defaults value: -1 (unlimited)
-			Sote immutable: yes
 	CONSUMER SETTINGS:
 		AckPolicy: Default value: none
 			value is set using: none, all, explicit
-			Sote defaults value: explicit
-			Sote immutable: no
 		AckWait: Default value: -1s (forever)
 			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
-			Sote defaults value: 1s
-			Sote immutable: yes
 		DeliverPolicy: Default value: "" (pull based consumer)
 			value is set using: all, last, new or next, DeliverByStartSequence or DeliverByStartTime
-			Sote defaults value: all
-			Sote immutable: no
 		DeliverySubject: Default value: instant
 			value is set using: instant, original
-			Sote defaults value: instant
-			Sote immutable: no
 		Durable Name: Default value: ""
 			value is set using: <durable name>
 			example: TEST_CONSUMER_NAME, test_consumer_name, Test_Consumer_Name
-			Sote defaults value: Required, not set
-			Sote immutable: no
 		FilterSubject: Default value: "" (all)
 			value is set using: <stream name>.<subject name>
 			example: TEST_STREAM_NAME.* for all messages from the TEST_STREAM_NAME stream, TEST_STREAM_NAME.cat for only cat messages
-			Sote defaults value: Required, not set
-			Sote immutable: no
 		MaxDeliver: Default value: -1 (unlimited)
 			value is set using: >0
-			Sote defaults value: 3
-			Sote immutable: no to values of 1,2 or 3
-		OptStartSeq: Default value: (Required when using DeliveryPolicy with DeliverByStartSequence
+		OptStartSeq: Default value: (Required when using DeliveryPolicy with DeliverByStartSequence)
 			value is set using: >0
-			Sote defaults value: Not Supported
-			Sote immutable: yes
 		ReplayPolicy: Default value: instant
 			value is set using: instant, original
-			Sote defaults value: instant
-			Sote immutable: no
 		SampleFrequency: Default value: -1
 			value is set using: 0 to 100
-			Sote defaults value: Not Supported
-			Sote immutable: yes
 		OptStartTime: Default value: Now
 			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
 			example: 1s, 1h, 1M, 1seconds, 1Months
-			Sote defaults value: Not Supported
-			Sote immutable: yes
 		RateLimit: Default value: 0
 			value is set using: >0
-			Sote defaults value: Not Supported
-			Sote immutable: yes
 */
 package sMessage
 
