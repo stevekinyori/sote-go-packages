@@ -1,23 +1,11 @@
-package sMessage
-
-import (
-	"log"
-	"strings"
-
-	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/nats.go"
-	"gitlab.com/soteapps/packages/v2020/sError"
-	"gitlab.com/soteapps/packages/v2020/sLogger"
-)
-
 /*
-	CreateConsumer will create a consumer
+	Consumer setting supported
 		AckPolicy: Default value: none
 			value is set using: none, all, explicit
 			Sote defaults value: explicit
 			Sote immutable: no
 		DeliverPolicy: Default value: "" (pull based consumer)
-			value is set using: all, last, new or next, DeliverByStartSequence or DeliverByStartTime
+			value is set using: all, last, next, DeliverByStartSequence or DeliverByStartTime
 			Sote defaults value: all
 			Sote immutable: no
 		DeliverySubject: Default value: instant
@@ -43,7 +31,39 @@ import (
 			Sote defaults value: instant
 			Sote immutable: no
 */
-func CreateConsumer(streamName, durableName, deliveryPolicy, deliverySubject, subjectFilter, replayPolicy string, maxDeliveries int, nc *nats.Conn) (pConsumer *jsm.Consumer,
+package sMessage
+
+import (
+	"log"
+
+	"github.com/nats-io/jsm.go"
+	"github.com/nats-io/nats.go"
+	"gitlab.com/soteapps/packages/v2020/sError"
+	"gitlab.com/soteapps/packages/v2020/sLogger"
+)
+
+const (
+	ACKPOLICYNONE     = "none"
+	ACKPOLICYALL      = "all"
+	ACKPOLICYEXPLICIT = "explicit"
+	//
+	DELIVERYPOLICYALL  = "all"
+	DELIVERYPOLICYLAST = "last"
+	DELIVERYPOLICYNEXT = "next"
+	DELIVERYPOLICYPULL = ""
+	//
+	REPLAYPOLICYINSTANT  = "instant"
+	REPLAYPOLICYORIGINAL = "original"
+)
+
+/*
+	CreateConsumerWithDeliverAllReplayInstantMax3 will create a consumer. If the consumer exists, it will load.
+		Set values for this function
+			AckPolicy: explicit
+			DeliverPolicy: all
+			ReplayPolicy: instant
+*/
+func CreateDeliverAllReplayInstantConsumer(streamName, durableName, deliverySubject, subjectFilter string, maxDeliveries int, nc *nats.Conn) (pConsumer *jsm.Consumer,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -51,65 +71,11 @@ func CreateConsumer(streamName, durableName, deliveryPolicy, deliverySubject, su
 		err error
 	)
 
-	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
-		if len(durableName) == 0 && soteErr.ErrCode == nil {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"durableName"}), nil)
-		}
-		if len(deliverySubject) == 0 && soteErr.ErrCode == nil {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"deliverySubject"}), nil)
-		}
-		if len(subjectFilter) == 0 && soteErr.ErrCode == nil {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
-		}
-		if len(replayPolicy) == 0 && soteErr.ErrCode == nil {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"replayPolicy"}), nil)
-		}
-		if (maxDeliveries <= 0 || maxDeliveries >= 4) && soteErr.ErrCode == nil {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"replayPolicy"}), nil)
-		}
-		if soteErr.ErrCode == nil {
-			soteErr = validateConnection(nc)
-		}
-	}
-
-	if soteErr.ErrCode == nil {
-		switch strings.ToLower(deliveryPolicy) {
-		case "all":
-			pConsumer, err = jsm.NewConsumer(streamName, jsm.DurableName(durableName), jsm.DeliverAllAvailable(), jsm.FilterStreamBySubject(subjectFilter),
-				jsm.ConsumerConnection(jsm.WithConnection(nc)))
-		case "last":
-			// TBD
-		case "new":
-			// TBD
-		case "next":
-			// TBD
-		default:
-			pConsumer, err = jsm.NewConsumer(streamName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter),
-				jsm.ConsumerConnection(jsm.WithConnection(nc)))
-		}
-	}
-
+	pConsumer, err = jsm.LoadOrNewConsumer(streamName, durableName, jsm.DeliverAllAvailable(), jsm.FilterStreamBySubject(subjectFilter), jsm.ConsumerConnection(jsm.WithConnection(nc)),
+		jsm.ReplayInstantly(), jsm.MaxDeliveryAttempts(3))
 	if err != nil {
 		soteErr = sError.GetSError(805599, sError.BuildParams([]string{streamName, durableName}), nil)
 		log.Fatal(soteErr.FmtErrMsg)
-	}
-
-	return
-}
-
-func LoadConsumer(streamName, durableName string) (pConsumer *jsm.Consumer, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var (
-		err error
-	)
-
-	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
-		pConsumer, err = jsm.LoadConsumer(streamName, durableName)
-		if err != nil {
-			soteErr = sError.GetSError(805000, nil, nil)
-			log.Fatal(soteErr.FmtErrMsg)
-		}
 	}
 
 	return
@@ -124,6 +90,66 @@ func DeleteConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
 			soteErr = sError.GetSError(805000, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
+	}
+
+	return
+}
+
+func validateConsumerParams(streamName, durableName, deliverySubject, subjectFilter string, nc *nats.Conn) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	soteErr = validateStreamName(streamName)
+
+	if soteErr.ErrCode == nil {
+		if validateDurableName(durableName); soteErr.ErrCode != nil {
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"durableName"}), nil)
+		}
+	}
+
+	if soteErr.ErrCode == nil {
+		if validateDeliverySubject(deliverySubject); soteErr.ErrCode != nil {
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"deliverySubject"}), nil)
+		}
+	}
+
+	if soteErr.ErrCode == nil {
+		if validateSubjectFilter(subjectFilter); soteErr.ErrCode != nil {
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
+		}
+	}
+
+	if soteErr.ErrCode == nil {
+		soteErr = validateConnection(nc)
+	}
+
+	return
+}
+
+func validateDurableName(durableName string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if len(durableName) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"durableName"}), nil)
+	}
+
+	return
+}
+
+func validateDeliverySubject(subjectFilter string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if len(subjectFilter) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
+	}
+
+	return
+}
+
+func validateSubjectFilter(deliverySubject string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if len(deliverySubject) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"deliverySubject"}), nil)
 	}
 
 	return
