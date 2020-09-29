@@ -87,7 +87,6 @@ var (
 		310005: {310005, NATSERROR, 1, "Key name", ": Upper or lower case %v keys value is missing", EmptyMap, ""},
 		320000: {320000, NATSERROR, 1, "List of required parameters", ": Message doesn't match signature. Sender must provide the following parameter names: %v", EmptyMap, ""},
 		335260: {335260, NATSERROR, 0, "None", ": Stream pointer is nil. Must be a validate pointer to a stream.", EmptyMap, ""},
-		335280: {335280, NATSERROR, 0, "None", ": Stream already exists.", EmptyMap, ""},
 		335299: {335299, NATSERROR, 1, "Stream Name", ": Stream creation encountered an error that is not expected. Stream Name: %v", EmptyMap, ""},
 		335580: {335580, NATSERROR, 0, "None", ": Stream already exists.", EmptyMap, ""},
 		335599: {335599, NATSERROR, 2, "Stream Name, Durable Name", ": Consumer creation encountered an error that is not expected. Stream Name: %v Durable Name: %v", EmptyMap, ""},
