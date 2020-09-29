@@ -1,4 +1,5 @@
 package sMessage
+
 import (
 	"encoding/json"
 	"testing"
@@ -9,91 +10,18 @@ import (
 	"gitlab.com/soteapps/packages/v2020/sError"
 )
 
-func TestValidateStream(t *testing.T) {
-	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
-	)
-
-	if soteErr = validateStream(nil); soteErr.ErrCode != 200513 {
+func TestValidateStreamWhenNil(t *testing.T) {
+	if soteErr := validateStream(nil); soteErr.ErrCode != 200513 {
 		t.Errorf("validateStream Failed: Expected error code of 200513")
-	}
-
-	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
-		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
-	} else {
-		if nc, soteErr = Connect(SYNADIAURL, opts); soteErr.ErrCode != nil {
-			t.Errorf("Connect Failed: Expected error code to be nil")
-		}
-	}
-
-	if soteErr = validateStreamParams(STREAMNAME, STREAMSUBJECT, nc); soteErr.ErrCode != nil {
-		t.Errorf("validateStreamParams Failed: Expected error code to be nil")
 	}
 }
 func TestValidateStreamName(t *testing.T) {
-	var (
-		soteErr sError.SoteError
-	)
-
-	if soteErr = validateStreamName(""); soteErr.ErrCode != 200513 {
+	if soteErr := validateStreamName(""); soteErr.ErrCode != 200513 {
 		t.Errorf("validateStreamName Failed: Expected error code of 200513")
 	}
 
-	if soteErr = validateStreamName(STREAMNAME); soteErr.ErrCode != nil {
+	if soteErr := validateStreamName(TESTSTREAMNAME); soteErr.ErrCode != nil {
 		t.Errorf("validateStreamName Failed: Expected error code to be nil")
-	}
-}
-func TestValidateConnection(t *testing.T) {
-	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
-	)
-
-	if soteErr = validateConnection(nil); soteErr.ErrCode != 200513 {
-		t.Errorf("validateConnection Failed: Expected error code of 200513")
-	}
-
-	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
-		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
-	} else {
-		if nc, soteErr = Connect(SYNADIAURL, opts); soteErr.ErrCode != nil {
-			t.Errorf("Connect Failed: Expected error code to be nil")
-		}
-	}
-
-	if soteErr = validateConnection(nc); soteErr.ErrCode != nil {
-		t.Errorf("validateConnection Failed: Expected error code to be nil")
-	}
-}
-func TestValidateStreamParams(t *testing.T) {
-	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
-	)
-
-	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
-		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
-	} else {
-		if nc, soteErr = Connect(SYNADIAURL, opts); soteErr.ErrCode != nil {
-			t.Errorf("Connect Failed: Expected error code to be nil")
-		}
-	}
-
-	if soteErr = validateStreamParams(STREAMNAME, STREAMSUBJECT, nc); soteErr.ErrCode != nil {
-		t.Errorf("validateStreamParams Failed: Expected error code to be nil")
-	}
-	if soteErr = validateStreamParams("", STREAMSUBJECT, nc); soteErr.ErrCode != 200513 {
-		t.Errorf("validateStreamParams Failed: Expected error code of 200513")
-	}
-	if soteErr = validateStreamParams(STREAMNAME, "", nc); soteErr.ErrCode != 200513 {
-		t.Errorf("validateStreamParams Failed: Expected error code of 200513")
-	}
-	if soteErr = validateStreamParams(STREAMNAME, STREAMSUBJECT, nil); soteErr.ErrCode != 200513 {
-		t.Errorf("validateStreamParams Failed: Expected error code of 200513")
 	}
 }
 func TestSetReplicas(t *testing.T) {
@@ -110,13 +38,42 @@ func TestSetReplicas(t *testing.T) {
 		t.Errorf("setReplicas Failed: Expected replicase value to be 10")
 	}
 }
+func TestValidateStreamParams(t *testing.T) {
+	var (
+		opts    []nats.Option
+		soteErr sError.SoteError
+		nc      *nats.Conn
+	)
+
+	// Setup
+	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
+		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
+	} else {
+		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+			t.Errorf("Connect Failed: Expected error code to be nil")
+		}
+	}
+
+	if soteErr = validateStreamParams(TESTSTREAMNAME, TESTSTREAMSUBJECT, nc); soteErr.ErrCode != nil {
+		t.Errorf("validateStreamParams Failed: Expected error code to be nil")
+	}
+	if soteErr = validateStreamParams("", TESTSTREAMSUBJECT, nc); soteErr.ErrCode != 200513 {
+		t.Errorf("validateStreamParams Failed: Expected error code of 200513")
+	}
+	if soteErr = validateStreamParams(TESTSTREAMNAME, "", nc); soteErr.ErrCode != 200513 {
+		t.Errorf("validateStreamParams Failed: Expected error code of 200513")
+	}
+	if soteErr = validateStreamParams(TESTSTREAMNAME, TESTSTREAMSUBJECT, nil); soteErr.ErrCode != 200513 {
+		t.Errorf("validateStreamParams Failed: Expected error code of 200513")
+	}
+}
 func TestDeleteStream(t *testing.T) {
-	// Testing that Stream pointer is not nil
+	// Testing when the Stream pointer is nil
 	if soteErr := DeleteStream(nil); soteErr.ErrCode != 200513 {
 		t.Errorf("DeleteStream Failed: Expected error code of 200513")
 	}
 }
-func TestCreateLimitsStreamDeleteStream(t *testing.T) {
+func TestCreateOrLoadLimitsStreamDeleteStream(t *testing.T) {
 	var (
 		opts    []nats.Option
 		soteErr sError.SoteError
@@ -124,24 +81,31 @@ func TestCreateLimitsStreamDeleteStream(t *testing.T) {
 		pStream *jsm.Stream
 	)
 
+	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(SYNADIAURL, opts); soteErr.ErrCode != nil {
+		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
-	// Test the default storage setting when creating a stream
-	if pStream, soteErr = CreateLimitsStream(STREAMNAME, STREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	// Test the creation of the stream
+	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
+	// Test the loading of the stream
+	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
+	}
+
+	// Testing when the Stream pointer exists
 	if soteErr := DeleteStream(pStream); soteErr.ErrCode != nil {
 		t.Errorf("DeleteStream Failed: Expected error code to be nil")
 	}
 }
-func TestCreateWorkStreamDeleteStream(t *testing.T) {
+func TestCreateOrLoadWorkStreamDeleteStream(t *testing.T) {
 	var (
 		opts    []nats.Option
 		soteErr sError.SoteError
@@ -149,19 +113,26 @@ func TestCreateWorkStreamDeleteStream(t *testing.T) {
 		pStream *jsm.Stream
 	)
 
+	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(SYNADIAURL, opts); soteErr.ErrCode != nil {
+		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
-	// Test the default storage setting when creating a stream
-	if pStream, soteErr = CreateWorkStream(STREAMNAME, STREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	// Test the creation of the stream
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
+	// Test the loading of the stream
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
+	}
+
+	// Clean up
 	if soteErr := DeleteStream(pStream); soteErr.ErrCode != nil {
 		t.Errorf("DeleteStream Failed: Expected error code to be nil")
 	}
@@ -180,16 +151,17 @@ func TestStreamInfo(t *testing.T) {
 		t.Errorf("StreamInfo Failed: Expected error code of 200513")
 	}
 
+	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(SYNADIAURL, opts); soteErr.ErrCode != nil {
+		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
 	// Test the default storage setting when creating a stream
-	if pStream, soteErr = CreateWorkStream(STREAMNAME, STREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
@@ -197,6 +169,11 @@ func TestStreamInfo(t *testing.T) {
 		x, _ := json.Marshal(info)
 		t.Errorf("Stream Info: " + string(x))
 		t.Errorf("StreamInfo Failed: Expected error code to be nil")
+	}
+
+	// Clean up
+	if soteErr := DeleteStream(pStream); soteErr.ErrCode != nil {
+		t.Errorf("DeleteStream Failed: Expected error code to be nil")
 	}
 }
 func TestPurgeStream(t *testing.T) {
@@ -212,21 +189,28 @@ func TestPurgeStream(t *testing.T) {
 		t.Errorf("PurgeStream Failed: Expected error code of 200513")
 	}
 
+	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(SYNADIAURL, opts); soteErr.ErrCode != nil {
+		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
 	// Test the default storage setting when creating a stream
-	if pStream, soteErr = CreateWorkStream(STREAMNAME, STREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
+	// Testing that the call works, not the jsm code
 	if soteErr = PurgeStream(pStream); soteErr.ErrCode != nil {
 		t.Errorf("PurgeStream Failed: Expected error code to be nil")
+	}
+
+	// Clean up
+	if soteErr := DeleteStream(pStream); soteErr.ErrCode != nil {
+		t.Errorf("DeleteStream Failed: Expected error code to be nil")
 	}
 }
 func TestDeleteMessageFromStream(t *testing.T) {
@@ -242,20 +226,27 @@ func TestDeleteMessageFromStream(t *testing.T) {
 		t.Errorf("DeleteMessageFromStream Failed: Expected error code of 400005")
 	}
 
+	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(SYNADIAURL, opts); soteErr.ErrCode != nil {
+		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
 	// Test the default storage setting when creating a stream
-	if pStream, soteErr = CreateWorkStream(STREAMNAME, STREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
+	// Testing that the call works, not the jsm code
 	if soteErr = DeleteMessageFromStream(pStream, 1); soteErr.ErrCode != 109999 {
 		t.Errorf("DeleteMessageFromStream Failed: Expected error code of 109999")
+	}
+
+	// Clean up
+	if soteErr := DeleteStream(pStream); soteErr.ErrCode != nil {
+		t.Errorf("DeleteStream Failed: Expected error code to be nil")
 	}
 }
