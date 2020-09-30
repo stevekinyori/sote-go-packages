@@ -184,6 +184,7 @@ var (
 		200512	Parameter name, Another parameter name > : %v and %v must both be populated
 		200513	Parameter name > : %v must be populated
 		200514	Parameter name, Another parameter name, Another parameter name > : %v, %v and %v must all be populated
+		200515	Parameter name, Another parameter name > : %v must be empty when %v is populated
 		201000	Info returned from HTTP/HTTPS Request > : Bad HTTP/HTTPS Request - %v
 		202000	Environment Name > : The API you are calling is not available in this environment (%v)
 		230050	Name, Application/Package name > : Number of parameters defined in the %v is not support by %v
