@@ -288,6 +288,9 @@ func TestErrorDetails(t *testing.T) {
 	errDetails["test_2"] = "Test_2_Value"
 	errDetails["test_3"] = "Test_3_Value"
 	validateReply(t, errCode, s, GetSError(errCode, s, errDetails))
+	errCode = 805000
+	validateReply(t, errCode, nil, GetSError(errCode, nil, errDetails))
+	validateReply(t, errCode, nil, GetSError(errCode, nil, EmptyMap))
 }
 func TestGenMarkDown(t *testing.T) {
 	if x := GenMarkDown(); !strings.Contains(x, MARKDOWNTITLEBAR) {
