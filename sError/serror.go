@@ -196,7 +196,8 @@ var (
 		310005	Key name > : Upper or lower case %v keys value is missing
 		320000	List of required parameters > : Message doesn't match signature. Sender must provide the following parameter names: %v
 		335299	Stream Name > : Stream creation encountered an error that is not expected. Stream Name: %v
-		335599	Stream Name, Durable Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Durable Name: %v
+		335599	Stream Name, Consumer Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Consumer Name: %v
+		336100	Stream Name, Consumer Subject Filter > : The consumer subject filter must be a subset of the stream subject. Stream Name: %v Consumer Subject Filter: %v
 		400000	Field name, Field value > : %v (%v) is not numeric
 		400005	Field name, Minimal length > : %v must have a value greater than %v
 		400010	Field name, Field value > : %v (%v) is not a string
