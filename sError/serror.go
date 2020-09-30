@@ -243,11 +243,11 @@ func GetSError(code int, params []interface{}, errorDetails map[string]string) (
 		soteErr = GetSError(230060, s, errorDetails)
 	} else {
 		if soteErr.ParamCount == 0 {
-			soteErr.FmtErrMsg = strconv.Itoa(code) + fmt.Sprintf(soteErr.FmtErrMsg)
 			soteErr.ErrorDetails = errorDetails
+			soteErr.FmtErrMsg = strconv.Itoa(code) + fmt.Sprintf(soteErr.FmtErrMsg) + fmt.Sprintf(formatErrorDetails(soteErr.ErrorDetails))
 		} else {
-			soteErr.FmtErrMsg = strconv.Itoa(code) + fmt.Sprintf(soteErr.FmtErrMsg, params...)
 			soteErr.ErrorDetails = errorDetails
+			soteErr.FmtErrMsg = strconv.Itoa(code) + fmt.Sprintf(soteErr.FmtErrMsg, params...) + fmt.Sprintf(formatErrorDetails(soteErr.ErrorDetails))
 		}
 	}
 	return
@@ -345,5 +345,18 @@ func GenErrorListRequiredParams() (funcComments string) {
 			funcComments += fmt.Sprintf("\t\t%v\t%v > %v\n", x.ErrCode, x.ParamDescription, x.FmtErrMsg)
 		}
 	}
+	return
+}
+
+func formatErrorDetails(tErrDetails map[string]string) (errDetails string) {
+	sLogger.DebugMethod()
+
+	if len(tErrDetails) > 0 {
+		errDetails = " ERROR DETAILS:"
+		for key, value := range tErrDetails {
+			errDetails = errDetails + " >>Key: " + key + " Value: " + value
+		}
+	}
+
 	return
 }
