@@ -34,7 +34,7 @@ func TestSetReplicas(t *testing.T) {
 	if replicas := setReplicas(1); replicas != 1 {
 		t.Errorf("setReplicas Failed: Expected replicase value to be 1")
 	}
-	if replicas := setReplicas(10); replicas != 10 {
+	if replicas := setReplicas(11); replicas != 10 {
 		t.Errorf("setReplicas Failed: Expected replicase value to be 10")
 	}
 }

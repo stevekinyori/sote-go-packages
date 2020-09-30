@@ -9,10 +9,10 @@ STREAMS:
 	can be set to old or new.  Oldest record the newest record is removed.
 
 	Interest streams retain messages so long as there is a consumer active for the subject.  At this time, this is not support by
-	Sote sMessage wrapper. Interest stream limits of the age, size and count still apply as upper bounds.
+	Sote sMessage wrapper. Interest stream limits using age, size and count still apply as upper bounds.
 
 	Work or Work Queue streams will retain the messages until the message is consumed by any one consumer. The message is then
-	removed by the stream. Work stream limits of the age, size and count still apply as upper bounds.
+	removed by the stream. Work stream limits using age, size and count still apply as upper bounds.
 */
 package sMessage
 
@@ -36,7 +36,7 @@ const (
 )
 
 /*
-	CreateLimitsStream will create a limits stream.  If it exists, it will load the stream
+CreateLimitsStream will create a limits stream.  If it exists, it will load the stream
 	Required parameters:
 		streamName
 		subjects (Multiple subject are allowed with a comma separating values)
@@ -72,7 +72,7 @@ func CreateOrLoadLimitsStream(streamName, subjects, storage string, replicas int
 }
 
 /*
-	CreateOrLoadWorkStream will create a work stream.  If it exists, it will load the stream
+CreateOrLoadWorkStream will create a work stream.  If it exists, it will load the stream
 	Required parameters:
 		streamName
 		subjects (Multiple subject are allowed with a comma separating values)
