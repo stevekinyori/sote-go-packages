@@ -69,23 +69,31 @@ var (
 		200512: {200512, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated", EmptyMap, ""},
 		200513: {200513, PROCESSERROR, 1, "Parameter name", ": %v must be populated", EmptyMap, ""},
 		200514: {200514, PROCESSERROR, 3, "Parameter name, Another parameter name, Another parameter name", ": %v, %v and %v must all be populated", EmptyMap, ""},
+		200515: {200515, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v must be empty when %v is populated", EmptyMap, ""},
+		//
 		201000: {201000, PROCESSERROR, 1, "Info returned from HTTP/HTTPS Request", ": Bad HTTP/HTTPS Request - %v", EmptyMap, ""},
 		// 201005: {201005, PROCESSERROR, 0, "None", "Invalid Claim", EmptyMap, ""},  REPLACED BY 500060
 		202000: {202000, PROCESSERROR, 1, "Environment Name", ": The API you are calling is not available in this environment (%v)", EmptyMap, ""},
+		//
 		209500: {209500, PROCESSERROR, 0, "None", ": QuickSight error - see Details", EmptyMap, ""},
 		209998: {209998, PROCESSERROR, 0, "None", ": Database constraint error - see Details", EmptyMap, ""},
 		209999: {209999, PROCESSERROR, 0, "None", ": SQL error - see Details", EmptyMap, ""},
+		//
 		219999: {219999, PROCESSERROR, 0, "None", ": Cognito error - see Details", EmptyMap, ""},
+		//
 		230000: {230000, PROCESSERROR, 0, "None", ": The number of parameters provided for the error message does not match the required number", EmptyMap, ""},
 		230050: {230050, PROCESSERROR, 2, "Name, Application/Package name", ": Number of parameters defined in the %v is not support by %v", EmptyMap, ""},
 		230060: {230060, PROCESSERROR, 2, "Provided parameter count, Expected parameter count", ": Number of parameters provided (%v) doesn't match the number expected (%v)", EmptyMap, ""},
+		//
 		250000: {250000, PROCESSERROR, 0, "None", ": AWS SES error - see details in retPack", EmptyMap, ""},
 		250005: {250005, PROCESSERROR, 0, "None", ": AWS STS error - see details in retPack", EmptyMap, ""},
 		//
 		300000: {300000, NATSERROR, 0, "None", ": TBD", EmptyMap, ""},
 		310000: {310000, NATSERROR, 1, "Key name", ": Upper or lower case %v key is missing", EmptyMap, ""},
 		310005: {310005, NATSERROR, 1, "Key name", ": Upper or lower case %v keys value is missing", EmptyMap, ""},
+		//
 		320000: {320000, NATSERROR, 1, "List of required parameters", ": Message doesn't match signature. Sender must provide the following parameter names: %v", EmptyMap, ""},
+		//
 		335260: {335260, NATSERROR, 0, "None", ": Stream pointer is nil. Must be a validate pointer to a stream.", EmptyMap, ""},
 		335299: {335299, NATSERROR, 1, "Stream Name", ": Stream creation encountered an error that is not expected. Stream Name: %v", EmptyMap, ""},
 		335580: {335580, NATSERROR, 0, "None", ": Stream already exists.", EmptyMap, ""},
@@ -108,10 +116,13 @@ var (
 		400105: {400105, CONTENTERROR, 2, "Data Structure Name, Data Structure Type", ": %v (%v) couldn't be converted to JSON - JSON conversion error", EmptyMap, ""},
 		400110: {400110, CONTENTERROR, 1, "Parameter name", ": %v couldn't be parsed - Invalid JSON error", EmptyMap, ""},
 		400111: {400111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v couldn't be converted to a map/keyed array - %v", EmptyMap, ""},
+		//
 		401000: {401000, CONTENTERROR, 0, "None", ": Column must have a non-null value. Details: ", EmptyMap, ""},
 		401010: {401010, CONTENTERROR, 0, "None", ": Column data type is not support or invalid. Details: ", EmptyMap, ""},
+		//
 		405110: {405110, CONTENTERROR, 2, "Thing being changed, System Id for the thing", ": No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
 		405120: {405120, CONTENTERROR, 3, "JSON array name, Thing being changed, System Id for the thing", ": The %v was empty for %v with id %v", EmptyMap, ""},
+		//
 		410000: {410000, CONTENTERROR, 1, "Error message number", ": %v error message is missing from sError package", EmptyMap, ""},
 		//
 		500000: {500000, PERMISSIONERROR, 0, "None", ": iss (Issuer) is not valid", EmptyMap, ""},
@@ -127,20 +138,24 @@ var (
 		//
 		600000: {600000, CONFIGURATIONISSUE, 0, "None", ": .env files are missing", EmptyMap, ""},
 		600010: {600010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", ": %v file was not found. Message return: %v", EmptyMap, ""},
+		//
 		601000: {601000, CONFIGURATIONISSUE, 1, "Environment name", ": environment variable is missing (%v)", EmptyMap, ""},
 		601010: {601010, CONFIGURATIONISSUE, 1, "Environment name", ": environment value (%v) is invalid", EmptyMap, ""},
+		//
 		602000: {602000, CONFIGURATIONISSUE, 3, "Database name, Database driver name, Port value", ": Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
 		602010: {602010, CONFIGURATIONISSUE, 0, "None", ": Unable to pass database authentication", EmptyMap, ""},
 		602020: {602020, CONFIGURATIONISSUE, 1, "SSL Mode", ": Only disable, allow, prefer and required are supported.", EmptyMap, ""},
 		602030: {602030, CONFIGURATIONISSUE, 1, "Connection Type", ": Only single or pool are supported.", EmptyMap, ""},
 		602999: {602999, CONFIGURATIONISSUE, 0, "None", ": No database connection has been established", EmptyMap, ""},
-		// TODO Investigate is this error message is in the right section 603999
+		//
 		603999: {603999, CONFIGURATIONISSUE, 0, "None", ": No nats connection has been established", EmptyMap, ""},
+		//
 		605000: {605000, CONFIGURATIONISSUE, 0, "None", ": Unexpected signing method", EmptyMap, ""},
 		605010: {605010, CONFIGURATIONISSUE, 0, "None", ": Kid header not found", EmptyMap, ""},
 		605020: {605020, CONFIGURATIONISSUE, 1, "Kid", ": key (%v) was not found in token", EmptyMap, ""},
 		605021: {605021, CONFIGURATIONISSUE, 1, "Kid", ": Kid (%v) was not found in public key set", EmptyMap, ""},
 		605030: {605030, CONFIGURATIONISSUE, 2, "Region, Environment", ": Failed to fetch remote JWK (status = 404) for %v region %v environment", EmptyMap, ""},
+		//
 		609998: {609998, CONFIGURATIONISSUE, 1, "Parameter name", ": Start up parameter is out of value range (%v)", EmptyMap, ""},
 		609999: {609999, CONFIGURATIONISSUE, 1, "Parameter name", ": Start up parameter is missing (%v)", EmptyMap, ""},
 		//
@@ -149,6 +164,7 @@ var (
 		800000: {800000, GENERALERROR, 0, "None", ": An error has occurred that is not expected.", EmptyMap, ""},
 		800100: {800100, GENERALERROR, 0, "None", ": Postgres error has occurred that is not expected.", EmptyMap, ""},
 		800199: {800199, GENERALERROR, 0, "None", ": Postgres is not responding over TCP. Container may not be running.", EmptyMap, ""},
+		//
 		805000: {805000, GENERALERROR, 0, "None", ": Synadia error has occurred that is not expected.", EmptyMap, ""},
 	}
 )
