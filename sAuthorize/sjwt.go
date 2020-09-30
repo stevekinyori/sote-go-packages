@@ -14,54 +14,58 @@ var holdSoteErr sError.SoteError
 
 func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
-
 	if tApplication != "" && tEnvironment != "" && rawToken != "" {
-		token, err := jwt.Parse(rawToken, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-				holdSoteErr = sError.GetSError(605000, nil, sError.EmptyMap)
-			}
-
-			if holdSoteErr.ErrCode == nil {
-				var (
-					kid  string
-					ok   bool
-					keys []jwk.Key
-				)
-				if kid, ok = token.Header["kid"].(string); !ok {
-					holdSoteErr = sError.GetSError(605010, nil, sError.EmptyMap)
+		if len(strings.Split(rawToken, ".")) == 3 {
+			token, err := jwt.Parse(rawToken, func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+					holdSoteErr = sError.GetSError(605000, nil, sError.EmptyMap)
 				}
 
 				if holdSoteErr.ErrCode == nil {
-					if keys, holdSoteErr = matchKid(tEnvironment, kid); holdSoteErr.ErrCode == nil {
-						var raw interface{}
-						return raw, keys[0].Raw(&raw)
+					var (
+						kid  string
+						ok   bool
+						keys []jwk.Key
+					)
+					if kid, ok = token.Header["kid"].(string); !ok {
+						holdSoteErr = sError.GetSError(605010, nil, sError.EmptyMap)
 					}
+
+					if holdSoteErr.ErrCode == nil {
+						if keys, holdSoteErr = matchKid(tEnvironment, kid); holdSoteErr.ErrCode == nil {
+							var raw interface{}
+							return raw, keys[0].Raw(&raw)
+						}
+					}
+				}
+
+				return nil, nil
+			})
+
+			if err != nil {
+				if strings.Contains(err.Error(), "expired") {
+					holdSoteErr = sError.GetSError(500050, nil, sError.EmptyMap)
+				}
+				if strings.Contains(err.Error(), "invalid type") || strings.Contains(err.Error(), "invalid character") {
+					holdSoteErr = sError.GetSError(500055, nil, sError.EmptyMap)
+				}
+				if strings.Contains(err.Error(), "invalid number of segments") {
+					holdSoteErr = sError.GetSError(500056, nil, sError.EmptyMap)
 				}
 			}
 
-			return nil, nil
-		})
-
-		if err != nil {
-			if strings.Contains(err.Error(), "expired") {
-				holdSoteErr = sError.GetSError(500050, nil, sError.EmptyMap)
+			if holdSoteErr.ErrCode == nil {
+				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+					holdSoteErr = validateClaims(claims, tApplication, tEnvironment)
+				} else {
+					holdSoteErr = sError.GetSError(500055, nil, sError.EmptyMap)
+				}
 			}
-			if strings.Contains(err.Error(), "invalid type") || strings.Contains(err.Error(), "invalid character") {
-				holdSoteErr = sError.GetSError(500055, nil, sError.EmptyMap)
-			}
-			if strings.Contains(err.Error(), "invalid number of segments") {
-				holdSoteErr = sError.GetSError(500056, nil, sError.EmptyMap)
-			}
+			soteErr = holdSoteErr
+		} else {
+			soteErr = sError.GetSError(500056, nil, sError.EmptyMap)
+			sLogger.Info(soteErr.FmtErrMsg)
 		}
-
-		if holdSoteErr.ErrCode == nil {
-			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-				holdSoteErr = validateClaims(claims, tApplication, tEnvironment)
-			} else {
-				holdSoteErr = sError.GetSError(500055, nil, sError.EmptyMap)
-			}
-		}
-		soteErr = holdSoteErr
 	} else {
 		soteErr = sError.GetSError(200514, sError.BuildParams([]string{"tApplication", "tEnvironment", "rawToken"}), sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
