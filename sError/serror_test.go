@@ -123,6 +123,11 @@ func Test335699Error(t *testing.T) {
 	s := BuildParams([]string{"PARAMETER", "ANOTHER_PARAMETER"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test336100Error(t *testing.T) {
+	var errCode = 336100
+	s := BuildParams([]string{"PARAMETER", "ANOTHER_PARAMETER"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test400000Error(t *testing.T) {
 	var errCode = 400000
 	s := BuildParams([]string{"FIELD_NAME", "FIELD_VALUE"})
