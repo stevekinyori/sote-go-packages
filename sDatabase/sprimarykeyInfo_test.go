@@ -1,8 +1,6 @@
 package sDatabase
 
 import (
-	"testing"
-
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
 
@@ -20,7 +18,7 @@ func init() {
 	sLogger.SetLogMessagePrefix("sprimarykeyInfo_test.go")
 }
 
-func TestPKPrimer(t *testing.T) {
+// func TestPKPrimer(t *testing.T) {
 	// if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
 	// 	t.Errorf("getAWSParams Failed: Expected error code to be nil.")
 	// 	t.Fatal()
@@ -35,8 +33,8 @@ func TestPKPrimer(t *testing.T) {
 	// if pkPrimer("sotetest", tConnInfo); len(pkList) == 0 {
 	// 	t.Errorf("pkPrimer Failed: Expected the pkList to have at least one entry.")
 	// }
-}
-func TestPkPrimer(t *testing.T) {
+// }
+// func TestPkPrimer(t *testing.T) {
 	// if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
 	// 	t.Errorf("getAWSParams Failed: Expected error code to be nil.")
 	// 	t.Fatal()
@@ -51,8 +49,8 @@ func TestPkPrimer(t *testing.T) {
 	// if pkPrimer("sotetest", tConnInfo); len(pkList) == 0 {
 	// 	t.Errorf("pkPrimer Failed: Expected the pkList to have at least one entry.")
 	// }
-}
-func TestPKLookup(t *testing.T) {
+// }
+// func TestPKLookup(t *testing.T) {
 	// if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
 	// 	t.Errorf("getAWSParams Failed: Expected error code to be nil.")
 	// 	t.Fatal()
@@ -71,8 +69,8 @@ func TestPKLookup(t *testing.T) {
 	// if tbName, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != nil && tbName != REFERENCETABLE {
 	// 	t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
 	// }
-}
-func TestPKLookupEmptyValues(t *testing.T) {
+// }
+// func TestPKLookupEmptyValues(t *testing.T) {
 	// if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
 	// 	t.Errorf("getAWSParams Failed: Expected error code to be nil.")
 	// 	t.Fatal()
@@ -93,10 +91,10 @@ func TestPKLookupEmptyValues(t *testing.T) {
 	// if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, EMPTYVALUE, tConnInfo); soteErr.ErrCode != 200513 {
 	// 	t.Errorf("pkLookup Failed: Expected error code to be 200513.")
 	// }
-}
-func TestNoConnection(t *testing.T) {
-	var tConnInfo = ConnInfo{nil, ConnValues{}}
-	if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 602999 {
-		t.Errorf("pkLookup Failed: Expected error code to be 602999.")
-	}
-}
+// }
+// func TestNoConnection(t *testing.T) {
+// 	var tConnInfo = ConnInfo{nil, ConnValues{}}
+// 	if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 602999 {
+// 		t.Errorf("pkLookup Failed: Expected error code to be 602999.")
+// 	}
+// }
