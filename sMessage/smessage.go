@@ -1,8 +1,8 @@
 /*
 NATS.io Jetstream default values are listed below. (Gathered from https://github.com/nats-io/jetstream)
-This are values that can be set.  sstream and consumer place limitation on the configurations that are possible from NATS.
+These are values that can be set natively.  sstream and consumer place limitation on the configurations available from NATS.
 
-	STREAM SETTINGS:
+	NATS STREAM SETTINGS:
 		Ack: Required for published
 			value is set using: true, false
 		Discard: Default value: old
@@ -23,15 +23,16 @@ This are values that can be set.  sstream and consumer place limitation on the c
 		MaxMsgSize: Default value: -1 (unlimited)
 			value is set using: (B)ytes, (k)ilobytes, (m)egabytes
 			example: 512B, 1k, 1m
-	CONSUMER SETTINGS:
+	NATS CONSUMER SETTINGS:
 		AckPolicy: Default value: none
-			value is set using: none, all, explicit
+			value is set using: none, all, explicit (explicit required for pull consumers)
 		AckWait: Default value: -1s (forever)
 			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
-		DeliverPolicy: Default value: "" (pull based consumer)
+		DeliverPolicy: Default value: ""
 			value is set using: all, last, new or next, DeliverByStartSequence or DeliverByStartTime
-		DeliverySubject: Default value: instant
-			value is set using: instant, original
+		DeliverySubject: Default value: "" ("" required for pull consumers)
+			value is set using: <target subject>
+			example: TEST_CONSUMER_NAME, test_consumer_name, Test_Consumer_Name
 		Durable Name: Default value: ""
 			value is set using: <durable name>
 			example: TEST_CONSUMER_NAME, test_consumer_name, Test_Consumer_Name
