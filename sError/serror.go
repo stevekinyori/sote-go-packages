@@ -253,7 +253,7 @@ func GetSError(code int, params []interface{}, errorDetails map[string]string) (
 	return
 }
 
-// This will convert a postgresql error into error details for include in SoteError
+// This will convert a postgresql error into error details for inclusion in SoteError
 func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 	sLogger.DebugMethod()
 
@@ -290,7 +290,7 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 }
 
 /*
-This will convert an array of strings to a param list for sError.GetSError
+	This will convert an array of strings to a param list for sError.GetSError
 */
 func BuildParams(values []string) (s []interface{}) {
 	sLogger.DebugMethod()
@@ -329,7 +329,7 @@ func GenMarkDown() (markDown string) {
 	This will generate plain text comments about error code that require parameters.  This can be used
 	to update the GetSError function comments
 */
-func GenErrorLisRequiredParams() (funcComments string) {
+func GenErrorListRequiredParams() (funcComments string) {
 	sLogger.DebugMethod()
 
 	// Sort the Keys from SError map
