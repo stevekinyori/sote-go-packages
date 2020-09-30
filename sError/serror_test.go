@@ -70,7 +70,7 @@ func Test200513Error(t *testing.T) {
 }
 func Test200514Error(t *testing.T) {
 	var errCode = 200514
-	s := BuildParams([]string{"PARAMETER_NAME","SECOND_PARAMETER_NAME","THIRD_PARAMETER_NAME"})
+	s := BuildParams([]string{"PARAMETER_NAME", "SECOND_PARAMETER_NAME", "THIRD_PARAMETER_NAME"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
 func Test200515Error(t *testing.T) {
@@ -205,7 +205,7 @@ func Test400110Error(t *testing.T) {
 }
 func Test400111Error(t *testing.T) {
 	var errCode = 400111
-	s := BuildParams([]string{"PARAMETER_NAME","APPLICATION_PACKAGE_NAME"})
+	s := BuildParams([]string{"PARAMETER_NAME", "APPLICATION_PACKAGE_NAME"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
 func Test405110Error(t *testing.T) {
@@ -278,6 +278,17 @@ func Test700000Error(t *testing.T) {
 	s := BuildParams([]string{"LIST_PARAMETERS"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func TestErrorDetails(t *testing.T) {
+	var (
+		errCode    = 700000
+		errDetails = make(map[string]string)
+	)
+	s := BuildParams([]string{"LIST_PARAMETERS"})
+	errDetails["test_1"] = "Test_1_Value"
+	errDetails["test_2"] = "Test_2_Value"
+	errDetails["test_3"] = "Test_3_Value"
+	validateReply(t, errCode, s, GetSError(errCode, s, errDetails))
+}
 func TestGenMarkDown(t *testing.T) {
 	if x := GenMarkDown(); !strings.Contains(x, MARKDOWNTITLEBAR) {
 		t.Errorf("GenMarkDown doesn't have the correct header, so there appears something wrong with the code.")
@@ -286,7 +297,7 @@ func TestGenMarkDown(t *testing.T) {
 	}
 }
 func TestGenErrorListRequiredParams(t *testing.T) {
-	if x := GenErrorLisRequiredParams(); !strings.Contains(x, FUNCCOMMENTSHEADER) {
+	if x := GenErrorListRequiredParams(); !strings.Contains(x, FUNCCOMMENTSHEADER) {
 		t.Errorf("GenMarkDown doesn't have the correct header, so there appears something wrong with the code.")
 	} else {
 		println(x)
