@@ -11,7 +11,7 @@ import (
 )
 
 func TestValidateStreamWhenNil(t *testing.T) {
-	if soteErr := validateStream(nil); soteErr.ErrCode != 200513 {
+	if soteErr := validateStream(nil); soteErr.ErrCode != 335260 {
 		t.Errorf("validateStream Failed: Expected error code of 200513")
 	}
 }
