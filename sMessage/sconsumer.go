@@ -7,50 +7,22 @@ CONSUMERS:
 	JetStream will deliver the messages as fast as possible to a subject of your choice or pull based for typical work queue like
 	behavior.
 
-	Consumer setting supported
-		AckPolicy: Default value: none
-			value is set using: none, all, explicit
-			NOTE: Is only for push streams. "Explicit" is for each message while "all" will cover all message in the stream or if a sequence is provided,
-				all the message up to that sequence number.  Example using 200 message and ack'ing message 100 will ack 1 to 99 also. Good for
-				performance boost when high value of messages are being processed. "None" means no ack is needed.
-			Sote defaults value: explicit
-			Sote immutable: no
-		DeliverPolicy: Default value: "" (pull based consumer)
-			value is set using: all, last, next, DeliverByStartSequence or DeliverByStartTime
-			NOTE: This is where in the stream will start sending messages to the consumer.
-			Sote defaults value: all
-			Sote immutable: no
-		DeliverySubject: Default value: instant
-			value is set using: instant, original
-			NOTE:
-			Sote defaults value: instant
-			Sote immutable: no
-		Durable Name: Default value: ""
-			value is set using: <durable name>
-			example: TEST_CONSUMER_NAME, test_consumer_name, Test_Consumer_Name
-			NOTE:
-			Sote defaults value: Required, not set
-			Sote immutable: no
-		FilterSubject: Default value: "" (all)
-			value is set using: <stream name>.<subject name>
-			example: TEST_STREAM_NAME.* for all messages from the TEST_STREAM_NAME stream, TEST_STREAM_NAME.cat for only cat messages
-			NOTE:
-			Sote defaults value: Required, not set
-			Sote immutable: no
-		MaxDeliver: Default value: -1 (unlimited)
-			value is set using: >0
-			Sote defaults value: 3
-			Sote immutable: no Allowed values are 1,2 or 3
-		ReplayPolicy: Default value: instant
-			value is set using: instant, original
-			NOTE: Instant will send the message to the consumer as fast as possible. Original will replay as received.
-			Sote defaults value: instant
-			Sote immutable: no
+	The Consumer subject filter must be a subset of the Stream subject. Error Code: 336100
+	Here are some examples:
+		Stream subject: IMAGES  Consumer subject filter: IMAGES -> works
+		Stream subject: IMAGES  Consumer subject filter: IMAGES.cat -> DOES NOT works
+		--
+		Stream subject: IMAGES.*  Consumer subject filter: IMAGES -> works
+		Stream subject: IMAGES.*  Consumer subject filter: IMAGES.cat -> works
+		--
+		Stream subject: IMAGES.CATS  Consumer subject filter: IMAGES -> DOES NOT works
+		Stream subject: IMAGES.cat  Consumer subject filter: IMAGES.* -> works
 */
 package sMessage
 
 import (
 	"log"
+	"strings"
 
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
@@ -63,37 +35,99 @@ const (
 	ACKPOLICYALL      = "all"
 	ACKPOLICYEXPLICIT = "explicit"
 	//
-	DELIVERYPOLICYALL  = "all"
-	DELIVERYPOLICYLAST = "last"
-	DELIVERYPOLICYNEXT = "next"
-	DELIVERYPOLICYPULL = ""
+	DELIVERPOLICYALL  = "all"
+	DELIVERPOLICYLAST = "last"
+	DELIVERPOLICYNEXT = "next"
+	//
+	DELIVERYSUBJECTPULL = ""
 	//
 	REPLAYPOLICYINSTANT  = "instant"
 	REPLAYPOLICYORIGINAL = "original"
 )
 
 /*
-	CreatePullConsumerWithReplayInstantMax3 will create a consumer. If the consumer exists, it will load.
-		Set values for this function
-			AckPolicy: explicit (required for pull consumer)
-			DeliverPolicy: explicit
-			DeliverySubject: ""
-			ReplayPolicy: instant
+CreatePullConsumerWithReplayInstant will create a consumer. If the consumer exists, it will load.
+	This will all read all the message in the stream without concern of the order.  This is go when transaction
+	order doesn't matter.
+	Required parameters:
+		streamName
+		consumerName
+		durableName (Required for a pull consumer)
+		subjectFilter
+		maxDeliver
+			Sote defaults value: 1 (Sote Max value is 3)
+		nc (pointer to a Jetstream connection)
+
+	Set values:
+		AckPolicy: explicit (required for a pull consumer)
+		DeliverPolicy: all
+		DeliverySubject: "" (required for a pull consumer)
+		ReplayPolicy: instant
 */
-func CreatePulConsumerWithReplayInstantMax3(streamName, durableName, subjectFilter string, maxDeliveries int, nc *nats.Conn) (pConsumer *jsm.Consumer,
+func CreatePullConsumerWithReplayInstant(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, nc *nats.Conn) (pConsumer *jsm.Consumer,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
 		err error
+		errDetails = make(map[string]string)
 	)
 
-	if soteErr = validateConsumerParams(streamName, durableName, DELIVERYPOLICYPULL, subjectFilter, nc); soteErr.ErrCode == nil {
-		pConsumer, err = jsm.LoadOrNewConsumer(streamName, durableName, jsm.DeliverAllAvailable(), jsm.FilterStreamBySubject(subjectFilter), jsm.ConsumerConnection(jsm.WithConnection(nc)),
-			jsm.ReplayInstantly(), jsm.MaxDeliveryAttempts(3))
+	if soteErr = validateConsumerParams(streamName, consumerName, durableName, DELIVERYSUBJECTPULL, subjectFilter, nc); soteErr.ErrCode == nil {
+		pConsumer, err = jsm.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ConsumerConnection(jsm.WithConnection(nc)),
+			jsm.ReplayInstantly(), jsm.MaxDeliveryAttempts(setMaxDeliver(maxDeliveries)), jsm.AcknowledgeExplicit())
 		if err != nil {
-			soteErr = sError.GetSError(805000, sError.BuildParams([]string{streamName, durableName}), nil)
-			log.Fatal(soteErr.FmtErrMsg)
+			errDetails["NATS ERROR:"] = err.Error()
+			if strings.Contains("consumer filter subject is not a valid subset of the interest subjects", err.Error()) {
+				soteErr = sError.GetSError(336100, sError.BuildParams([]string{streamName, subjectFilter}), errDetails)
+			} else {
+				soteErr = sError.GetSError(805000, nil, errDetails)
+				log.Fatal(soteErr.FmtErrMsg)
+			}
+		}
+	}
+
+	return
+}
+
+/*
+CreatePullConsumerWithReplayOriginal will create a consumer. If the consumer exists, it will load.
+	This will read all the messages from the stream as they were received.  It is good for playback of actions.
+	Required parameters:
+		streamName
+		consumerName
+		durableName (Required for a pull consumer)
+		subjectFilter
+		maxDeliver
+			Sote defaults value: 1 (Sote Max value is 3)
+		nc (pointer to a Jetstream connection)
+
+	Set values:
+		AckPolicy: explicit (required for a pull consumer)
+		DeliverPolicy: all
+		DeliverySubject: "" (required for a pull consumer)
+		ReplayPolicy: original
+*/
+func CreatePullConsumerWithReplayOriginal(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, nc *nats.Conn) (pConsumer *jsm.Consumer,
+	soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		err error
+		errDetails = make(map[string]string)
+	)
+
+	if soteErr = validateConsumerParams(streamName, consumerName, durableName, DELIVERYSUBJECTPULL, subjectFilter, nc); soteErr.ErrCode == nil {
+		pConsumer, err = jsm.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ConsumerConnection(jsm.WithConnection(nc)),
+			jsm.ReplayAsReceived(), jsm.MaxDeliveryAttempts(setMaxDeliver(maxDeliveries)), jsm.AcknowledgeExplicit())
+		if err != nil {
+			errDetails["NATS ERROR:"] = err.Error()
+			if strings.Contains("consumer filter subject is not a valid subset of the interest subjects", err.Error()) {
+				soteErr = sError.GetSError(336100, sError.BuildParams([]string{streamName, subjectFilter}), errDetails)
+			} else {
+				soteErr = sError.GetSError(805000, nil, errDetails)
+				log.Fatal(soteErr.FmtErrMsg)
+			}
 		}
 	}
 
@@ -114,17 +148,21 @@ func DeleteConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
 	return
 }
 
-func validateConsumerParams(streamName, durableName, deliverySubject, subjectFilter string, nc *nats.Conn) (soteErr sError.SoteError) {
+func validateConsumerParams(streamName, consumerName, durableName, deliverySubject, subjectFilter string, nc *nats.Conn) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	soteErr = validateStreamName(streamName)
 
 	if soteErr.ErrCode == nil {
-		soteErr = validateDurableName(durableName)
+		soteErr = validateConsumerName(consumerName)
 	}
 
-	if soteErr.ErrCode == nil && deliverySubject != DELIVERYPOLICYPULL {
-		soteErr = validateDeliverySubject(deliverySubject)
+	if soteErr.ErrCode == nil {
+		soteErr = validateDurableName(durableName, deliverySubject)
+	}
+
+	if soteErr.ErrCode == nil {
+		soteErr = validateDeliverySubject(deliverySubject, deliverySubject)
 	}
 
 	if soteErr.ErrCode == nil {
@@ -138,20 +176,34 @@ func validateConsumerParams(streamName, durableName, deliverySubject, subjectFil
 	return
 }
 
-func validateDurableName(durableName string) (soteErr sError.SoteError) {
+func validateConsumerName(consumerName string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if len(durableName) == 0 {
+	if len(consumerName) == 0 {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"consumerName"}), nil)
+	}
+
+	return
+}
+
+func validateDurableName(durableName, deliverySubject string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	// Durable name is required when the consumer is a pull.  Otherwise, it is optional.
+	if len(durableName) == 0 && deliverySubject == DELIVERYSUBJECTPULL {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"durableName"}), nil)
 	}
 
 	return
 }
 
-func validateDeliverySubject(subjectFilter string) (soteErr sError.SoteError) {
+func validateDeliverySubject(subjectFilter, deliverySubject string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if len(subjectFilter) == 0 {
+	// Subject Filter must be empty when the consumer is a pull.  Otherwise, it is required
+	if len(subjectFilter) > 0 && deliverySubject == DELIVERYSUBJECTPULL {
+		soteErr = sError.GetSError(200515, sError.BuildParams([]string{"subjectFilter", "deliverySubject"}), nil)
+	} else if len(subjectFilter) == 0 && deliverySubject != DELIVERYSUBJECTPULL {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjectFilter"}), nil)
 	}
 
@@ -173,6 +225,20 @@ func validateConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
 
 	if pConsumer == nil {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Consumer"}), nil)
+	}
+
+	return
+}
+
+func setMaxDeliver(tMaxDeliver int) (maxDeliver int) {
+	sLogger.DebugMethod()
+
+	if tMaxDeliver <= 0 {
+		maxDeliver = 1
+	} else if tMaxDeliver > 10 {
+		maxDeliver = 3
+	} else {
+		maxDeliver = tMaxDeliver
 	}
 
 	return
