@@ -227,7 +227,7 @@ func validateStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if pStream == nil {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Stream"}), nil)
+		soteErr = sError.GetSError(335260, sError.BuildParams([]string{"NATS.io Stream"}), nil)
 	}
 
 	return
