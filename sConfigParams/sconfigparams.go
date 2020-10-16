@@ -32,20 +32,21 @@ const (
 	APPENV    = "APP_ENVIRONMENT"
 	AWSREGION = "AWS_REGION"
 	// Environments
+	DEVELOPMENT = "development" // Also referred to as local
 	STAGING     = "staging"
-	DEVELOPMENT = "development"
 	DEMO        = "demo"
 	PRODUCTION  = "production"
 	// System Manager Parameter Keys
 	AWSREGIONIKEY = "AWS_REGION"
-	USERPOOLIDKEY = "COGNITO_USER_POOL_ID"
 	CLIENTIDKEY   = "COGNITO_CLIENT_ID"
-	DBPASSWORDKEY = "DATABASE_PASSWORD"
 	DBHOSTKEY     = "DB_HOST"
-	DBUSERKEY     = "DB_USERNAME"
-	DBPORTKEY     = "DB_PORT"
 	DBNAMEKEY     = "DB_NAME"
+	DBPASSWORDKEY = "DATABASE_PASSWORD"
+	DBPORTKEY     = "DB_PORT"
 	DBSSLMODEKEY  = "DB_SSL_MODE"
+	DBUSERKEY     = "DB_USERNAME"
+	SYNADIACREDS  = "SYNADIA_CREDS"
+	USERPOOLIDKEY = "COGNITO_USER_POOL_ID"
 	// Root Path
 	ROOTPATH = "/sote"
 )
@@ -282,6 +283,12 @@ func GetClientId(tApplication, tEnvironment string) (clientId string, soteErr sE
 
 	return
 }
+
+/*
+This will retrieve the messaging credentials needed to authenticate that is in AWS System Manager service for the ROOTPATH and
+environment.
+*/
+// func tbd
 
 /*
 The Environment is validated against 'development', 'staging', 'demo' and 'production'. The value supplied
