@@ -24,9 +24,11 @@ import (
 	"strings"
 )
 
-const DebugLogLevel = "DEBUG"      // Support log levels
-const InfoLogLevel = "INFO"        // Support log levels
-const logPrefixMissing = "missing" // Support log levels
+const (
+	DebugLogLevel    = "DEBUG"   // Support log levels
+	InfoLogLevel     = "INFO"    // Support log levels
+	logPrefixMissing = "missing" // Support log levels
+)
 
 var (
 	logMessage *log.Logger
