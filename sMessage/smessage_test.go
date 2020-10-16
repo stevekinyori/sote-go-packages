@@ -139,3 +139,38 @@ func TestConnect(t *testing.T) {
 		t.Errorf("Connect Failed: Expected error code of 200513")
 	}
 }
+func TestGetManager(t *testing.T) {
+	var (
+		nc      *nats.Conn
+		opts    []nats.Option
+		soteErr sError.SoteError
+	)
+
+	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
+		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
+	} else {
+		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+			t.Errorf("Connect Failed: Expected error code to be nil")
+		}
+	}
+
+	if _, soteErr = GetJSMManager(nc); soteErr.ErrCode != nil {
+		t.Errorf("GetManager Failed: Expected error code to be nil")
+	}
+
+}
+func TestGetJSMManagerWithConnOptions(t *testing.T) {
+	var (
+		opts    []nats.Option
+		soteErr sError.SoteError
+	)
+
+	opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds")
+
+	if soteErr.ErrCode == nil {
+		if _, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+			t.Errorf("GetManager Failed: Expected error code to be nil")
+		}
+	}
+
+}

@@ -81,33 +81,33 @@ func TestSetMaxDeliver(t *testing.T) {
 }
 func TestValidateConsumerParams(t *testing.T) {
 	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
+		opts       []nats.Option
+		soteErr    sError.SoteError
+		jsmManager *jsm.Manager
 	)
 
 	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
-	if soteErr = validateConsumerParams(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTDELIVERSUBJECT, TESTSUBJECTFILETER, nc); soteErr.ErrCode != nil {
+	if soteErr = validateConsumerParams(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTDELIVERSUBJECT, TESTSUBJECTFILETER, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("validateConsumerParams Failed: Expected error code to be nil")
 	}
-	if soteErr = validateConsumerParams("", TESTCONSUMERNAME, TESTDURABLENAME, TESTDELIVERSUBJECT, TESTSUBJECTFILETER, nc); soteErr.ErrCode != 200513 {
+	if soteErr = validateConsumerParams("", TESTCONSUMERNAME, TESTDURABLENAME, TESTDELIVERSUBJECT, TESTSUBJECTFILETER, jsmManager); soteErr.ErrCode != 200513 {
 		t.Errorf("validateConsumerParams Failed: Expected error code of 200513")
 	}
-	if soteErr = validateConsumerParams(TESTSTREAMNAME, "", TESTDURABLENAME, TESTDELIVERSUBJECT, TESTSUBJECTFILETER, nc); soteErr.ErrCode != 200513 {
+	if soteErr = validateConsumerParams(TESTSTREAMNAME, "", TESTDURABLENAME, TESTDELIVERSUBJECT, TESTSUBJECTFILETER, jsmManager); soteErr.ErrCode != 200513 {
 		t.Errorf("validateConsumerParams Failed: Expected error code of 200513")
 	}
-	if soteErr = validateConsumerParams(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, "", TESTSUBJECTFILETER, nc); soteErr.ErrCode != 200513 {
+	if soteErr = validateConsumerParams(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, "", TESTSUBJECTFILETER, jsmManager); soteErr.ErrCode != 200513 {
 		t.Errorf("validateConsumerParams Failed: Expected error code of 200513")
 	}
-	if soteErr = validateConsumerParams(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTDELIVERSUBJECT, "", nc); soteErr.ErrCode != 200513 {
+	if soteErr = validateConsumerParams(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTDELIVERSUBJECT, "", jsmManager); soteErr.ErrCode != 200513 {
 		t.Errorf("validateConsumerParams Failed: Expected error code of 200513")
 	}
 	if soteErr = validateConsumerParams(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTDELIVERSUBJECT, TESTSUBJECTFILETER, nil); soteErr.ErrCode != 200513 {
@@ -122,27 +122,27 @@ func TestDeleteConsumer(t *testing.T) {
 }
 func TestCreateDeliverAllReplayInstantConsumer(t *testing.T) {
 	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
-		pStream *jsm.Stream
+		opts       []nats.Option
+		soteErr    sError.SoteError
+		jsmManager *jsm.Manager
+		pStream    *jsm.Stream
 	)
 
 	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
-	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
 	// Test error code 336100 - Consumer subject filter is not subset of stream subject
-	if _, soteErr := CreatePullConsumerWithReplayInstant(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, nc); soteErr.ErrCode != 336100 {
+	if _, soteErr := CreatePullConsumerWithReplayInstant(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, jsmManager); soteErr.ErrCode != 336100 {
 		t.Errorf("CreateDeliverAllReplayInstantConsumer Failed: Expected error code of 336100")
 	}
 	// Clean Up
@@ -151,12 +151,12 @@ func TestCreateDeliverAllReplayInstantConsumer(t *testing.T) {
 	}
 
 	// Test when consumer subject filter is a subset of the stream subject
-	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECTWILDCARD, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECTWILDCARD, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
 	// Test that the consumer is loaded without error
-	if _, soteErr := CreatePullConsumerWithReplayInstant(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, nc); soteErr.ErrCode != nil {
+	if _, soteErr := CreatePullConsumerWithReplayInstant(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateDeliverAllReplayInstantConsumer Failed: Expected error code to be nil")
 	}
 
@@ -167,27 +167,27 @@ func TestCreateDeliverAllReplayInstantConsumer(t *testing.T) {
 }
 func TestCreatePullConsumerWithReplayOriginal(t *testing.T) {
 	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
-		pStream *jsm.Stream
+		opts       []nats.Option
+		soteErr    sError.SoteError
+		jsmManager *jsm.Manager
+		pStream    *jsm.Stream
 	)
 
 	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
-	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
 	// Test error code 336100 - Consumer subject filter is not subset of stream subject
-	if _, soteErr := CreatePullConsumerWithReplayOriginal(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, nc); soteErr.ErrCode != 336100 {
+	if _, soteErr := CreatePullConsumerWithReplayOriginal(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, jsmManager); soteErr.ErrCode != 336100 {
 		t.Errorf("CreateDeliverAllReplayInstantConsumer Failed: Expected error code of 336100")
 	}
 	// Clean Up
@@ -196,12 +196,12 @@ func TestCreatePullConsumerWithReplayOriginal(t *testing.T) {
 	}
 
 	// Test when consumer subject filter is a subset of the stream subject
-	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECTWILDCARD, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECTWILDCARD, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
 	// Test that the consumer is loaded without error
-	if _, soteErr := CreatePullConsumerWithReplayOriginal(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, nc); soteErr.ErrCode != nil {
+	if _, soteErr := CreatePullConsumerWithReplayOriginal(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateDeliverAllReplayInstantConsumer Failed: Expected error code to be nil")
 	}
 

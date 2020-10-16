@@ -56,10 +56,12 @@ These are values that can be set natively.  sstream and consumer place limitatio
 package sMessage
 
 import (
+	"log"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
 	"gitlab.com/soteapps/packages/v2020/sError"
 	"gitlab.com/soteapps/packages/v2020/sLogger"
@@ -99,9 +101,9 @@ func SetCredentialsFile(streamCredentialFile string) (opts []nats.Option, soteEr
 	sLogger.DebugMethod()
 
 	if len(streamCredentialFile) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamCredentialFile"}), nil)
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamCredentialFile"}), sError.EmptyMap)
 	} else if _, err := os.Stat(streamCredentialFile); err != nil {
-		soteErr = sError.GetSError(600010, sError.BuildParams([]string{streamCredentialFile, err.Error()}), nil)
+		soteErr = sError.GetSError(600010, sError.BuildParams([]string{streamCredentialFile, err.Error()}), sError.EmptyMap)
 	} else {
 		opts = []nats.Option{nats.UserCredentials(streamCredentialFile)}
 	}
@@ -116,7 +118,7 @@ func SetCredentialsToken(streamCredentialToken string) (opts []nats.Option, sote
 	sLogger.DebugMethod()
 
 	if len(streamCredentialToken) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamCredentialToken"}), nil)
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamCredentialToken"}), sError.EmptyMap)
 	} else {
 		opts = []nats.Option{nats.Token(streamCredentialToken)}
 	}
@@ -128,15 +130,15 @@ func SetReconnectOptions(maxReconnect int, reconnectWait time.Duration) (opts []
 	sLogger.DebugMethod()
 
 	if maxReconnect == 0 && reconnectWait == 0 {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{"maxReconnect", "reconnectWait"}), nil)
+		soteErr = sError.GetSError(200512, sError.BuildParams([]string{"maxReconnect", "reconnectWait"}), sError.EmptyMap)
 	} else {
 		if reconnectWait == 0 {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"reconnectWait"}), nil)
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"reconnectWait"}), sError.EmptyMap)
 		} else {
 			opts = []nats.Option{nats.ReconnectWait(reconnectWait)}
 		}
 		if maxReconnect == 0 {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"reconnectWait"}), nil)
+			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"reconnectWait"}), sError.EmptyMap)
 		} else {
 			opts = []nats.Option{nats.MaxReconnects(maxReconnect)}
 		}
@@ -149,7 +151,7 @@ func SetTimeOut(timeOut time.Duration) (opts []nats.Option, soteErr sError.SoteE
 	sLogger.DebugMethod()
 
 	if timeOut == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"timeOut"}), nil)
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"timeOut"}), sError.EmptyMap)
 	} else {
 		opts = []nats.Option{nats.Timeout(timeOut)}
 	}
@@ -162,11 +164,11 @@ func Connect(url string, opts []nats.Option) (nc *nats.Conn, soteErr sError.Sote
 	sLogger.DebugMethod()
 
 	if len(url) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"url"}), nil)
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"url"}), sError.EmptyMap)
 	}
 
 	if opts == nil {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Options (opts)"}), nil)
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Options (opts)"}), sError.EmptyMap)
 	}
 
 	if soteErr.ErrCode == nil {
@@ -192,4 +194,63 @@ func Connect(url string, opts []nats.Option) (nc *nats.Conn, soteErr sError.Sote
 	}
 
 	return
+}
+
+func GetJSMManager(nc *nats.Conn) (jsmManager *jsm.Manager, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		err error
+	)
+
+	if nc == nil {
+		soteErr = sError.GetSError(603999, nil, sError.EmptyMap)
+	}
+
+	jsmManager, err = jsm.New(nc, jsm.WithTimeout(2*time.Second))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return
+}
+
+func GetJSMManagerWithConnOptions(url string, opts []nats.Option) (jsmManager *jsm.Manager, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		nc *nats.Conn
+	)
+
+	nc, soteErr = Connect(url, opts)
+	if soteErr.ErrCode == nil {
+		jsmManager, soteErr = GetJSMManager(nc)
+	}
+
+	return
+}
+
+func validateConnection(nc *nats.Conn) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if nc == nil {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Connect"}), sError.EmptyMap)
+	}
+
+	return
+
+}
+
+func validateJSMManager(jsmManager *jsm.Manager) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if jsmManager == nil {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Jetstream Manager"}), sError.EmptyMap)
+	}
+
+	if ! jsmManager.IsJetStreamEnabled() {
+		soteErr = sError.GetSError(300000, nil, sError.EmptyMap)
+	}
+	return
+
 }

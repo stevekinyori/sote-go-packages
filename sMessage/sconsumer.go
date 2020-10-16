@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/nats.go"
 	"gitlab.com/soteapps/packages/v2020/sError"
 	"gitlab.com/soteapps/packages/v2020/sLogger"
 )
@@ -64,18 +63,18 @@ CreatePullConsumerWithReplayInstant will create a consumer. If the consumer exis
 		DeliverySubject: "" (required for a pull consumer)
 		ReplayPolicy: instant
 */
-func CreatePullConsumerWithReplayInstant(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, nc *nats.Conn) (pConsumer *jsm.Consumer,
+func CreatePullConsumerWithReplayInstant(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, jsmManager *jsm.Manager) (pConsumer *jsm.Consumer,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
-		err error
+		err        error
 		errDetails = make(map[string]string)
 	)
 
-	if soteErr = validateConsumerParams(streamName, consumerName, durableName, DELIVERYSUBJECTPULL, subjectFilter, nc); soteErr.ErrCode == nil {
-		pConsumer, err = jsm.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ConsumerConnection(jsm.WithConnection(nc)),
-			jsm.ReplayInstantly(), jsm.MaxDeliveryAttempts(setMaxDeliver(maxDeliveries)), jsm.AcknowledgeExplicit())
+	if soteErr = validateConsumerParams(streamName, consumerName, durableName, DELIVERYSUBJECTPULL, subjectFilter, jsmManager); soteErr.ErrCode == nil {
+		pConsumer, err = jsmManager.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ReplayInstantly(),
+			jsm.MaxDeliveryAttempts(setMaxDeliver(maxDeliveries)), jsm.AcknowledgeExplicit())
 		if err != nil {
 			errDetails["NATS ERROR:"] = err.Error()
 			if strings.Contains("consumer filter subject is not a valid subset of the interest subjects", err.Error()) {
@@ -108,18 +107,18 @@ CreatePullConsumerWithReplayOriginal will create a consumer. If the consumer exi
 		DeliverySubject: "" (required for a pull consumer)
 		ReplayPolicy: original
 */
-func CreatePullConsumerWithReplayOriginal(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, nc *nats.Conn) (pConsumer *jsm.Consumer,
+func CreatePullConsumerWithReplayOriginal(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, jsmManager *jsm.Manager) (pConsumer *jsm.Consumer,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
-		err error
+		err        error
 		errDetails = make(map[string]string)
 	)
 
-	if soteErr = validateConsumerParams(streamName, consumerName, durableName, DELIVERYSUBJECTPULL, subjectFilter, nc); soteErr.ErrCode == nil {
-		pConsumer, err = jsm.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ConsumerConnection(jsm.WithConnection(nc)),
-			jsm.ReplayAsReceived(), jsm.MaxDeliveryAttempts(setMaxDeliver(maxDeliveries)), jsm.AcknowledgeExplicit())
+	if soteErr = validateConsumerParams(streamName, consumerName, durableName, DELIVERYSUBJECTPULL, subjectFilter, jsmManager); soteErr.ErrCode == nil {
+		pConsumer, err = jsmManager.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ReplayAsReceived(),
+			jsm.MaxDeliveryAttempts(setMaxDeliver(maxDeliveries)), jsm.AcknowledgeExplicit())
 		if err != nil {
 			errDetails["NATS ERROR:"] = err.Error()
 			if strings.Contains("consumer filter subject is not a valid subset of the interest subjects", err.Error()) {
@@ -148,7 +147,7 @@ func DeleteConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
 	return
 }
 
-func validateConsumerParams(streamName, consumerName, durableName, deliverySubject, subjectFilter string, nc *nats.Conn) (soteErr sError.SoteError) {
+func validateConsumerParams(streamName, consumerName, durableName, deliverySubject, subjectFilter string, jsmManager *jsm.Manager) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	soteErr = validateStreamName(streamName)
@@ -170,7 +169,7 @@ func validateConsumerParams(streamName, consumerName, durableName, deliverySubje
 	}
 
 	if soteErr.ErrCode == nil {
-		soteErr = validateConnection(nc)
+		soteErr = validateJSMManager(jsmManager)
 	}
 
 	return

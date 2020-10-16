@@ -40,27 +40,27 @@ func TestSetReplicas(t *testing.T) {
 }
 func TestValidateStreamParams(t *testing.T) {
 	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
+		opts       []nats.Option
+		soteErr    sError.SoteError
+		jsmManager *jsm.Manager
 	)
 
 	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
-	if soteErr = validateStreamParams(TESTSTREAMNAME, TESTSTREAMSUBJECT, nc); soteErr.ErrCode != nil {
+	if soteErr = validateStreamParams(TESTSTREAMNAME, TESTSTREAMSUBJECT, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("validateStreamParams Failed: Expected error code to be nil")
 	}
-	if soteErr = validateStreamParams("", TESTSTREAMSUBJECT, nc); soteErr.ErrCode != 200513 {
+	if soteErr = validateStreamParams("", TESTSTREAMSUBJECT, jsmManager); soteErr.ErrCode != 200513 {
 		t.Errorf("validateStreamParams Failed: Expected error code of 200513")
 	}
-	if soteErr = validateStreamParams(TESTSTREAMNAME, "", nc); soteErr.ErrCode != 200513 {
+	if soteErr = validateStreamParams(TESTSTREAMNAME, "", jsmManager); soteErr.ErrCode != 200513 {
 		t.Errorf("validateStreamParams Failed: Expected error code of 200513")
 	}
 	if soteErr = validateStreamParams(TESTSTREAMNAME, TESTSTREAMSUBJECT, nil); soteErr.ErrCode != 200513 {
@@ -75,28 +75,28 @@ func TestDeleteStream(t *testing.T) {
 }
 func TestCreateOrLoadLimitsStreamDeleteStream(t *testing.T) {
 	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
-		pStream *jsm.Stream
+		opts       []nats.Option
+		soteErr    sError.SoteError
+		jsmManager *jsm.Manager
+		pStream    *jsm.Stream
 	)
 
 	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
 	// Test the creation of the stream
-	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
 	// Test the loading of the stream
-	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadLimitsStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
@@ -107,28 +107,28 @@ func TestCreateOrLoadLimitsStreamDeleteStream(t *testing.T) {
 }
 func TestCreateOrLoadWorkStreamDeleteStream(t *testing.T) {
 	var (
-		opts    []nats.Option
-		soteErr sError.SoteError
-		nc      *nats.Conn
-		pStream *jsm.Stream
+		opts       []nats.Option
+		soteErr    sError.SoteError
+		jsmManager *jsm.Manager
+		pStream    *jsm.Stream
 	)
 
 	// Setup
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
 	// Test the creation of the stream
-	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
 	// Test the loading of the stream
-	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
@@ -141,7 +141,7 @@ func TestStreamInfo(t *testing.T) {
 	var (
 		opts    []nats.Option
 		soteErr sError.SoteError
-		nc      *nats.Conn
+		jsmManager      *jsm.Manager
 		pStream *jsm.Stream
 		info    *api.StreamInfo
 	)
@@ -155,13 +155,13 @@ func TestStreamInfo(t *testing.T) {
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
 	// Test the default storage setting when creating a stream
-	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
@@ -180,7 +180,7 @@ func TestPurgeStream(t *testing.T) {
 	var (
 		opts    []nats.Option
 		soteErr sError.SoteError
-		nc      *nats.Conn
+		jsmManager      *jsm.Manager
 		pStream *jsm.Stream
 	)
 
@@ -193,13 +193,13 @@ func TestPurgeStream(t *testing.T) {
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
 	// Test the default storage setting when creating a stream
-	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
@@ -217,7 +217,7 @@ func TestDeleteMessageFromStream(t *testing.T) {
 	var (
 		opts    []nats.Option
 		soteErr sError.SoteError
-		nc      *nats.Conn
+		jsmManager      *jsm.Manager
 		pStream *jsm.Stream
 	)
 
@@ -230,13 +230,13 @@ func TestDeleteMessageFromStream(t *testing.T) {
 	if opts, soteErr = SetCredentialsFile("/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds"); soteErr.ErrCode != nil {
 		t.Errorf("SetCredentialsFile Failed: Expected error code to be nil")
 	} else {
-		if nc, soteErr = Connect(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
+		if jsmManager, soteErr = GetJSMManagerWithConnOptions(TESTSYNADIAURL, opts); soteErr.ErrCode != nil {
 			t.Errorf("Connect Failed: Expected error code to be nil")
 		}
 	}
 
 	// Test the default storage setting when creating a stream
-	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, nc); soteErr.ErrCode != nil {
+	if pStream, soteErr = CreateOrLoadWorkStream(TESTSTREAMNAME, TESTSTREAMSUBJECT, "", 1, jsmManager); soteErr.ErrCode != nil {
 		t.Errorf("CreateWorkStream Failed: Expected error code to be nil")
 	}
 
