@@ -88,7 +88,7 @@ var (
 		250000: {250000, PROCESSERROR, 0, "None", ": AWS SES error - see details in retPack", EmptyMap, ""},
 		250005: {250005, PROCESSERROR, 0, "None", ": AWS STS error - see details in retPack", EmptyMap, ""},
 		//
-		300000: {300000, NATSERROR, 0, "None", ": TBD", EmptyMap, ""},
+		300000: {300000, NATSERROR, 0, "None", ": Jetstream is not enabled", EmptyMap, ""},
 		310000: {310000, NATSERROR, 1, "Key name", ": Upper or lower case %v key is missing", EmptyMap, ""},
 		310005: {310005, NATSERROR, 1, "Key name", ": Upper or lower case %v keys value is missing", EmptyMap, ""},
 		//
