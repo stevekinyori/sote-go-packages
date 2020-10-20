@@ -39,13 +39,14 @@ const (
 	// System Manager Parameter Keys
 	AWSREGIONIKEY = "AWS_REGION"
 	CLIENTIDKEY   = "COGNITO_CLIENT_ID"
+	CREDENTIALS   = "credentials"
 	DBHOSTKEY     = "DB_HOST"
 	DBNAMEKEY     = "DB_NAME"
 	DBPASSWORDKEY = "DATABASE_PASSWORD"
 	DBPORTKEY     = "DB_PORT"
 	DBSSLMODEKEY  = "DB_SSL_MODE"
 	DBUSERKEY     = "DB_USERNAME"
-	SYNADIACREDS  = "SYNADIA_CREDS"
+	URL           = "url"
 	USERPOOLIDKEY = "COGNITO_USER_POOL_ID"
 	// Root Path
 	ROOTPATH = "/sote"
@@ -288,7 +289,45 @@ func GetClientId(tApplication, tEnvironment string) (clientId string, soteErr sE
 This will retrieve the messaging credentials needed to authenticate that is in AWS System Manager service for the ROOTPATH and
 environment.
 */
-// func tbd
+func GetNATSCredentials() (natsCredentials func(string, string) (interface{}, sError.SoteError)) {
+	sLogger.DebugMethod()
+
+	natsCredentials = getCreds()
+
+	return
+}
+
+func getCreds() func(string, string) (interface{}, sError.SoteError) {
+	return func(tApplication, tEnvironment string) (natsCredentials interface{}, soteErr sError.SoteError) {
+		if tApplication == "" || tEnvironment == "" {
+			soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
+		} else {
+			natsCredentials, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), CREDENTIALS)
+		}
+		return
+	}
+}
+
+/*
+This will retrieve the messaging server URL needed to connect that is in AWS System Manager service for the ROOTPATH and
+environment.
+*/
+func GetNATSURL(tApplication, tEnvironment string) (natsURL string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tNatsURL interface{}
+
+	if tApplication == "" || tEnvironment == "" {
+		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
+	} else {
+		tNatsURL, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), URL)
+		if tNatsURL != nil {
+			natsURL = tNatsURL.(string)
+		}
+	}
+
+	return
+}
 
 /*
 The Environment is validated against 'development', 'staging', 'demo' and 'production'. The value supplied

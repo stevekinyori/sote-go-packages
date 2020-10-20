@@ -9,8 +9,9 @@ import (
 
 const (
 	// Application values
-	API  string = "api"
-	SDCC string = "sdcc"
+	API     string = "api"
+	SDCC    string = "sdcc"
+	SYNADIA string = "synadia"
 )
 
 func init() {
@@ -161,5 +162,35 @@ func TestGetEnvironmentVariable(t *testing.T) {
 	}
 	if _, soteErr := GetEnvironmentAppEnvironment(); soteErr.ErrCode != nil {
 		t.Errorf("GetEnvironmentAppEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+}
+func TestGetNATSCredentials(t *testing.T) {
+	var (
+		credValues func(string, string) (interface{}, sError.SoteError)
+		soteErr sError.SoteError
+	)
+	if credValues = GetNATSCredentials(); soteErr.ErrCode != nil {
+		t.Errorf("GetNATSCredentials failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+
+	if _, soteErr = credValues(SYNADIA, STAGING); soteErr.ErrCode != nil {
+		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr = credValues("SCOTT", STAGING); soteErr.ErrCode != 109999 {
+		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr = credValues(SYNADIA, ""); soteErr.ErrCode != 200512 {
+		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 200512: %v", soteErr.FmtErrMsg)
+	}
+}
+func TestGetNATSURL(t *testing.T) {
+	if _, soteErr := GetNATSURL(SYNADIA, STAGING); soteErr.ErrCode != nil {
+		t.Errorf("GetNATSURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetNATSURL("SCOTT", STAGING); soteErr.ErrCode != 109999 {
+		t.Errorf("GetNATSURL failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetNATSURL("", STAGING); soteErr.ErrCode != 200512 {
+		t.Errorf("GetNATSURL failed: Expected soteErr to be 200512: %v", soteErr.FmtErrMsg)
 	}
 }
