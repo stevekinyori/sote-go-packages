@@ -58,10 +58,10 @@ var (
 	pTrue                = &setToTrue // pointer to the setToTrue variable
 	maxResult      int64 = 10
 	pMaxResult           = &maxResult
-	myConfigParams configParams
+	myConfigParams ConfigParams
 )
 
-type configParams struct {
+type ConfigParams struct {
 	Application string
 	Environment string
 }
@@ -92,8 +92,8 @@ func GetParameters(tApplication, tEnvironment string) (parameters map[string]int
 
 	var pSSMPathOutput *ssm.GetParametersByPathOutput
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			parameters = make(map[string]interface{})
 			if pSSMPathOutput, soteErr = listParameters(tApplication, strings.ToLower(tEnvironment)); soteErr.ErrCode == nil {
 				for _, pParameter := range pSSMPathOutput.Parameters {
@@ -115,8 +115,8 @@ func GetDBPassword(tApplication, tEnvironment string) (dbPassword string, soteEr
 
 	var tDBPassword interface{}
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			tDBPassword, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBPASSWORDKEY)
 			if tDBPassword != nil {
 				dbPassword = tDBPassword.(string)
@@ -136,8 +136,8 @@ func GetDBHost(tApplication, tEnvironment string) (dbHost string, soteErr sError
 
 	var tDBHost interface{}
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			tDBHost, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBHOSTKEY)
 			if tDBHost != nil {
 				dbHost = tDBHost.(string)
@@ -157,8 +157,8 @@ func GetDBUser(tApplication, tEnvironment string) (dbUser string, soteErr sError
 
 	var tDBUser interface{}
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			tDBUser, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBUSERKEY)
 			if tDBUser != nil {
 				dbUser = tDBUser.(string)
@@ -178,8 +178,8 @@ func GetDBPort(tApplication, tEnvironment string) (dbPort int, soteErr sError.So
 
 	var tDBPort interface{}
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			tDBPort, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBPORTKEY)
 			if tDBPort != nil {
 				dbPort, _ = strconv.Atoi(tDBPort.(string))
@@ -201,8 +201,8 @@ func GetDBName(tApplication, tEnvironment string) (dbName string, soteErr sError
 
 	var tDBName interface{}
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			tDBName, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBNAMEKEY)
 			if tDBName != nil {
 				dbName = tDBName.(string)
@@ -222,8 +222,8 @@ func GetDBSSLMode(tApplication, tEnvironment string) (dbSSLMode string, soteErr 
 
 	var tDBSSLMode interface{}
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			tDBSSLMode, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBSSLMODEKEY)
 			if tDBSSLMode != nil {
 				dbSSLMode = tDBSSLMode.(string)
@@ -259,7 +259,7 @@ func GetUserPoolId(tEnvironment string) (userPoolId string, soteErr sError.SoteE
 
 	var tUserPoolId interface{}
 
-	if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 		tUserPoolId, soteErr = getParameter("", strings.ToLower(tEnvironment), USERPOOLIDKEY)
 		if tUserPoolId != nil {
 			userPoolId = tUserPoolId.(string)
@@ -278,8 +278,8 @@ func GetClientId(tApplication, tEnvironment string) (clientId string, soteErr sE
 
 	var tClientId interface{}
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			tClientId, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), CLIENTIDKEY)
 			if tClientId != nil {
 				clientId = tClientId.(string)
@@ -304,8 +304,8 @@ func GetNATSCredentials() (natsCredentials func(string, string) (interface{}, sE
 
 func getCreds() func(string, string) (interface{}, sError.SoteError) {
 	return func(tApplication, tEnvironment string) (natsCredentials interface{}, soteErr sError.SoteError) {
-		if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-			if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+			if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 				natsCredentials, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), CREDENTIALS)
 			}
 		}
@@ -322,8 +322,8 @@ func GetNATSURL(tApplication, tEnvironment string) (natsURL string, soteErr sErr
 
 	var tNatsURL interface{}
 
-	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
-		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+	if soteErr = SetConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = SetConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 			tNatsURL, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), URL)
 			if tNatsURL != nil {
 				natsURL = tNatsURL.(string)
@@ -469,7 +469,7 @@ func getParameter(tApplication, tEnvironment, key string) (returnValue interface
 	return
 }
 
-func setConfigParamsApplication(tApplication string) (soteErr sError.SoteError) {
+func SetConfigParamsApplication(tApplication string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if tApplication == "" {
@@ -487,7 +487,7 @@ func GetConfigParamsApplication() string {
 	return myConfigParams.Application
 }
 
-func setConfigParamsEnvironment(tEnvironment string) (soteErr sError.SoteError) {
+func SetConfigParamsEnvironment(tEnvironment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = ValidateEnvironment(tEnvironment); soteErr.ErrCode == nil {
