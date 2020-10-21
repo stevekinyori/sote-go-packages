@@ -481,7 +481,7 @@ func setConfigParamsApplication(tApplication string) (soteErr sError.SoteError) 
 	return
 }
 
-func GetConfigParamsApplication(tApplication string) string {
+func GetConfigParamsApplication() string {
 	sLogger.DebugMethod()
 
 	return myConfigParams.Application
@@ -497,7 +497,7 @@ func setConfigParamsEnvironment(tEnvironment string) (soteErr sError.SoteError) 
 	return
 }
 
-func GetConfigParamsEnvironment(tEnvironment string) string {
+func GetConfigParamsEnvironment() string {
 	sLogger.DebugMethod()
 
 	return myConfigParams.Environment
