@@ -53,12 +53,18 @@ const (
 )
 
 var (
-	awsService *ssm.SSM
-	setToTrue        = true       // This can not be a constant because we need a pointer.
-	pTrue            = &setToTrue // pointer to the setToTrue variable
-	maxResult  int64 = 10
-	pMaxResult       = &maxResult
+	awsService     *ssm.SSM
+	setToTrue            = true       // This can not be a constant because we need a pointer.
+	pTrue                = &setToTrue // pointer to the setToTrue variable
+	maxResult      int64 = 10
+	pMaxResult           = &maxResult
+	myConfigParams configParams
 )
+
+type configParams struct {
+	Application string
+	Environment string
+}
 
 /*
 This will establish a session using the default .aws location
@@ -78,20 +84,21 @@ func init() {
 /*
 This will retrieve the parameters that are in the AWS System Manager service for the ROOTPATH and the supplied
 application and environment.  AWS limits the maximum number of parameters to 10 in a single query.  sconfigparams
-doesn't support pulling more than the first 10 parameters based on the path
+doesn't support pulling more than the first 10 parameters based on the path.
+
 */
 func GetParameters(tApplication, tEnvironment string) (parameters map[string]interface{}, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var pSSMPathOutput *ssm.GetParametersByPathOutput
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		parameters = make(map[string]interface{})
-		if pSSMPathOutput, soteErr = listParameters(tApplication, strings.ToLower(tEnvironment)); soteErr.ErrCode == nil {
-			for _, pParameter := range pSSMPathOutput.Parameters {
-				parameters[*pParameter.Name] = *pParameter.Value
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			parameters = make(map[string]interface{})
+			if pSSMPathOutput, soteErr = listParameters(tApplication, strings.ToLower(tEnvironment)); soteErr.ErrCode == nil {
+				for _, pParameter := range pSSMPathOutput.Parameters {
+					parameters[*pParameter.Name] = *pParameter.Value
+				}
 			}
 		}
 	}
@@ -108,12 +115,12 @@ func GetDBPassword(tApplication, tEnvironment string) (dbPassword string, soteEr
 
 	var tDBPassword interface{}
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		tDBPassword, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBPASSWORDKEY)
-		if tDBPassword != nil {
-			dbPassword = tDBPassword.(string)
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			tDBPassword, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBPASSWORDKEY)
+			if tDBPassword != nil {
+				dbPassword = tDBPassword.(string)
+			}
 		}
 	}
 
@@ -122,19 +129,19 @@ func GetDBPassword(tApplication, tEnvironment string) (dbPassword string, soteEr
 
 /*
 This will retrieve the database host parameter that is in AWS System Manager service for the ROOTPATH and
-application.
+application.  Application and environment are required.
 */
 func GetDBHost(tApplication, tEnvironment string) (dbHost string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBHost interface{}
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		tDBHost, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBHOSTKEY)
-		if tDBHost != nil {
-			dbHost = tDBHost.(string)
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			tDBHost, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBHOSTKEY)
+			if tDBHost != nil {
+				dbHost = tDBHost.(string)
+			}
 		}
 	}
 
@@ -143,19 +150,19 @@ func GetDBHost(tApplication, tEnvironment string) (dbHost string, soteErr sError
 
 /*
 This will retrieve the database user parameter that is in AWS System Manager service for the ROOTPATH and
-application.
+application.  Application and environment are required.
 */
 func GetDBUser(tApplication, tEnvironment string) (dbUser string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBUser interface{}
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		tDBUser, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBUSERKEY)
-		if tDBUser != nil {
-			dbUser = tDBUser.(string)
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			tDBUser, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBUSERKEY)
+			if tDBUser != nil {
+				dbUser = tDBUser.(string)
+			}
 		}
 	}
 
@@ -164,21 +171,21 @@ func GetDBUser(tApplication, tEnvironment string) (dbUser string, soteErr sError
 
 /*
 This will retrieve the database port parameter that is in AWS System Manager service for the ROOTPATH and
-application.
+application.  Application and environment are required.
 */
 func GetDBPort(tApplication, tEnvironment string) (dbPort int, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBPort interface{}
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		tDBPort, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBPORTKEY)
-		if tDBPort != nil {
-			dbPort, _ = strconv.Atoi(tDBPort.(string))
-		} else {
-			soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBPORTKEY}), sError.EmptyMap)
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			tDBPort, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBPORTKEY)
+			if tDBPort != nil {
+				dbPort, _ = strconv.Atoi(tDBPort.(string))
+			} else {
+				soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBPORTKEY}), sError.EmptyMap)
+			}
 		}
 	}
 
@@ -187,19 +194,19 @@ func GetDBPort(tApplication, tEnvironment string) (dbPort int, soteErr sError.So
 
 /*
 This will retrieve the database name parameter that is in AWS System Manager service for the ROOTPATH and
-application.
+application.  Application and environment are required.
 */
 func GetDBName(tApplication, tEnvironment string) (dbName string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBName interface{}
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		tDBName, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBNAMEKEY)
-		if tDBName != nil {
-			dbName = tDBName.(string)
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			tDBName, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBNAMEKEY)
+			if tDBName != nil {
+				dbName = tDBName.(string)
+			}
 		}
 	}
 
@@ -208,19 +215,19 @@ func GetDBName(tApplication, tEnvironment string) (dbName string, soteErr sError
 
 /*
 This will retrieve the database SSL mode parameter that is in AWS System Manager service for the ROOTPATH and
-application.
+application.  Application and environment are required.
 */
 func GetDBSSLMode(tApplication, tEnvironment string) (dbSSLMode string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBSSLMode interface{}
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		tDBSSLMode, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBSSLMODEKEY)
-		if tDBSSLMode != nil {
-			dbSSLMode = tDBSSLMode.(string)
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			tDBSSLMode, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), DBSSLMODEKEY)
+			if tDBSSLMode != nil {
+				dbSSLMode = tDBSSLMode.(string)
+			}
 		}
 	}
 
@@ -245,16 +252,14 @@ func GetRegion() (region string, soteErr sError.SoteError) {
 
 /*
 This will retrieve the cognito user pool id parameter that is in AWS System Manager service for the ROOTPATH and
-environment.
+environment.  Environment are required.
 */
 func GetUserPoolId(tEnvironment string) (userPoolId string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tUserPoolId interface{}
 
-	if tEnvironment == "" {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
-	} else {
+	if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
 		tUserPoolId, soteErr = getParameter("", strings.ToLower(tEnvironment), USERPOOLIDKEY)
 		if tUserPoolId != nil {
 			userPoolId = tUserPoolId.(string)
@@ -266,19 +271,19 @@ func GetUserPoolId(tEnvironment string) (userPoolId string, soteErr sError.SoteE
 
 /*
 This will retrieve the cognito client id for the allocation that is in AWS System Manager service for the ROOTPATH and
-environment.
+environment.  Application and environment are required.
 */
 func GetClientId(tApplication, tEnvironment string) (clientId string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tClientId interface{}
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		tClientId, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), CLIENTIDKEY)
-		if tClientId != nil {
-			clientId = tClientId.(string)
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			tClientId, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), CLIENTIDKEY)
+			if tClientId != nil {
+				clientId = tClientId.(string)
+			}
 		}
 	}
 
@@ -299,10 +304,10 @@ func GetNATSCredentials() (natsCredentials func(string, string) (interface{}, sE
 
 func getCreds() func(string, string) (interface{}, sError.SoteError) {
 	return func(tApplication, tEnvironment string) (natsCredentials interface{}, soteErr sError.SoteError) {
-		if tApplication == "" || tEnvironment == "" {
-			soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-		} else {
-			natsCredentials, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), CREDENTIALS)
+		if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+			if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+				natsCredentials, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), CREDENTIALS)
+			}
 		}
 		return
 	}
@@ -310,19 +315,19 @@ func getCreds() func(string, string) (interface{}, sError.SoteError) {
 
 /*
 This will retrieve the messaging server URL needed to connect that is in AWS System Manager service for the ROOTPATH and
-environment.
+environment.  Application and environment are required.
 */
 func GetNATSURL(tApplication, tEnvironment string) (natsURL string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tNatsURL interface{}
 
-	if tApplication == "" || tEnvironment == "" {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{tApplication, tEnvironment}), sError.EmptyMap)
-	} else {
-		tNatsURL, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), URL)
-		if tNatsURL != nil {
-			natsURL = tNatsURL.(string)
+	if soteErr = setConfigParamsApplication(tApplication); soteErr.ErrCode == nil {
+		if soteErr = setConfigParamsEnvironment(tEnvironment); soteErr.ErrCode == nil {
+			tNatsURL, soteErr = getParameter(tApplication, strings.ToLower(tEnvironment), URL)
+			if tNatsURL != nil {
+				natsURL = tNatsURL.(string)
+			}
 		}
 	}
 
@@ -331,7 +336,7 @@ func GetNATSURL(tApplication, tEnvironment string) (natsURL string, soteErr sErr
 
 /*
 The Environment is validated against 'development', 'staging', 'demo' and 'production'. The value supplied
-will be forced to lower case.
+will be forced to lower case.  Environment are required.
 */
 func ValidateEnvironment(tEnvironment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -343,6 +348,45 @@ func ValidateEnvironment(tEnvironment string) (soteErr sError.SoteError) {
 	case PRODUCTION:
 	default:
 		soteErr = sError.GetSError(601010, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
+	}
+
+	return
+}
+
+/*
+This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
+the function will return an error code for not found.
+*/
+func GetEnvironmentAWSRegion() (envValue string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	envValue, soteErr = GetEnvironmentVariable(AWSREGIONIKEY)
+
+	return
+}
+
+/*
+This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
+the function will return an error code for not found.
+*/
+func GetEnvironmentAppEnvironment() (envValue string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	envValue, soteErr = GetEnvironmentVariable(APPENV)
+
+	return
+}
+
+/*
+Get the requested environment variable. If the environment variable is not found or the value is empty,
+the function will return an error code for not found.
+*/
+func GetEnvironmentVariable(key string) (envValue string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	envValue = os.Getenv(key)
+	if envValue = os.Getenv(key); len(envValue) == 0 {
+		soteErr = sError.GetSError(109999, sError.BuildParams([]string{key}), sError.EmptyMap)
 	}
 
 	return
@@ -410,6 +454,7 @@ func getParameter(tApplication, tEnvironment, key string) (returnValue interface
 	sLogger.DebugMethod()
 
 	var ssmParamInput ssm.GetParameterInput
+
 	ssmParamInput.WithDecryption = pTrue
 	name := setPath(tApplication, tEnvironment) + "/" + key
 	ssmParamInput.Name = &name
@@ -424,41 +469,36 @@ func getParameter(tApplication, tEnvironment, key string) (returnValue interface
 	return
 }
 
-/*
-This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
-the function will return an error code for not found.
-*/
-func GetEnvironmentAWSRegion() (envValue string, soteErr sError.SoteError) {
+func setConfigParamsApplication(tApplication string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	envValue, soteErr = GetEnvironmentVariable(AWSREGIONIKEY)
-
-	return
-}
-
-/*
-This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
-the function will return an error code for not found.
-*/
-func GetEnvironmentAppEnvironment() (envValue string, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	envValue, soteErr = GetEnvironmentVariable(APPENV)
-
-	return
-}
-
-/*
-Get the requested environment variable. If the environment variable is not found or the value is empty,
-the function will return an error code for not found.
-*/
-func GetEnvironmentVariable(key string) (envValue string, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	envValue = os.Getenv(key)
-	if envValue = os.Getenv(key); len(envValue) == 0 {
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{key}), sError.EmptyMap)
+	if tApplication == "" {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{tApplication}), sError.EmptyMap)
+	} else {
+		myConfigParams.Application = tApplication
 	}
 
 	return
+}
+
+func GetConfigParamsApplication(tApplication string) string {
+	sLogger.DebugMethod()
+
+	return myConfigParams.Application
+}
+
+func setConfigParamsEnvironment(tEnvironment string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if soteErr = ValidateEnvironment(tEnvironment); soteErr.ErrCode == nil {
+		myConfigParams.Environment = tEnvironment
+	}
+
+	return
+}
+
+func GetConfigParamsEnvironment(tEnvironment string) string {
+	sLogger.DebugMethod()
+
+	return myConfigParams.Environment
 }

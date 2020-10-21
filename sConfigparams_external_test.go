@@ -122,8 +122,8 @@ func TestGetNATSCredentials(t *testing.T) {
 	if _, soteErr = credValues("SCOTT", sConfigParams.STAGING); soteErr.ErrCode != 109999 {
 		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr = credValues(SYNADIA, ""); soteErr.ErrCode != 200512 {
-		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 200512: %v", soteErr.FmtErrMsg)
+	if _, soteErr = credValues(SYNADIA, ""); soteErr.ErrCode != 601010 {
+		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 601010: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestGetNATSURL(t *testing.T) {
@@ -133,7 +133,7 @@ func TestGetNATSURL(t *testing.T) {
 	if _, soteErr := sConfigParams.GetNATSURL("SCOTT", sConfigParams.STAGING); soteErr.ErrCode != 109999 {
 		t.Errorf("GetNATSURL failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr := sConfigParams.GetNATSURL("", sConfigParams.STAGING); soteErr.ErrCode != 200512 {
-		t.Errorf("GetNATSURL failed: Expected soteErr to be 200512: %v", soteErr.FmtErrMsg)
+	if _, soteErr := sConfigParams.GetNATSURL("", sConfigParams.STAGING); soteErr.ErrCode != 200513 {
+		t.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
