@@ -10,4 +10,5 @@ require (
 	github.com/lestrrat-go/jwx v1.0.3
 	github.com/nats-io/jsm.go v0.0.19
 	github.com/nats-io/nats.go v1.10.1-0.20201013114232-5a33ce07522f
+	github.com/nats-io/nkeys v0.2.0
 )
