@@ -33,21 +33,18 @@ func TestValidToken(t *testing.T) {
 		t.Errorf("ValidToken failed: Expected soteErr to be 500050 or nil: %v", soteErr.ErrCode)
 	}
 }
-/*
-TODO when https://github.com/dgrijalva/jwt-go/issues/423 is resolved, this test can be uncommented
-*/
-// func TestValidFakeToken(t *testing.T) {
-// 	var soteErr sError.SoteError
-// 	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 500050 && soteErr.ErrCode != nil {
-// 		t.Errorf("ValidToken failed: Expected soteErr to be 500050 or nil: %v", soteErr.FmtErrMsg)
-// 	}
-// }
-// func TestValidMissingSegmentToken(t *testing.T) {
-// 	var soteErr sError.SoteError
-// 	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 500055 && soteErr.ErrCode != nil {
-// 		t.Errorf("ValidToken failed: Expected soteErr to be 500055 or nil: %v", soteErr.FmtErrMsg)
-// 	}
-// }
+func TestValidFakeToken(t *testing.T) {
+	var soteErr sError.SoteError
+	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 500056 && soteErr.ErrCode != nil {
+		t.Errorf("ValidToken failed: Expected soteErr to be 500050 or nil: %v", soteErr.FmtErrMsg)
+	}
+}
+func TestValidMissingSegmentToken(t *testing.T) {
+	var soteErr sError.SoteError
+	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 500056 && soteErr.ErrCode != nil {
+		t.Errorf("ValidToken failed: Expected soteErr to be 500055 or nil: %v", soteErr.FmtErrMsg)
+	}
+}
 func TestInValidSignatureToken(t *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 500050 && soteErr.ErrCode != 500055  && soteErr.ErrCode != 500056 {
