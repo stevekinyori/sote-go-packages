@@ -255,6 +255,16 @@ func Test605030Error(t *testing.T) {
 	s := sError.BuildParams([]string{"REGION","ENVIRONMENT"})
 	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
+func Test609990Error(t *testing.T) {
+	var errCode = 609990
+	s := sError.BuildParams([]string{"URL_IS_MISSING"})
+	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
+}
+func Test609998Error(t *testing.T) {
+	var errCode = 609998
+	s := sError.BuildParams([]string{"START_VARIABLE_OUT_OF_RANGE"})
+	validateReply(t, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
+}
 func Test609999Error(t *testing.T) {
 	var errCode = 609999
 	s := sError.BuildParams([]string{"START_VARIABLE_MISSING"})

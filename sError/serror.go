@@ -159,6 +159,7 @@ var (
 		605021: {605021, CONFIGURATIONISSUE, 1, "Kid", ": Kid (%v) was not found in public key set", EmptyMap, ""},
 		605030: {605030, CONFIGURATIONISSUE, 2, "Region, Environment", ": Failed to fetch remote JWK (status = 404) for %v region %v environment", EmptyMap, ""},
 		//
+		609990: {609990, CONFIGURATIONISSUE, 1, "Parameter name", ": URL is missing (%v)", EmptyMap, ""},
 		609998: {609998, CONFIGURATIONISSUE, 1, "Parameter name", ": Start up parameter is out of value range (%v)", EmptyMap, ""},
 		609999: {609999, CONFIGURATIONISSUE, 1, "Parameter name", ": Start up parameter is missing (%v)", EmptyMap, ""},
 		//
@@ -228,6 +229,7 @@ var (
 		605020	Kid > : key (%v) was not found in token
 		605021	Kid > : Kid (%v) was not found in public key set
 		605030	Region, Environment > : Failed to fetch remote JWK (status = 404) for %v region %v environment
+		609990	Parameter name > : URL is missing (%v)
 		609998	Parameter name > : Start up parameter is out of value range (%v)
 		609999	Parameter name > : Start up parameter is missing (%v)
 		700000	List of required parameters > : Call doesn't match API signature. Caller must provide the following parameter names: %v
