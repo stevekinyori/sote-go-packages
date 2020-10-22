@@ -72,7 +72,7 @@ import (
 )
 
 type JSMManager struct {
-	Manager     jsm.Manager
+	Manager     *jsm.Manager
 	Application string
 	Environment string
 	sURL        string
@@ -89,9 +89,9 @@ func New(application, environment, credentialFileName, sURL string, maxReconnect
 	sLogger.DebugMethod()
 
 	var (
-		// tmpFileName string
-		nc          *nats.Conn
-		tmpCreds    interface{}
+		err      error
+		nc       *nats.Conn
+		tmpCreds interface{}
 	)
 
 	if soteErr = sConfigParams.ValidateApplication(application); soteErr.ErrCode == nil {
@@ -123,11 +123,15 @@ func New(application, environment, credentialFileName, sURL string, maxReconnect
 		}
 		// Making connection to server
 		if soteErr.ErrCode == nil {
-			nc, soteErr = pJSMManager.connect()
+			if nc, soteErr = pJSMManager.connect(); soteErr.ErrCode == nil {
+				// Creating the JSM Manager
+				pJSMManager.Manager, err = jsm.New(nc)
+				if err != nil {
+					log.Panic(err.Error())
+				}
+			}
 		}
 	}
-
-	log.Println(nc)
 
 	return
 }
@@ -239,75 +243,4 @@ func (jsmm *JSMManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 	defer nc.Close()
 
 	return
-}
-
-func SetStreamName(streamName string) (opts []nats.Option, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
-		opts = []nats.Option{nats.Name(streamName)}
-	}
-
-	return
-}
-
-func GetJSMManager(nc *nats.Conn) (jsmManager *jsm.Manager, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var (
-		err error
-	)
-
-	if nc == nil {
-		soteErr = sError.GetSError(603999, nil, sError.EmptyMap)
-	}
-
-	// TODO Change Connect to non-exported and call from GetJSMManager
-
-	jsmManager, err = jsm.New(nc, jsm.WithTimeout(2*time.Second))
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	return
-}
-
-func GetJSMManagerWithConnOptions(url string, opts []nats.Option) (jsmManager *jsm.Manager, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var (
-		nc *nats.Conn
-	)
-
-	// nc, soteErr = Connect(url, opts)
-	if soteErr.ErrCode == nil {
-		jsmManager, soteErr = GetJSMManager(nc)
-	}
-
-	return
-}
-
-func validateConnection(nc *nats.Conn) (soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	if nc == nil {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"NATS.io Connect"}), sError.EmptyMap)
-	}
-
-	return
-
-}
-
-func validateJSMManager(jsmManager *jsm.Manager) (soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	if jsmManager == nil {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Jetstream Manager"}), sError.EmptyMap)
-	}
-
-	if !jsmManager.IsJetStreamEnabled() {
-		soteErr = sError.GetSError(300000, nil, sError.EmptyMap)
-	}
-	return
-
 }
