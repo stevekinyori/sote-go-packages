@@ -76,7 +76,7 @@ type JSMManager struct {
 	Application string
 	Environment string
 	sURL        string
-	opts        []nats.Option
+	connOpts    []nats.Option
 
 	sync.Mutex
 }
@@ -119,7 +119,7 @@ func New(application, environment, credentialFileName, sURL string, maxReconnect
 		} else {
 			getCreds := sConfigParams.GetNATSCredentials()
 			tmpCreds, soteErr = getCreds(pJSMManager.Application, pJSMManager.Environment)
-			pJSMManager.opts = append(pJSMManager.opts, pJSMManager.UserCredsFromRaw([]byte(tmpCreds.(string))))
+			pJSMManager.connOpts = append(pJSMManager.connOpts, pJSMManager.userCredsFromRaw([]byte(tmpCreds.(string))))
 		}
 		// Making connection to server
 		if soteErr.ErrCode == nil {
@@ -148,17 +148,20 @@ func (jsmm *JSMManager) setCredentialsFile(streamCredentialFile string) (soteErr
 	} else if _, err := os.Stat(streamCredentialFile); err != nil {
 		soteErr = sError.GetSError(600010, sError.BuildParams([]string{streamCredentialFile, err.Error()}), sError.EmptyMap)
 	} else {
-		jsmm.opts = append(jsmm.opts, nats.UserCredentials(streamCredentialFile))
+		jsmm.connOpts = append(jsmm.connOpts, nats.UserCredentials(streamCredentialFile))
 	}
 
 	return
 }
 
-func (jsmm *JSMManager) UserCredsFromRaw(rawdata []byte) nats.Option {
+/*
+	UserCredsFromRaw will take a credential file content that is not stored on the file system, such as AWS System Manager Parameters
+*/
+func (jsmm *JSMManager) userCredsFromRaw(rawCredentials []byte) nats.Option {
 	return nats.UserJWT(
-		func() (string, error) { return nkeys.ParseDecoratedJWT(rawdata) },
+		func() (string, error) { return nkeys.ParseDecoratedJWT(rawCredentials) },
 		func(nonce []byte) ([]byte, error) {
-			kp, err := nkeys.ParseDecoratedNKey(rawdata)
+			kp, err := nkeys.ParseDecoratedNKey(rawCredentials)
 			if err != nil {
 				return nil, err
 			}
@@ -169,32 +172,23 @@ func (jsmm *JSMManager) UserCredsFromRaw(rawdata []byte) nats.Option {
 }
 
 /*
-	setReconnectOptions limits the maxReconnect to 5 and the highest reconnectWait of 1 second.
+	setReconnectOptions expects a maxReconnect value between 1 and 5; if not, it is set to 1. The reconnectWait value
+	between 250 milliseconds and 1 minute; if not, it is set to 1 second.
 */
 func (jsmm *JSMManager) setReconnectOptions(maxReconnect int, reconnectWait time.Duration) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if maxReconnect == 0 && reconnectWait == 0 {
-		soteErr = sError.GetSError(200512, sError.BuildParams([]string{"maxReconnect", "reconnectWait"}), sError.EmptyMap)
+	if reconnectWait < 250*time.Millisecond || reconnectWait > 1*time.Minute {
+		jsmm.connOpts = append(jsmm.connOpts, nats.ReconnectWait(1*time.Second))
+		sLogger.Info("Resetting reconnectWait to 1 second")
 	} else {
-		if reconnectWait == 0 {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"reconnectWait"}), sError.EmptyMap)
-		} else {
-			if reconnectWait > 1*time.Minute {
-				jsmm.opts = append(jsmm.opts, nats.ReconnectWait(1*time.Second))
-			} else {
-				jsmm.opts = append(jsmm.opts, nats.ReconnectWait(reconnectWait))
-			}
-		}
-		if maxReconnect == 0 {
-			soteErr = sError.GetSError(200513, sError.BuildParams([]string{"reconnectWait"}), sError.EmptyMap)
-		} else {
-			if maxReconnect > 5 {
-				jsmm.opts = append(jsmm.opts, nats.MaxReconnects(5))
-			} else {
-				jsmm.opts = append(jsmm.opts, nats.MaxReconnects(maxReconnect))
-			}
-		}
+		jsmm.connOpts = append(jsmm.connOpts, nats.ReconnectWait(reconnectWait))
+	}
+	if maxReconnect < 1 || maxReconnect > 5 {
+		jsmm.connOpts = append(jsmm.connOpts, nats.MaxReconnects(1))
+		sLogger.Info("Resetting maxReconnect to 1 try")
+	} else {
+		jsmm.connOpts = append(jsmm.connOpts, nats.MaxReconnects(maxReconnect))
 	}
 
 	return
@@ -203,9 +197,8 @@ func (jsmm *JSMManager) setReconnectOptions(maxReconnect int, reconnectWait time
 func (jsmm *JSMManager) setURL(sURL string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if _, err := url.Parse(sURL); err != nil {
-		// TODO Create Error Code
-		soteErr = sError.GetSError(100000, nil, nil)
+	if _, err := url.Parse(sURL); err != nil || sURL == "" {
+		soteErr = sError.GetSError(609990, sError.BuildParams([]string{sURL}), nil)
 	} else {
 		jsmm.sURL = sURL
 	}
@@ -224,7 +217,7 @@ func (jsmm *JSMManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 	)
 
 	// Connect to NATS  --  default "euwest1.aws.ngs.global"
-	nc, err = nats.Connect(jsmm.sURL, jsmm.opts...)
+	nc, err = nats.Connect(jsmm.sURL, jsmm.connOpts...)
 	if err != nil {
 		if strings.Contains(err.Error(), "no servers") {
 			soteErr = sError.GetSError(603999, nil, sError.EmptyMap)
@@ -240,7 +233,6 @@ func (jsmm *JSMManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 			panic("sMessages.connect Failed")
 		}
 	}
-	defer nc.Close()
 
 	return
 }
