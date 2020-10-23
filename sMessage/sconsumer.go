@@ -63,7 +63,7 @@ CreatePullConsumerWithReplayInstant will create a consumer. If the consumer exis
 		DeliverySubject: "" (required for a pull consumer)
 		ReplayPolicy: instant
 */
-func CreatePullConsumerWithReplayInstant(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, jsmManager *jsm.Manager) (pConsumer *jsm.Consumer,
+func CreatePullConsumerWithReplayInstant(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, jsmManager *JSMManager) (pConsumer *jsm.Consumer,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -73,7 +73,7 @@ func CreatePullConsumerWithReplayInstant(streamName, consumerName, durableName, 
 	)
 
 	if soteErr = validateConsumerParams(streamName, consumerName, durableName, DELIVERYSUBJECTPULL, subjectFilter, jsmManager); soteErr.ErrCode == nil {
-		pConsumer, err = jsmManager.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ReplayInstantly(),
+		pConsumer, err = jsmManager.Manager.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ReplayInstantly(),
 			jsm.MaxDeliveryAttempts(setMaxDeliver(maxDeliveries)), jsm.AcknowledgeExplicit())
 		if err != nil {
 			errDetails["NATS ERROR:"] = err.Error()
@@ -107,7 +107,7 @@ CreatePullConsumerWithReplayOriginal will create a consumer. If the consumer exi
 		DeliverySubject: "" (required for a pull consumer)
 		ReplayPolicy: original
 */
-func CreatePullConsumerWithReplayOriginal(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, jsmManager *jsm.Manager) (pConsumer *jsm.Consumer,
+func CreatePullConsumerWithReplayOriginal(streamName, consumerName, durableName, subjectFilter string, maxDeliveries int, jsmManager *JSMManager) (pConsumer *jsm.Consumer,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -117,7 +117,7 @@ func CreatePullConsumerWithReplayOriginal(streamName, consumerName, durableName,
 	)
 
 	if soteErr = validateConsumerParams(streamName, consumerName, durableName, DELIVERYSUBJECTPULL, subjectFilter, jsmManager); soteErr.ErrCode == nil {
-		pConsumer, err = jsmManager.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ReplayAsReceived(),
+		pConsumer, err = jsmManager.Manager.LoadOrNewConsumer(streamName, consumerName, jsm.DurableName(durableName), jsm.FilterStreamBySubject(subjectFilter), jsm.ReplayAsReceived(),
 			jsm.MaxDeliveryAttempts(setMaxDeliver(maxDeliveries)), jsm.AcknowledgeExplicit())
 		if err != nil {
 			errDetails["NATS ERROR:"] = err.Error()
@@ -147,7 +147,7 @@ func DeleteConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
 	return
 }
 
-func validateConsumerParams(streamName, consumerName, durableName, deliverySubject, subjectFilter string, jsmManager *jsm.Manager) (soteErr sError.SoteError) {
+func validateConsumerParams(streamName, consumerName, durableName, deliverySubject, subjectFilter string, jsmmManager *JSMManager) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	soteErr = validateStreamName(streamName)
@@ -168,8 +168,8 @@ func validateConsumerParams(streamName, consumerName, durableName, deliverySubje
 		soteErr = validateSubjectFilter(subjectFilter)
 	}
 
-	if soteErr.ErrCode == nil {
-		soteErr = validateJSMManager(jsmManager)
+	if soteErr.ErrCode == nil && jsmmManager == nil {
+		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"JSMManager"}), nil)
 	}
 
 	return
@@ -228,7 +228,9 @@ func validateConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
 
 	return
 }
-
+/*
+	setMaxDeliver forces the value be between 1 and 10.  If it below 1, then 1 and if greater than 10, its set to 3.
+ */
 func setMaxDeliver(tMaxDeliver int) (maxDeliver int) {
 	sLogger.DebugMethod()
 
