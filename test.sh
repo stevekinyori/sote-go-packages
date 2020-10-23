@@ -49,17 +49,22 @@ echo -n 'processing internal tests .'
 #
 # The following will generate coverage.out files and new packages should be added.
 echo -n 'sLogger ' 1> /tmp/tmp_$$.out
-rm sLogger/coverage.out 2> /dev/null; go test sLogger/* -coverprofile sLogger/coverage.out 1>> /tmp/tmp_$$.out
+rm sLogger/coverage.out 2> /dev/null; go test sLogger/*.go -coverprofile sLogger/coverage.out 1>> /tmp/tmp_$$.out
+echo -n '.'
 echo -n 'sError ' 1>> /tmp/tmp_$$.out
-rm sError/coverage.out 2> /dev/null; go test sError/* -coverprofile sError/coverage.out 1>> /tmp/tmp_$$.out
+rm sError/coverage.out 2> /dev/null; go test sError/*.go -coverprofile sError/coverage.out 1>> /tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sDatabase ' 1>> /tmp/tmp_$$.out
-rm sDatabase/coverage.out 2> /dev/null; go test sDatabase/* -coverprofile sDatabase/coverage.out 1>> /tmp/tmp_$$.out
+rm sDatabase/coverage.out 2> /dev/null; go test sDatabase/*.go -coverprofile sDatabase/coverage.out 1>> /tmp/tmp_$$.out
+echo -n '.'
 echo -n 'sConfigParams ' 1>> /tmp/tmp_$$.out
-rm sConfigParams/coverage.out 2> /dev/null; go test sConfigParams/* -coverprofile sConfigParams/coverage.out 1>> /tmp/tmp_$$.out
+rm sConfigParams/coverage.out 2> /dev/null; go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out 1>> /tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sAuthorize ' 1>> /tmp/tmp_$$.out
-rm sAuthorize/coverage.out 2> /dev/null; go test sAuthorize/* -coverprofile sAuthorize/coverage.out 1>> /tmp/tmp_$$.out
+rm sAuthorize/coverage.out 2> /dev/null; go test sAuthorize/*.go -coverprofile sAuthorize/coverage.out 1>> /tmp/tmp_$$.out
+echo -n '.'
+echo -n 'sMessage ' 1>> /tmp/tmp_$$.out
+rm sMessage/coverage.out 2> /dev/null; go test sMessage/*.go -coverprofile sMessage/coverage.out 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )"
@@ -77,14 +82,21 @@ echo -n 'processing external tests .'
 # # There is no coverage because the tests are outside the directory with the source file.
 echo -n 'sLogger_external_test ' 1> /tmp/tmp_$$.out
 go test sLogger_external_test.go 1>> /tmp/tmp_$$.out
+echo -n '.'
 echo -n 'sError_external_test ' 1>> /tmp/tmp_$$.out
 go test sError_external_test.go 1>> /tmp/tmp_$$.out
+echo -n '.'
 echo -n 'sDatabase_external_test ' 1>> /tmp/tmp_$$.out
 go test sDatabase_external_test.go 1>> /tmp/tmp_$$.out
+echo -n '.'
 echo -n 'sConfigParams_external_test ' 1>> /tmp/tmp_$$.out
 go test sConfigParams_external_test.go 1>> /tmp/tmp_$$.out
+echo -n '.'
 echo -n 'sAuthorize_external_test ' 1>> /tmp/tmp_$$.out
 go test sAuthorize_external_test.go 1>> /tmp/tmp_$$.out
+echo -n '.'
+echo -n 'sMessage_external_test ' 1>> /tmp/tmp_$$.out
+go test sMessages_external_test.go 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )"
