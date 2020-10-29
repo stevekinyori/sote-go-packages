@@ -23,6 +23,18 @@ These are values that can be set natively.  sstream and consumer place limitatio
 		MaxMsgSize: Default value: -1 (unlimited)
 			value is set using: (B)ytes, (k)ilobytes, (m)egabytes
 			example: 512B, 1k, 1m
+		Name: Required
+			The name of the stream and the stream subjects can be different
+		NoAck: Default is false
+			values is set using 'true' or 'false'
+		Replicas: No default
+			value is from 1 to n
+		Retention: No default
+			value is set using jsm.LimitsRetention(), jsm.WorkQueueRetention() jsm.InterestPolicy()
+		Storage: No default
+			value is set using jsm..MemoryStorage() or jsm.FileStorage()
+		Subjects: No default
+			value is a string of values that are comma separated.  Dot can be used to create sub-subjects and '*' is a wildcard
 	NATS CONSUMER SETTINGS:
 		AckPolicy: Default value: none
 			value is set using: none, all, explicit (explicit required for pull consumers)
