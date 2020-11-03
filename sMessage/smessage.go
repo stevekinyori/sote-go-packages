@@ -6,7 +6,7 @@ These are values that can be set natively.  sstream and consumer place limitatio
 		Ack: Required for published
 			value is set using: true, false
 		Discard: Default value: old
-			value is set using: new, old
+			value is set using: jsm.DiscardNew(), jsm.DiscardOld()
 		Duplicates: Default value: ""
 			value is set using: (s)econds, (m)inutes, (h)ours, (y)ears, (M)onths, (d)ays
 			example: 1s, 1h, 1M, 1seconds, 1Months
@@ -85,6 +85,7 @@ import (
 
 type JSMManager struct {
 	Manager     *jsm.Manager
+	nc          *nats.Conn
 	Application string
 	Environment string
 	sURL        string
@@ -102,7 +103,6 @@ func New(application, environment, credentialFileName, sURL string, maxReconnect
 
 	var (
 		err      error
-		nc       *nats.Conn
 		tmpCreds interface{}
 	)
 
@@ -135,9 +135,9 @@ func New(application, environment, credentialFileName, sURL string, maxReconnect
 		}
 		// Making connection to server
 		if soteErr.ErrCode == nil {
-			if nc, soteErr = pJSMManager.connect(); soteErr.ErrCode == nil {
+			if pJSMManager.nc, soteErr = pJSMManager.connect(); soteErr.ErrCode == nil {
 				// Creating the JSM Manager
-				pJSMManager.Manager, err = jsm.New(nc)
+				pJSMManager.Manager, err = jsm.New(pJSMManager.nc)
 				if err != nil {
 					log.Panic(err.Error())
 				}
@@ -245,6 +245,20 @@ func (jsmm *JSMManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 			panic("sMessages.connect Failed")
 		}
 	}
+
+	return
+}
+
+/*
+	This will close the connection to the NATS network using the JSMManager
+*/
+func (jsmm *JSMManager) Close() {
+	sLogger.DebugMethod()
+
+	// Closing connect to NATS  --  default "euwest1.aws.ngs.global"
+	jsmm.nc.Close()
+
+	jsmm = nil
 
 	return
 }

@@ -30,39 +30,48 @@ const (
 )
 
 func TestNew(t *testing.T) {
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != nil {
+	if jsmm, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds", TESTSYNADIAURL, 1,
+		250*time.Millisecond); soteErr.ErrCode == nil {
+		if !jsmm.Manager.IsJetStreamEnabled() {
+			t.Errorf("Close Failed: IsJetStreamEnabled to return true")
+		}
+		jsmm.Close()
+		if jsmm.Manager.IsJetStreamEnabled() {
+			t.Errorf("Close Failed: IsJetStreamEnabled to return false")
+		}
+	} else {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,1, 250*time.Millisecond); soteErr.ErrCode != nil {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != nil {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
 
-	if _, soteErr := New("", sConfigParams.STAGING, "", TESTSYNADIAURL,1, 250*time.Millisecond); soteErr.ErrCode != 200513 {
+	if _, soteErr := New("", sConfigParams.STAGING, "", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != 200513 {
 		t.Errorf("New Failed: Expected error code of 200513")
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, "", "", TESTSYNADIAURL,1, 250*time.Millisecond); soteErr.ErrCode != 601010 {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, "", "", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != 601010 {
 		t.Errorf("New Failed: Expected error code of 601010")
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", "",1, 250*time.Millisecond); soteErr.ErrCode != 609990 {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", "", 1, 250*time.Millisecond); soteErr.ErrCode != 609990 {
 		t.Errorf("New Failed: Expected error code of 609990")
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,0, 250*time.Millisecond); soteErr.ErrCode != nil {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 0, 250*time.Millisecond); soteErr.ErrCode != nil {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,200, 250*time.Millisecond); soteErr.ErrCode != nil {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 200, 250*time.Millisecond); soteErr.ErrCode != nil {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,1, 1*time.Millisecond); soteErr.ErrCode != nil {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 1, 1*time.Millisecond); soteErr.ErrCode != nil {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,1, 2*time.Minute); soteErr.ErrCode != nil {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 1, 2*time.Minute); soteErr.ErrCode != nil {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
 }
