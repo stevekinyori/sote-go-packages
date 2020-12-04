@@ -234,6 +234,9 @@ func (jsmm *JSMManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 		if strings.Contains(err.Error(), "no servers") {
 			soteErr = sError.GetSError(603999, nil, sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
+		} else if strings.Contains(err.Error(), "no nkey seed found") {
+			soteErr = sError.GetSError(603998, nil, sError.EmptyMap)
+			sLogger.Info(soteErr.FmtErrMsg)
 		} else {
 			var errDetails = make(map[string]string)
 			errDetails, soteErr = sError.ConvertErr(err)
