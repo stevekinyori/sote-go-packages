@@ -30,7 +30,7 @@ const (
 )
 
 func TestNew(t *testing.T) {
-	if jsmm, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds", TESTSYNADIAURL, 1,
+	if jsmm, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 1,
 		250*time.Millisecond); soteErr.ErrCode == nil {
 		if !jsmm.Manager.IsJetStreamEnabled() {
 			t.Errorf("Close Failed: IsJetStreamEnabled to return true")
@@ -42,23 +42,28 @@ func TestNew(t *testing.T) {
 	} else {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
-
+}
+func TestNewExpectErrorCode(t *testing.T) {
 	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != nil {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
-
+}
+func TestNewExpect200513(t *testing.T) {
 	if _, soteErr := New("", sConfigParams.STAGING, "", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != 200513 {
 		t.Errorf("New Failed: Expected error code of 200513")
 	}
-
+}
+func TestNewExpect601010(t *testing.T) {
 	if _, soteErr := New(TESTAPPLICATIONSYNADIA, "", "", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != 601010 {
 		t.Errorf("New Failed: Expected error code of 601010")
 	}
-
+}
+func TestNewExpect609990(t *testing.T) {
 	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", "", 1, 250*time.Millisecond); soteErr.ErrCode != 609990 {
 		t.Errorf("New Failed: Expected error code of 609990")
 	}
-
+}
+func TestNewExpectNil(t *testing.T) {
 	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 0, 250*time.Millisecond); soteErr.ErrCode != nil {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
