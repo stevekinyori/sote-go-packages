@@ -170,7 +170,7 @@ func DeleteMessageFromStream(pStream *jsm.Stream, sequenceNumber int) (soteErr s
 		if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
 			err := pStream.DeleteMessage(sequenceNumber)
 			if err != nil {
-				if strings.Contains(err.Error(), "not found") {
+				if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "stream EOF") {
 					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"sequenceNumber(" + strconv.Itoa(sequenceNumber) + ")"}), nil)
 				} else {
 					soteErr = sError.GetSError(805000, nil, nil)
