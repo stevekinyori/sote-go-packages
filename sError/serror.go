@@ -151,6 +151,7 @@ var (
 		602030: {602030, CONFIGURATIONISSUE, 1, "Connection Type", ": Only single or pool are supported.", EmptyMap, ""},
 		602999: {602999, CONFIGURATIONISSUE, 0, "None", ": No database connection has been established", EmptyMap, ""},
 		//
+		603998: {603998, CONFIGURATIONISSUE, 0, "None", ": no nkey seed found", EmptyMap, ""},
 		603999: {603999, CONFIGURATIONISSUE, 0, "None", ": No nats connection has been established", EmptyMap, ""},
 		//
 		605000: {605000, CONFIGURATIONISSUE, 0, "None", ": Unexpected signing method", EmptyMap, ""},
