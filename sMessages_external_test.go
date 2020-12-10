@@ -31,10 +31,6 @@ const (
 )
 
 func TestNew(t *testing.T) {
-	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "/Users/syacko/.nkeys/creds/synadia/NATS_CONNECT/NATS_CONNECT.creds", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != nil {
-		t.Errorf("New Failed: Expected error code to be nil")
-	}
-
 	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,1, 250*time.Millisecond); soteErr.ErrCode != nil {
 		t.Errorf("New Failed: Expected error code to be nil")
 	}
