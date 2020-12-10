@@ -117,6 +117,14 @@ func New(application, environment, credentialFileName, sURL string, maxReconnect
 	}
 
 	if soteErr.ErrCode == nil {
+		if len(sURL) > 0 {
+			soteErr = pJSMManager.setURL(sURL)
+		} else {
+			var getURL string
+			getURL, soteErr = sConfigParams.GetNATSURL(pJSMManager.Application, pJSMManager.Environment)
+			soteErr = pJSMManager.setURL(getURL)
+		}
+
 		soteErr = pJSMManager.setURL(sURL)
 	}
 
