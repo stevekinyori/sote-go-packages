@@ -18,6 +18,13 @@ func init() {
 	sLogger.SetLogMessagePrefix("sconfigparams_test.go")
 }
 
+//  THIS MUST BE THE FIRST TEST RUN - DO NOT MOVE OR PLACE A TEST BEFORE TestGetRegion
+func TestGetRegion(t *testing.T) {
+	if _, soteErr := GetRegion(); soteErr.ErrCode != nil {
+		t.Errorf("GetRegion failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		t.Fatalf("RUN AWS_CONFIG or verify that ~/.aws/config exists and the region is set: %v", soteErr.FmtErrMsg)
+	}
+}
 func TestGetParametersFound(t *testing.T) {
 	parameters := make(map[string]interface{})
 	var soteErr sError.SoteError
@@ -106,11 +113,6 @@ func TestGetDBUser(t *testing.T) {
 		t.Errorf("GetDBUser failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetRegion(t *testing.T) {
-	if _, soteErr := GetRegion(); soteErr.ErrCode != nil {
-		t.Errorf("GetRegion failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
-	}
-}
 func TestGetUserPoolId(t *testing.T) {
 	if _, soteErr := GetUserPoolId(STAGING); soteErr.ErrCode != nil {
 		t.Errorf("GetUserPoolId failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
@@ -153,12 +155,6 @@ func TestValidateEnvironment(t *testing.T) {
 func TestGetEnvironmentVariable(t *testing.T) {
 	if _, soteErr := GetEnvironmentVariable(APPENV); soteErr.ErrCode != nil {
 		t.Errorf("GetEnvironmentVariable failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
-	}
-	if _, soteErr := GetEnvironmentVariable(AWSREGION); soteErr.ErrCode != nil {
-		t.Errorf("GetEnvironmentVariable failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
-	}
-	if _, soteErr := GetEnvironmentAWSRegion(); soteErr.ErrCode != nil {
-		t.Errorf("GetEnvironmentAWSRegion failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetEnvironmentAppEnvironment(); soteErr.ErrCode != nil {
 		t.Errorf("GetEnvironmentAppEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
