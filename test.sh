@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 #
 # This is a testing script for Sote Packages
 #
@@ -9,11 +9,15 @@ echo -n "Checking system config ."
 #
 # Checking to make sure environment variables are set correctly
 read RC1 <<< "$( printenv | grep -i 'APP_ENVIRONMENT' | awk '/[development]./ || /[staging]./  || /[demo]./ || /[production]./ {print 0}' )"
-read RC2 <<< "$( printenv | grep -i 'AWS_REGION' | awk '/[eu-west-1]./ {print 0}' )"
-if [[ "$RC1" == "" || "$RC2" == "" ]]; then
-    echo "SYSTEM IS NOT CONFIGURED: You must have APP_ENVIRONMENT and AWS_REGION set as environment variables."
+# REMOVED ~/.aws/config contains region
+# read RC2 <<< "$( printenv | grep -i 'AWS_REGION' | awk '/[eu-west-1]./ {print 0}' )"
+#if [[ "$RC1" == "" || "$RC2" == "" ]]; then
+#    echo "SYSTEM IS NOT CONFIGURED: You must have APP_ENVIRONMENT and AWS_REGION set as environment variables."
+#    echo "    APP_ENVIRONMENT must be 'development', 'staging', 'demo' or 'production'"
+#    echo "    AWS_REGION must be 'eu-west-1'"
+if [[ "$RC1" == "" ]]; then
+    echo "SYSTEM IS NOT CONFIGURED: You must have APP_ENVIRONMENT set as environment variables."
     echo "    APP_ENVIRONMENT must be 'development', 'staging', 'demo' or 'production'"
-    echo "    AWS_REGION must be 'eu-west-1'"
     exit 1
 fi
 #
