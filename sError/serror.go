@@ -169,6 +169,7 @@ var (
 		800000: {800000, GENERALERROR, 0, "None", ": An error has occurred that is not expected.", EmptyMap, ""},
 		800100: {800100, GENERALERROR, 0, "None", ": Postgres error has occurred that is not expected.", EmptyMap, ""},
 		800199: {800199, GENERALERROR, 0, "None", ": Postgres is not responding over TCP. Container may not be running.", EmptyMap, ""},
+		801999: {801999, GENERALERROR, 0, "None", ": AWS session error has occurred that is not expected", EmptyMap, ""},
 		//
 		805000: {805000, GENERALERROR, 0, "None", ": Synadia error has occurred that is not expected.", EmptyMap, ""},
 	}

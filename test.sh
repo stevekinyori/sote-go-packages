@@ -3,38 +3,7 @@
 # This is a testing script for Sote Packages
 #
  set -uo pipefail
-#
-# Display Checking system message
-echo -n "Checking system config ."
-#
-# Checking to make sure environment variables are set correctly
-read RC1 <<< "$( printenv | grep -i 'APP_ENVIRONMENT' | awk '/[development]./ || /[staging]./  || /[demo]./ || /[production]./ {print 0}' )"
-# REMOVED ~/.aws/config contains region
-# read RC2 <<< "$( printenv | grep -i 'AWS_REGION' | awk '/[eu-west-1]./ {print 0}' )"
-#if [[ "$RC1" == "" || "$RC2" == "" ]]; then
-#    echo "SYSTEM IS NOT CONFIGURED: You must have APP_ENVIRONMENT and AWS_REGION set as environment variables."
-#    echo "    APP_ENVIRONMENT must be 'development', 'staging', 'demo' or 'production'"
-#    echo "    AWS_REGION must be 'eu-west-1'"
-if [[ "$RC1" == "" ]]; then
-    echo "SYSTEM IS NOT CONFIGURED: You must have APP_ENVIRONMENT set as environment variables."
-    echo "    APP_ENVIRONMENT must be 'development', 'staging', 'demo' or 'production'"
-    exit 1
-fi
-#
-# Checking to make sure the sotetest schema is installed
-DB_HOST=`aws ssm get-parameters --with-decryption --names /sote/api/$APP_ENVIRONMENT/DB_HOST --query "Parameters[*].{Value:Value}"`
-DB_HOST=`echo $DB_HOST | jq '.[] | .Value' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g"`
-echo -n "."
-DB_PORT=`aws ssm get-parameters --with-decryption --names /sote/api/$APP_ENVIRONMENT/DB_PORT --query "Parameters[*].{Value:Value}"`
-DB_PORT=`echo $DB_PORT | jq '.[] | .Value' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g"`
-DB_NAME=`aws ssm get-parameters --with-decryption --names /sote/api/$APP_ENVIRONMENT/DB_NAME --query "Parameters[*].{Value:Value}"`
-DB_NAME=`echo $DB_NAME | jq '.[] | .Value' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g"`
-echo -n "."
-DB_USER=`aws ssm get-parameters --with-decryption --names /sote/api/$APP_ENVIRONMENT/DB_USERNAME --query "Parameters[*].{Value:Value}"`
-DB_USER=`echo $DB_USER | jq '.[] | .Value' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g"`
-DB_PWSD=`aws ssm get-parameters --with-decryption --names /sote/api/$APP_ENVIRONMENT/DATABASE_PASSWORD --query "Parameters[*].{Value:Value}"`
-DB_PWSD=`echo $DB_PWSD | jq '.[] | .Value' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g"`
-echo "Done"
+sons!
 #
 echo -n "Refreshing sotetest schema ."
 `PGPASSWORD=$DB_PWSD psql -h $DB_HOST -d $DB_NAME -U $DB_USER -f db/migration/testdbstructures.sql 1> /dev/null 2> /tmp/packages_$$.out`

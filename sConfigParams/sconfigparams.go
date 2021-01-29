@@ -53,11 +53,11 @@ const (
 )
 
 var (
-	awsService     *ssm.SSM
-	setToTrue            = true       // This can not be a constant because we need a pointer.
-	pTrue                = &setToTrue // pointer to the setToTrue variable
-	maxResult      int64 = 10
-	pMaxResult           = &maxResult
+	awsService *ssm.SSM
+	setToTrue        = true       // This can not be a constant because we need a pointer.
+	pTrue            = &setToTrue // pointer to the setToTrue variable
+	maxResult  int64 = 10
+	pMaxResult       = &maxResult
 )
 
 /*
