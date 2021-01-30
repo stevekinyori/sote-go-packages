@@ -119,6 +119,7 @@ var (
 		400105: {400105, CONTENTERROR, 2, "Data Structure Name, Data Structure Type", ": %v (%v) couldn't be converted to JSON - JSON conversion error", EmptyMap, ""},
 		400110: {400110, CONTENTERROR, 1, "Parameter name", ": %v couldn't be parsed - Invalid JSON error", EmptyMap, ""},
 		400111: {400111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v couldn't be converted to a map/keyed array - %v", EmptyMap, ""},
+		400200: {400200, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v", EmptyMap, ""},
 		//
 		401000: {401000, CONTENTERROR, 0, "None", ": Column must have a non-null value. Details: ", EmptyMap, ""},
 		401010: {401010, CONTENTERROR, 0, "None", ": Column data type is not support or invalid. Details: ", EmptyMap, ""},
@@ -218,6 +219,7 @@ var (
 		400105	Data Structure Name, Data Structure Type > : %v (%v) couldn't be converted to JSON - JSON conversion error
 		400110	Parameter name > : %v couldn't be parsed - Invalid JSON error
 		400111	Parameter name, Application/Package name > : %v couldn't be converted to a map/keyed array - %v
+		400200	Parameter name, Data Structure Type > : %v couldn't be converted to an %v
 		405110	Thing being changed, System Id for the thing > : No update is needed. No fields where changed for %v with id %v
 		405120	JSON array name, Thing being changed, System Id for the thing > : The %v was empty for %v with id %v
 		410000	Error message number > : %v error message is missing from sError package

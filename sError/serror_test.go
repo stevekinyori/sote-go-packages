@@ -198,6 +198,11 @@ func Test400100Error(t *testing.T) {
 	s := BuildParams([]string{"PARAMETER_NAME", "DATA_STRUCTURE_TYPE"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test400200Error(t *testing.T) {
+	var errCode = 400200
+	s := BuildParams([]string{"PARAMETER_NAME", "DATA_STRUCTURE_TYPE"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test400105Error(t *testing.T) {
 	var errCode = 400105
 	s := BuildParams([]string{"DATA_STRUCTURE_NAME", "DATA_STRUCTURE_TYPE"})
