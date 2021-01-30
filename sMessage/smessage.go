@@ -78,9 +78,9 @@ import (
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
-	"gitlab.com/soteapps/packages/v2020/sConfigParams"
-	"gitlab.com/soteapps/packages/v2020/sError"
-	"gitlab.com/soteapps/packages/v2020/sLogger"
+	"gitlab.com/soteapps/packages/v2021/sConfigParams"
+	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 type JSMManager struct {

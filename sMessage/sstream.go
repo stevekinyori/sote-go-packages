@@ -24,8 +24,8 @@ import (
 
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/api"
-	"gitlab.com/soteapps/packages/v2020/sError"
-	"gitlab.com/soteapps/packages/v2020/sLogger"
+	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 const (

@@ -3,8 +3,8 @@ package packages
 import (
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2020/sConfigParams"
-	"gitlab.com/soteapps/packages/v2020/sError"
+	"gitlab.com/soteapps/packages/v2021/sConfigParams"
+	"gitlab.com/soteapps/packages/v2021/sError"
 )
 
 const (

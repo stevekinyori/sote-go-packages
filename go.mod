@@ -1,4 +1,4 @@
-module gitlab.com/soteapps/packages/v2020
+module gitlab.com/soteapps/packages/v2021
 
 go 1.14
 

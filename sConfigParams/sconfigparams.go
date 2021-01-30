@@ -23,8 +23,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
-	"gitlab.com/soteapps/packages/v2020/sError"
-	"gitlab.com/soteapps/packages/v2020/sLogger"
+	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 const (

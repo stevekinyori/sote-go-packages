@@ -5,9 +5,9 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/lestrrat-go/jwx/jwk"
-	"gitlab.com/soteapps/packages/v2020/sConfigParams"
-	"gitlab.com/soteapps/packages/v2020/sError"
-	"gitlab.com/soteapps/packages/v2020/sLogger"
+	"gitlab.com/soteapps/packages/v2021/sConfigParams"
+	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 const (

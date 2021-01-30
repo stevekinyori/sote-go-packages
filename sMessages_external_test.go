@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/soteapps/packages/v2020/sConfigParams"
-	"gitlab.com/soteapps/packages/v2020/sMessage"
+	"gitlab.com/soteapps/packages/v2021/sConfigParams"
+	"gitlab.com/soteapps/packages/v2021/sMessage"
 )
 
 const (

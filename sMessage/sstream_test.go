@@ -7,8 +7,8 @@ import (
 
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/api"
-	"gitlab.com/soteapps/packages/v2020/sConfigParams"
-	"gitlab.com/soteapps/packages/v2020/sError"
+	"gitlab.com/soteapps/packages/v2021/sConfigParams"
+	"gitlab.com/soteapps/packages/v2021/sError"
 )
 
 func TestValidateStreamWhenNil(t *testing.T) {

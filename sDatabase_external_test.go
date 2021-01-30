@@ -3,7 +3,7 @@ package packages
 import (
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2020/sDatabase"
+	"gitlab.com/soteapps/packages/v2021/sDatabase"
 )
 
 const (

@@ -1,7 +1,7 @@
 package sDatabase
 
 import (
-	"gitlab.com/soteapps/packages/v2020/sLogger"
+	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 const (
