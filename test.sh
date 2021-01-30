@@ -38,6 +38,9 @@ rm sAuthorize/coverage.out 2> /dev/null; go test sAuthorize/*.go -coverprofile s
 echo -n '.'
 echo -n 'sMessage ' 1>> /tmp/tmp_$$.out
 rm sMessage/coverage.out 2> /dev/null; go test sMessage/*.go -coverprofile sMessage/coverage.out 1>> /tmp/tmp_$$.out
+cho -n '.'
+echo -n 'sHTTPClient ' 1>> /tmp/tmp_$$.out
+rm sHTTPClient/coverage.out 2> /dev/null; go test sHTTPClient/*.go -coverprofile sHTTPClient/coverage.out 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )"
@@ -70,6 +73,9 @@ go test sAuthorize_external_test.go 1>> /tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sMessage_external_test ' 1>> /tmp/tmp_$$.out
 go test sMessages_external_test.go 1>> /tmp/tmp_$$.out
+echo -n '.'
+echo -n 'sHTTPClient_external_test ' 1>> /tmp/tmp_$$.out
+go test sHTTPClient_external_test.go 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )"
@@ -89,6 +95,7 @@ go tool cover -func=sError/coverage.out >> coverage_review.out
 go tool cover -func=sDatabase/coverage.out >> coverage_review.out
 go tool cover -func=sConfigParams/coverage.out >> coverage_review.out
 go tool cover -func=sAuthorize/coverage.out >> coverage_review.out
+go tool cover -func=sHTTPClient/coverage.out >> coverage_review.out
 echo "Done"
 #
 # # Review the coverage totals for 70%+ compliance
