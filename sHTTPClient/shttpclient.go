@@ -166,6 +166,8 @@ func (httpm *HTTPManager) paramFormatting(reqParams map[string]interface{}) (sot
 	forLoop:
 		for k, v := range reqParams {
 			switch v.(type) {
+			case nil:
+				break
 			case int:
 				x = strconv.Itoa(v.(int))
 			default:
