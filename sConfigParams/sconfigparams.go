@@ -30,7 +30,6 @@ import (
 const (
 	// Environment variables
 	APPENV    = "APP_ENVIRONMENT"
-	AWSREGION = "AWS_REGION"
 	// Environments
 	DEVELOPMENT = "development" // Also referred to as local
 	STAGING     = "staging"
