@@ -1,7 +1,7 @@
 /*
 This is a wrapper for github.com/jackc/pgx/v4 connection.  We are wrapping this
 so that all Sote Go developers connect to Sote databases the same way.
- */
+*/
 package sDatabase
 
 import (
@@ -28,6 +28,7 @@ const (
 type ConnInfo struct {
 	DBPoolPtr    *pgxpool.Pool
 	DSConnValues ConnValues
+	DBContext    context.Context
 }
 
 type ConnValues struct {
@@ -50,6 +51,8 @@ This will create a connection to a database and populate ConnInfo
   sslMode  Type of encryption used for the connection (https://www.postgresql.org/docs/12/libpq-ssl.html for version 12)
   port     Interface the connection communicates with Postgres
   timeout  Number of seconds a request must complete (3 seconds is normal setting)
+
+  DBContext is also set to context.Background() an empty context.
 */
 func GetConnection(dbName, user, password, host, sslMode string, port, timeout int) (dbConnInfo ConnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -75,8 +78,8 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 				panic("sDatabase.sconnection.GetConnection Failed")
 			}
 		}
+		dbConnInfo.DBContext = context.Background()
 	}
-
 	return
 }
 
@@ -95,7 +98,6 @@ func setConnectionValues(dbName, user, password, host, sslMode string, port, tim
 	}
 
 	tConnInfo = ConnValues{dbName, user, password, host, port, timeout, sslMode}
-
 	return
 }
 

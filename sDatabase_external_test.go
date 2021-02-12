@@ -69,7 +69,23 @@ func TestToJSONString(t *testing.T) {
 		t.Fail()
 	}
 }
+func TestContext(t *testing.T) {
+	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+		t.Errorf("GetAWSParams Failed: Expected error code to be nil.")
+		t.Fatal()
+	}
 
+	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
+	if soteErr.ErrCode != nil {
+		t.Errorf("setConnectionValues Failed: Expected a nil error code.")
+		t.Fail()
+	}
+
+	if tConnInfo.DBContext == nil {
+		t.Errorf("TestContext testing DBContext Failed: Expected a non-nil error code.")
+		t.Fail()
+	}
+}
 //
 // sconstraintinfo
 //
