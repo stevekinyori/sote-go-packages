@@ -8,7 +8,7 @@
    #### AFTER
    ![Before](img/hosts_after.png)
 
-- You must have postgres port as 5432 in dockerapi/containerctl.sh
+- You must have postgres port as 5432 in dockerapi/containerctl.sh You have to restart or re-setup your docker after you make this change
    #### BEFORE
    ![Before](img/containerctl_before.png)
 
