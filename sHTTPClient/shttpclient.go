@@ -34,7 +34,7 @@ type payloadManager struct {
 	sHTTPResponse    *httpclient.Response
 	sHTTPBytePayload []byte
 	sHTTPMapPayload  map[string]interface{}
-	RetPack          string
+	RetPack          interface{}
 	sync.Mutex
 }
 
@@ -216,7 +216,7 @@ func (httpm *HTTPManager) resultFormatting() (soteErr sError.SoteError) {
 		soteErr = sError.GetSError(400105, sError.BuildParams([]string{"sPayloadBody", "[]byte"}), sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
 	} else if soteErr = httpm.convertErrors(); soteErr.ErrCode == nil {
-		httpm.RetPack = fmt.Sprintf("%v", httpm.sHTTPMapPayload["retPack"])
+		httpm.RetPack = httpm.sHTTPMapPayload["retPack"]
 	}
 
 	return
