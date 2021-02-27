@@ -25,10 +25,13 @@ const (
 	DSCONNFORMAT    = "dbname=%v user=%v password=%v host=%v port=%v connect_timeout=%v sslmode=%v"
 )
 
+// SRow and SRows are so pgx package doesn't need to be imported in every where there are queries to the database.
 type ConnInfo struct {
 	DBPoolPtr    *pgxpool.Pool
 	DSConnValues ConnValues
 	DBContext    context.Context
+	SRows        pgx.Rows
+	SRow         pgx.Row
 }
 
 type ConnValues struct {
@@ -61,7 +64,8 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 		panic("Invalid connection parameters for database: " + soteErr.FmtErrMsg)
 	} else {
 		var err error
-		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.DSConnValues.DBName, dbConnInfo.DSConnValues.User, dbConnInfo.DSConnValues.Password, dbConnInfo.DSConnValues.Host,
+		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.DSConnValues.DBName, dbConnInfo.DSConnValues.User, dbConnInfo.DSConnValues.Password,
+			dbConnInfo.DSConnValues.Host,
 			dbConnInfo.DSConnValues.Port, dbConnInfo.DSConnValues.Timeout, dbConnInfo.DSConnValues.SSLMode)
 		if dbConnInfo.DBPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString); err != nil {
 			if strings.Contains(err.Error(), "dial") {
