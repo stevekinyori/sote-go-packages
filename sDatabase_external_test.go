@@ -86,6 +86,21 @@ func TestContext(t *testing.T) {
 		t.Fail()
 	}
 }
+func TestSRow(t *testing.T) {
+	tRow := sDatabase.SRow(nil)
+	if tRow != nil {
+		t.Errorf("TestSRow testing creation of SRow variable Failed: Expected error code to be nil.")
+		t.Fail()
+	}
+}
+func TestSRows(t *testing.T) {
+	tRows := sDatabase.SRows(nil)
+	if tRows != nil {
+		t.Errorf("TestSRows testing creation of SRows variable Failed: Expected error code to be nil.")
+		t.Fail()
+	}
+}
+
 //
 // sconstraintinfo
 //

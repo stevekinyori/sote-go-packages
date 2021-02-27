@@ -30,8 +30,6 @@ type ConnInfo struct {
 	DBPoolPtr    *pgxpool.Pool
 	DSConnValues ConnValues
 	DBContext    context.Context
-	SRows        pgx.Rows
-	SRow         pgx.Row
 }
 
 type ConnValues struct {
@@ -43,6 +41,9 @@ type ConnValues struct {
 	Timeout  int    `json:"timeout"`
 	SSLMode  string `json:"sslMode"`
 }
+
+type SRows pgx.Rows
+type SRow pgx.Row
 
 /*
 This will create a connection to a database and populate ConnInfo
