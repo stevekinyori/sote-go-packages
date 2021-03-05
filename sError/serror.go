@@ -47,61 +47,52 @@ const MARKDOWNTITLEBAR string = "| Error Code | Category | Parameter Description
 const FUNCCOMMENTSHEADER string = "\tError Code with requiring parameters:\n"
 const SQLSTATE string = "SQLSTATE"
 
-var (
+ var (
 	EmptyMap = make(map[string]string)
 	/*
 		Error code Ranges are not limited to a single error category.
 		The required format for the FmtErrMsg value is ": <sprintf string>" where the ":" followed by the space must start the value.
 	*/
 	soteErrors = map[int]SoteError{
+		// Errors where the Front End can take action
 		100000: {100000, USERERROR, 0, "None", ": Item already exists", EmptyMap, ""},
 		100100: {100100, USERERROR, 2, "List of users roles, Requested action", ": Your roles %v are not authorized to %v", EmptyMap, ""},
 		109999: {109999, USERERROR, 1, "Item name", ": No %v was/were found", EmptyMap, ""},
-		//
 		200000: {200000, PROCESSERROR, 0, "None", ": Row has been updated since reading it, re-read the row", EmptyMap, ""},
-		200100: {200100, PROCESSERROR, 0, "None", ": Table doesn't exist", EmptyMap, ""},
+		200500: {200500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, ""},
+		800000: {800000, GENERALERROR, 0, "None", ": An error has occurred that is not expected.", EmptyMap, ""},
+		// Errors where the Back End can take action or the system needs to panic
+ 		200100: {200100, PROCESSERROR, 0, "None", ": Table doesn't exist", EmptyMap, ""},
 		200200: {200200, PROCESSERROR, 2, "Parameter name, Data type of parameter", ": %v must be of type %v", EmptyMap, ""},
 		200250: {200250, PROCESSERROR, 3, "Parameter name, Parameter value, List of values allowed", ": %v (%v) must contain one of these values: %v", EmptyMap, ""},
 		200260: {200260, PROCESSERROR, 3, "Other parameter name, Parameter name, Parameter value", ": %v must be provided when %v is set to (%v)", EmptyMap, ""},
-		200500: {200500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, ""},
 		200510: {200510, PROCESSERROR, 3, "Parameter name, Field name, Field value", ": %v can't be updated because %v is set to %v", EmptyMap, ""},
 		200511: {200511, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated or null", EmptyMap, ""},
 		200512: {200512, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated", EmptyMap, ""},
 		200513: {200513, PROCESSERROR, 1, "Parameter name", ": %v must be populated", EmptyMap, ""},
 		200514: {200514, PROCESSERROR, 3, "Parameter name, Another parameter name, Another parameter name", ": %v, %v and %v must all be populated", EmptyMap, ""},
 		200515: {200515, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v must be empty when %v is populated", EmptyMap, ""},
-		//
 		201000: {201000, PROCESSERROR, 1, "Info returned from HTTP/HTTPS Request", ": Bad HTTP/HTTPS Request - %v", EmptyMap, ""},
-		// 201005: {201005, PROCESSERROR, 0, "None", "Invalid Claim", EmptyMap, ""},  REPLACED BY 500060
 		202000: {202000, PROCESSERROR, 1, "Environment Name", ": The API you are calling is not available in this environment (%v)", EmptyMap, ""},
-		//
 		209500: {209500, PROCESSERROR, 0, "None", ": QuickSight error - see Details", EmptyMap, ""},
 		209998: {209998, PROCESSERROR, 0, "None", ": Database constraint error - see Details", EmptyMap, ""},
 		209999: {209999, PROCESSERROR, 0, "None", ": SQL error - see Details", EmptyMap, ""},
-		//
 		219999: {219999, PROCESSERROR, 0, "None", ": Cognito error - see Details", EmptyMap, ""},
-		//
 		230000: {230000, PROCESSERROR, 0, "None", ": The number of parameters provided for the error message does not match the required number", EmptyMap, ""},
 		230050: {230050, PROCESSERROR, 2, "Name, Application/Package name", ": Number of parameters defined in the %v is not support by %v", EmptyMap, ""},
 		230060: {230060, PROCESSERROR, 2, "Provided parameter count, Expected parameter count", ": Number of parameters provided (%v) doesn't match the number expected (%v)", EmptyMap, ""},
-		//
 		250000: {250000, PROCESSERROR, 0, "None", ": AWS SES error - see details in retPack", EmptyMap, ""},
 		250005: {250005, PROCESSERROR, 0, "None", ": AWS STS error - see details in retPack", EmptyMap, ""},
-		//
 		300000: {300000, NATSERROR, 0, "None", ": Jetstream is not enabled", EmptyMap, ""},
 		310000: {310000, NATSERROR, 1, "Key name", ": Upper or lower case %v key is missing", EmptyMap, ""},
 		310005: {310005, NATSERROR, 1, "Key name", ": Upper or lower case %v keys value is missing", EmptyMap, ""},
-		//
 		320000: {320000, NATSERROR, 1, "List of required parameters", ": Message doesn't match signature. Sender must provide the following parameter names: %v", EmptyMap, ""},
-		//
 		335260: {335260, NATSERROR, 0, "None", ": Stream pointer is nil. Must be a validate pointer to a stream.", EmptyMap, ""},
 		335299: {335299, NATSERROR, 1, "Stream Name", ": Stream creation encountered an error that is not expected. Stream Name: %v", EmptyMap, ""},
 		335580: {335580, NATSERROR, 0, "None", ": Stream already exists.", EmptyMap, ""},
 		335599: {335599, NATSERROR, 2, "Stream Name, Consumer Name", ": Consumer creation encountered an error that is not expected. Stream Name: %v Consumer Name: %v", EmptyMap, ""},
-		//
 		336100: {336100, NATSERROR, 2, "Stream Name, Consumer Subject Filter", ": The consumer subject filter must be a subset of the stream subject. " +
 			"Stream Name: %v Consumer Subject Filter: %v", EmptyMap, ""},
-		//
 		400000: {400000, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not numeric", EmptyMap, ""},
 		400005: {400005, CONTENTERROR, 2, "Field name, Minimal length", ": %v must have a value greater than %v", EmptyMap, ""},
 		400010: {400010, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a string", EmptyMap, ""},
@@ -120,15 +111,11 @@ var (
 		400110: {400110, CONTENTERROR, 1, "Parameter name", ": %v couldn't be parsed - Invalid JSON error", EmptyMap, ""},
 		400111: {400111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v couldn't be converted to a map/keyed array - %v", EmptyMap, ""},
 		400200: {400200, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v", EmptyMap, ""},
-		//
 		401000: {401000, CONTENTERROR, 0, "None", ": Column must have a non-null value. Details: ", EmptyMap, ""},
 		401010: {401010, CONTENTERROR, 0, "None", ": Column data type is not support or invalid. Details: ", EmptyMap, ""},
-		//
 		405110: {405110, CONTENTERROR, 2, "Thing being changed, System Id for the thing", ": No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
 		405120: {405120, CONTENTERROR, 3, "JSON array name, Thing being changed, System Id for the thing", ": The %v was empty for %v with id %v", EmptyMap, ""},
-		//
 		410000: {410000, CONTENTERROR, 1, "Error message number", ": %v error message is missing from sError package", EmptyMap, ""},
-		//
 		500000: {500000, PERMISSIONERROR, 0, "None", ": iss (Issuer) is not valid", EmptyMap, ""},
 		500010: {500010, PERMISSIONERROR, 0, "None", ": sub (Subject) was not present", EmptyMap, ""},
 		500020: {500020, PERMISSIONERROR, 0, "None", ": token_use is not valid", EmptyMap, ""},
@@ -139,39 +126,29 @@ var (
 		500056: {500056, PERMISSIONERROR, 0, "None", ": Token contains an invalid number of segments", EmptyMap, ""},
 		500060: {500060, PERMISSIONERROR, 1, "Claim names", ": These claims are invalid: %v", EmptyMap, ""},
 		500070: {500070, PERMISSIONERROR, 0, "None", ": Required claim(s) is/are missing", EmptyMap, ""},
-		//
 		600000: {600000, CONFIGURATIONISSUE, 0, "None", ": .env files are missing", EmptyMap, ""},
 		600010: {600010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", ": %v file was not found. Message return: %v", EmptyMap, ""},
-		//
 		601000: {601000, CONFIGURATIONISSUE, 1, "Environment name", ": environment variable is missing (%v)", EmptyMap, ""},
 		601010: {601010, CONFIGURATIONISSUE, 1, "Environment name", ": environment value (%v) is invalid", EmptyMap, ""},
-		//
 		602000: {602000, CONFIGURATIONISSUE, 3, "Database name, Database driver name, Port value", ": Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
 		602010: {602010, CONFIGURATIONISSUE, 0, "None", ": Unable to pass database authentication", EmptyMap, ""},
 		602020: {602020, CONFIGURATIONISSUE, 1, "SSL Mode", ": Only disable, allow, prefer and required are supported.", EmptyMap, ""},
 		602030: {602030, CONFIGURATIONISSUE, 1, "Connection Type", ": Only single or pool are supported.", EmptyMap, ""},
 		602999: {602999, CONFIGURATIONISSUE, 0, "None", ": No database connection has been established", EmptyMap, ""},
-		//
 		603998: {603998, CONFIGURATIONISSUE, 0, "None", ": no nkey seed found", EmptyMap, ""},
 		603999: {603999, CONFIGURATIONISSUE, 0, "None", ": No nats connection has been established", EmptyMap, ""},
-		//
 		605000: {605000, CONFIGURATIONISSUE, 0, "None", ": Unexpected signing method", EmptyMap, ""},
 		605010: {605010, CONFIGURATIONISSUE, 0, "None", ": Kid header not found", EmptyMap, ""},
 		605020: {605020, CONFIGURATIONISSUE, 1, "Kid", ": key (%v) was not found in token", EmptyMap, ""},
 		605021: {605021, CONFIGURATIONISSUE, 1, "Kid", ": Kid (%v) was not found in public key set", EmptyMap, ""},
 		605030: {605030, CONFIGURATIONISSUE, 2, "Region, Environment", ": Failed to fetch remote JWK (status = 404) for %v region %v environment", EmptyMap, ""},
-		//
 		609990: {609990, CONFIGURATIONISSUE, 1, "Parameter name", ": URL is missing (%v)", EmptyMap, ""},
 		609998: {609998, CONFIGURATIONISSUE, 1, "Parameter name", ": Start up parameter is out of value range (%v)", EmptyMap, ""},
 		609999: {609999, CONFIGURATIONISSUE, 1, "Parameter name", ": Start up parameter is missing (%v)", EmptyMap, ""},
-		//
 		700000: {700000, APICONTRACTERROR, 1, "List of required parameters", ": Call doesn't match API signature. Caller must provide the following parameter names: %v", EmptyMap, ""},
-		//
-		800000: {800000, GENERALERROR, 0, "None", ": An error has occurred that is not expected.", EmptyMap, ""},
 		800100: {800100, GENERALERROR, 0, "None", ": Postgres error has occurred that is not expected.", EmptyMap, ""},
 		800199: {800199, GENERALERROR, 0, "None", ": Postgres is not responding over TCP. Container may not be running.", EmptyMap, ""},
 		801999: {801999, GENERALERROR, 0, "None", ": AWS session error has occurred that is not expected", EmptyMap, ""},
-		//
 		805000: {805000, GENERALERROR, 0, "None", ": Synadia error has occurred that is not expected.", EmptyMap, ""},
 	}
 )
