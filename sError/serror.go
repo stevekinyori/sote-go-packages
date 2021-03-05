@@ -57,9 +57,9 @@ const SQLSTATE string = "SQLSTATE"
 		// Errors where the Front End can take action
 		100000: {100000, USERERROR, 0, "None", ": Item already exists", EmptyMap, ""},
 		100100: {100100, USERERROR, 2, "List of users roles, Requested action", ": Your roles %v are not authorized to %v", EmptyMap, ""},
-		109999: {109999, USERERROR, 1, "Item name", ": No %v was/were found", EmptyMap, ""},
 		200000: {200000, PROCESSERROR, 0, "None", ": Row has been updated since reading it, re-read the row", EmptyMap, ""},
 		200500: {200500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, ""},
+		109999: {109999, USERERROR, 1, "Item name", ": No %v was/were found", EmptyMap, ""},
 		800000: {800000, GENERALERROR, 0, "None", ": An error has occurred that is not expected.", EmptyMap, ""},
 		// Errors where the Back End can take action or the system needs to panic
  		200100: {200100, PROCESSERROR, 0, "None", ": Table doesn't exist", EmptyMap, ""},
