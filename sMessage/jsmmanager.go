@@ -166,7 +166,7 @@ func (jsmm *JSMManager) setCredentialsFile(streamCredentialFile string) (soteErr
 	if len(streamCredentialFile) == 0 {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamCredentialFile"}), sError.EmptyMap)
 	} else if _, err := os.Stat(streamCredentialFile); err != nil {
-		soteErr = sError.GetSError(600010, sError.BuildParams([]string{streamCredentialFile, err.Error()}), sError.EmptyMap)
+		soteErr = sError.GetSError(209010, sError.BuildParams([]string{streamCredentialFile, err.Error()}), sError.EmptyMap)
 	} else {
 		jsmm.connOpts = append(jsmm.connOpts, nats.UserCredentials(streamCredentialFile))
 	}
@@ -218,7 +218,7 @@ func (jsmm *JSMManager) setURL(sURL string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if _, err := url.Parse(sURL); err != nil || sURL == "" {
-		soteErr = sError.GetSError(609990, sError.BuildParams([]string{sURL}), nil)
+		soteErr = sError.GetSError(210090, sError.BuildParams([]string{sURL}), nil)
 	} else {
 		jsmm.sURL = sURL
 	}
@@ -252,7 +252,7 @@ func (jsmm *JSMManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 				sLogger.Info(soteErr.FmtErrMsg)
 				panic("sError.ConvertErr Failed")
 			}
-			sLogger.Info(sError.GetSError(805000, nil, errDetails).FmtErrMsg)
+			sLogger.Info(sError.GetSError(210400, nil, errDetails).FmtErrMsg)
 			panic("sMessages.connect Failed")
 		}
 	}

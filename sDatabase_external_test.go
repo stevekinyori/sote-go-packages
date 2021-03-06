@@ -24,8 +24,8 @@ const (
 func TestVerifyConnection(t *testing.T) {
 	var tConnInfo sDatabase.ConnInfo
 	soteErr := sDatabase.VerifyConnection(tConnInfo)
-	if soteErr.ErrCode != 602999 {
-		t.Errorf("VerifyConnection Failed: Expected 602999 error code.")
+	if soteErr.ErrCode != 209299 {
+		t.Errorf("VerifyConnection Failed: Expected 209299 error code.")
 		t.Fail()
 	}
 
@@ -127,8 +127,8 @@ func TestSRows(t *testing.T) {
 // }
 // func TestGetSingleColumnConstraintInfoNoConn(t *testing.T) {
 // 	var tConnInfo = sDatabase.ConnInfo{nil, sDatabase.ConnValues{}}
-// 	if _, soteErr := sDatabase.GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); soteErr.ErrCode != 602999 {
-// 		t.Errorf("pkLookup Failed: Expected error code to be 602999.")
+// 	if _, soteErr := sDatabase.GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); soteErr.ErrCode != 209299 {
+// 		t.Errorf("pkLookup Failed: Expected error code to be 209299.")
 //
 // 	}
 // }
@@ -138,8 +138,8 @@ func TestSRows(t *testing.T) {
 //
 // func TestGetTables(t *testing.T) {
 	// var tConnInfo sDatabase.ConnInfo
-	// if _, soteErr := sDatabase.GetTableList("sote", tConnInfo); soteErr.ErrCode != 602999 {
-	// 	t.Errorf("Get Tables Failed: Expected error code of 602999")
+	// if _, soteErr := sDatabase.GetTableList("sote", tConnInfo); soteErr.ErrCode != 209299 {
+	// 	t.Errorf("Get Tables Failed: Expected error code of 209299")
 	// 	t.Fail()
 	// }
 	//
@@ -171,8 +171,8 @@ func TestSRows(t *testing.T) {
 //
 // func TestGetColumnInfo(t *testing.T) {
 	// var tConnInfo sDatabase.ConnInfo
-	// if _, soteErr := sDatabase.GetColumnInfo(SOTETESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != 602999 {
-	// 	t.Errorf("GetColumnInfo Failed: Expected error code of 602999")
+	// if _, soteErr := sDatabase.GetColumnInfo(SOTETESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != 209299 {
+	// 	t.Errorf("GetColumnInfo Failed: Expected error code of 209299")
 	// 	t.Fail()
 	// }
 	//

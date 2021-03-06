@@ -35,26 +35,26 @@ func init() {
 
 func TestValidToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 500050 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500050 or nil: %v", soteErr.FmtErrMsg)
+	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidMissingSegmentToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 500056 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500056 or nil: %v", soteErr.FmtErrMsg)
+	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidFakeToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 500056 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500056 or nil: %v", soteErr.FmtErrMsg)
+	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestInValidSignatureToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 500050 && soteErr.ErrCode != 500055 && soteErr.ErrCode != 500056 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500050, 500055 or 500056: %v", soteErr.FmtErrMsg)
+	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidTokenMissingParams(t *testing.T) {
@@ -65,8 +65,8 @@ func TestValidTokenMissingParams(t *testing.T) {
 }
 func TestInValidToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 500055 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500055: %v", soteErr.FmtErrMsg)
+	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestMatchKid(t *testing.T) {
@@ -110,34 +110,34 @@ func TestFetchPublicKey(t *testing.T) {
 		t.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 
-	if keySet, soteErr = fetchPublicKey("SCOTT_LAND", userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 605030 {
-		t.Errorf("matchKid failed: Expected soteErr to be 605030: %v", soteErr.FmtErrMsg)
+	if keySet, soteErr = fetchPublicKey("SCOTT_LAND", userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 210030 {
+		t.Errorf("matchKid failed: Expected soteErr to be 210030: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidateClaims(t *testing.T) {
 	var claims jwt.MapClaims
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 500070 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 500070")
+	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208370 {
+		t.Errorf("validateClaims failed: Expected soteErr to be 208370")
 	}
 	claims = make(map[string]interface{})
 	claims["scope"] = "scott.fake.scope"
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 500060 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 500060")
+	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
+		t.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
 	claims = make(map[string]interface{})
 	claims["token_use"] = "scott.fake.use"
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 500060 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 500060")
+	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
+		t.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
 	claims = make(map[string]interface{})
 	claims["iss"] = "scott.fake.iss"
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 500060 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 500060")
+	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
+		t.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
 	claims = make(map[string]interface{})
 	claims["client_id"] = "scott.fake.client_id"
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 500040 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 500040")
+	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208340 {
+		t.Errorf("validateClaims failed: Expected soteErr to be 208340")
 	}
 }
 func TestValidateClientId(t *testing.T) {

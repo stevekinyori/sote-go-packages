@@ -12,7 +12,7 @@ func init() {
 
 func TestSetConnectionValue(t *testing.T) {
 	_, soteErr := setConnectionValues("dbName", "User", "Password", "Host", "INVALID", 1, 1)
-	if soteErr.ErrCode != 602020 {
+	if soteErr.ErrCode != 209220 {
 		t.Errorf("setConnectionValues Failed: Error code is not for an invalid sslMode.")
 		t.Fail()
 	}
@@ -32,8 +32,8 @@ func TestSetConnectionValues(t *testing.T) {
 func TestVerifyConnection(t *testing.T) {
 	var tConnInfo ConnInfo
 	soteErr := VerifyConnection(tConnInfo)
-	if soteErr.ErrCode != 602999 {
-		t.Errorf("VerifyConnection Failed: Expected 602999 error code.")
+	if soteErr.ErrCode != 209299 {
+		t.Errorf("VerifyConnection Failed: Expected 209299 error code.")
 		t.Fail()
 	}
 
@@ -56,8 +56,8 @@ func TestVerifyConnection(t *testing.T) {
 
 	// This will test the condition that no database is available to connect
 	tConnInfo, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, 65000, 3)
-	if soteErr.ErrCode != 602999 {
-		t.Errorf("setConnectionValues Failed: Expected 602999 error code.")
+	if soteErr.ErrCode != 209299 {
+		t.Errorf("setConnectionValues Failed: Expected 209299 error code.")
 		t.Fail()
 	}
 

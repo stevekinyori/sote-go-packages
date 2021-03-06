@@ -10,8 +10,8 @@ func init() {
 
 // func TestGetTables(t *testing.T) {
 // 	var tConnInfo ConnInfo
-// 	if _, soteErr := GetTableList("sote", tConnInfo); soteErr.ErrCode != 602999 {
-// 		t.Errorf("GetTableList Failed: Expected error code of 602999")
+// 	if _, soteErr := GetTableList("sote", tConnInfo); soteErr.ErrCode != 209299 {
+// 		t.Errorf("GetTableList Failed: Expected error code of 209299")
 // 		t.Fail()
 // 	}
 //

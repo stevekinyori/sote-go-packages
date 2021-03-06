@@ -134,9 +134,9 @@ func TestCreateDeliverAllReplayInstantConsumer(t *testing.T) {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
-	// Test error code 336100 - Consumer subject filter is not subset of stream subject
-	if _, soteErr := CreatePullConsumerWithReplayInstant(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, pJSMManager); soteErr.ErrCode != 336100 {
-		t.Errorf("CreateDeliverAllReplayInstantConsumer Failed: Expected error code of 336100")
+	// Test error code 206700 - Consumer subject filter is not subset of stream subject
+	if _, soteErr := CreatePullConsumerWithReplayInstant(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, pJSMManager); soteErr.ErrCode != 206700 {
+		t.Errorf("CreateDeliverAllReplayInstantConsumer Failed: Expected error code of 206700")
 	}
 	// Clean Up
 	if soteErr := DeleteStream(pStream); soteErr.ErrCode != nil {
@@ -175,9 +175,9 @@ func TestCreatePullConsumerWithReplayOriginal(t *testing.T) {
 		t.Errorf("CreateLimitsStream Failed: Expected error code to be nil")
 	}
 
-	// Test error code 336100 - Consumer subject filter is not subset of stream subject
-	if _, soteErr := CreatePullConsumerWithReplayOriginal(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, pJSMManager); soteErr.ErrCode != 336100 {
-		t.Errorf("CreateDeliverAllReplayInstantConsumer Failed: Expected error code of 336100")
+	// Test error code 206700 - Consumer subject filter is not subset of stream subject
+	if _, soteErr := CreatePullConsumerWithReplayOriginal(TESTSTREAMNAME, TESTCONSUMERNAME, TESTDURABLENAME, TESTSUBJECTFILETER, 1, pJSMManager); soteErr.ErrCode != 206700 {
+		t.Errorf("CreateDeliverAllReplayInstantConsumer Failed: Expected error code of 206700")
 	}
 	// Clean Up
 	if soteErr := DeleteStream(pStream); soteErr.ErrCode != nil {

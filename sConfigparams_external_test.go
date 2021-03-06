@@ -25,7 +25,7 @@ func TestGetParametersFound(t *testing.T) {
 }
 func TestGetParametersNotFound(t *testing.T) {
 	var soteErr sError.SoteError
-	if _, soteErr = sConfigParams.GetParameters(API, "SCOTT"); soteErr.ErrCode != 601010 {
+	if _, soteErr = sConfigParams.GetParameters(API, "SCOTT"); soteErr.ErrCode != 209110 {
 		t.Errorf("GetParameters failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if _, soteErr = sConfigParams.GetParameters("SCOTT", sConfigParams.STAGING); soteErr.ErrCode != 109999 {
@@ -103,8 +103,8 @@ func TestValidateEnvironment(t *testing.T) {
 	if soteErr := sConfigParams.ValidateEnvironment(sConfigParams.PRODUCTION); soteErr.ErrCode != nil {
 		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
-	if soteErr := sConfigParams.ValidateEnvironment("BAD_ENV"); soteErr.ErrCode != 601010 {
-		t.Errorf("ValidateEnvironment failed: Expected soteErr to be 601010: %v", soteErr.ErrCode)
+	if soteErr := sConfigParams.ValidateEnvironment("BAD_ENV"); soteErr.ErrCode != 209110 {
+		t.Errorf("ValidateEnvironment failed: Expected soteErr to be 209110: %v", soteErr.ErrCode)
 	}
 }
 func TestGetNATSCredentials(t *testing.T) {
@@ -122,8 +122,8 @@ func TestGetNATSCredentials(t *testing.T) {
 	if _, soteErr = credValues("SCOTT", sConfigParams.STAGING); soteErr.ErrCode != 109999 {
 		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr = credValues(SYNADIA, ""); soteErr.ErrCode != 601010 {
-		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 601010: %v", soteErr.FmtErrMsg)
+	if _, soteErr = credValues(SYNADIA, ""); soteErr.ErrCode != 209110 {
+		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestGetNATSURL(t *testing.T) {

@@ -175,51 +175,51 @@ const SQLSTATE string = "SQLSTATE"
 		200513	Parameter name > : %v must be populated
 		200514	Parameter name, Another parameter name, Another parameter name > : %v, %v and %v must all be populated
 		200515	Parameter name, Another parameter name > : %v must be empty when %v is populated
-		201000	Info returned from HTTP/HTTPS Request > : Bad HTTP/HTTPS Request - %v
-		202000	Environment Name > : The API you are calling is not available in this environment (%v)
-		230050	Name, Application/Package name > : Number of parameters defined in the %v is not support by %v
-		230060	Provided parameter count, Expected parameter count > : Number of parameters provided (%v) doesn't match the number expected (%v)
-		310000	Key name > : Upper or lower case %v key is missing
-		310005	Key name > : Upper or lower case %v keys value is missing
-		320000	List of required parameters > : Message doesn't match signature. Sender must provide the following parameter names: %v
-		335299	Stream Name > : Stream creation encountered an error that is not expected. Stream Name: %v
-		335599	Stream Name, Consumer Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Consumer Name: %v
-		336100	Stream Name, Consumer Subject Filter > : The consumer subject filter must be a subset of the stream subject. Stream Name: %v Consumer Subject Filter: %v
-		400000	Field name, Field value > : %v (%v) is not numeric
-		400005	Field name, Minimal length > : %v must have a value greater than %v
-		400010	Field name, Field value > : %v (%v) is not a string
-		400020	Field name, Field value > : %v (%v) is not a float
-		400030	Field name, Field value > : %v (%v) is not a array
-		400040	Field name, Field value > : %v (%v) is not a json string
-		400050	Field name, Field value > : %v (%v) is not a valid email address
-		400060	Field name, Field value > : %v (%v) contains special characters which are not allowed
-		400065	Field name, Field value > : %v (%v) contains special characters other than underscore
-		400070	Field name, Field value > : %v (%v) is not a valid date
-		400080	Field name, Field value > : %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu
-		400090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size > : %v (%v) is too %v. %v size: %v Actual size: %v
-		400095	Field name, Field value, greater than value, less than value > : %v (%v) must be greater than %v and less than %v
-		400100	Parameter name, Data Structure Type > : %v couldn't be converted to an %v - JSON conversion error
-		400105	Data Structure Name, Data Structure Type > : %v (%v) couldn't be converted to JSON - JSON conversion error
-		400110	Parameter name > : %v couldn't be parsed - Invalid JSON error
-		400111	Parameter name, Application/Package name > : %v couldn't be converted to a map/keyed array - %v
-		400200	Parameter name, Data Structure Type > : %v couldn't be converted to an %v
-		405110	Thing being changed, System Id for the thing > : No update is needed. No fields where changed for %v with id %v
-		405120	JSON array name, Thing being changed, System Id for the thing > : The %v was empty for %v with id %v
-		410000	Error message number > : %v error message is missing from sError package
-		500060	Claim names > : These claims are invalid: %v
-		600010	File name, Message returned from Open > : %v file was not found. Message return: %v
-		601000	Environment name > : environment variable is missing (%v)
-		601010	Environment name > : environment value (%v) is invalid
-		602000	Database name, Database driver name, Port value > : Unable to connect to database %v using driver %v on port %v
-		602020	SSL Mode > : Only disable, allow, prefer and required are supported.
-		602030	Connection Type > : Only single or pool are supported.
-		605020	Kid > : key (%v) was not found in token
-		605021	Kid > : Kid (%v) was not found in public key set
-		605030	Region, Environment > : Failed to fetch remote JWK (status = 404) for %v region %v environment
-		609990	Parameter name > : URL is missing (%v)
-		609998	Parameter name > : Start up parameter is out of value range (%v)
-		609999	Parameter name > : Start up parameter is missing (%v)
-		700000	List of required parameters > : Call doesn't match API signature. Caller must provide the following parameter names: %v
+		200600	Info returned from HTTP/HTTPS Request > : Bad HTTP/HTTPS Request - %v
+		200700	Environment Name > : The API you are calling is not available in this environment (%v)
+		203050	Name, Application/Package name > : Number of parameters defined in the %v is not support by %v
+		203060	Provided parameter count, Expected parameter count > : Number of parameters provided (%v) doesn't match the number expected (%v)
+		206100	Key name > : Upper or lower case %v key is missing
+		206105	Key name > : Upper or lower case %v keys value is missing
+		206200	List of required parameters > : Message doesn't match signature. Sender must provide the following parameter names: %v
+		206400	Stream Name > : Stream creation encountered an error that is not expected. Stream Name: %v
+		206600	Stream Name, Consumer Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Consumer Name: %v
+		206700	Stream Name, Consumer Subject Filter > : The consumer subject filter must be a subset of the stream subject. Stream Name: %v Consumer Subject Filter: %v
+		207000	Field name, Field value > : %v (%v) is not numeric
+		207005	Field name, Minimal length > : %v must have a value greater than %v
+		207010	Field name, Field value > : %v (%v) is not a string
+		207020	Field name, Field value > : %v (%v) is not a float
+		207030	Field name, Field value > : %v (%v) is not a array
+		207040	Field name, Field value > : %v (%v) is not a json string
+		207050	Field name, Field value > : %v (%v) is not a valid email address
+		207060	Field name, Field value > : %v (%v) contains special characters which are not allowed
+		207065	Field name, Field value > : %v (%v) contains special characters other than underscore
+		207070	Field name, Field value > : %v (%v) is not a valid date
+		207080	Field name, Field value > : %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu
+		207090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size > : %v (%v) is too %v. %v size: %v Actual size: %v
+		207095	Field name, Field value, greater than value, less than value > : %v (%v) must be greater than %v and less than %v
+		207010	Parameter name, Data Structure Type > : %v couldn't be converted to an %v - JSON conversion error
+		207105	Data Structure Name, Data Structure Type > : %v (%v) couldn't be converted to JSON - JSON conversion error
+		207110	Parameter name > : %v couldn't be parsed - Invalid JSON error
+		207111	Parameter name, Application/Package name > : %v couldn't be converted to a map/keyed array - %v
+		207200	Parameter name, Data Structure Type > : %v couldn't be converted to an %v
+		208110	Thing being changed, System Id for the thing > : No update is needed. No fields where changed for %v with id %v
+		208120	JSON array name, Thing being changed, System Id for the thing > : The %v was empty for %v with id %v
+		208200	Error message number > : %v error message is missing from sError package
+		208360	Claim names > : These claims are invalid: %v
+		209010	File name, Message returned from Open > : %v file was not found. Message return: %v
+		209100	Environment name > : environment variable is missing (%v)
+		209110	Environment name > : environment value (%v) is invalid
+		209200	Database name, Database driver name, Port value > : Unable to connect to database %v using driver %v on port %v
+		209220	SSL Mode > : Only disable, allow, prefer and required are supported.
+		209230	Connection Type > : Only single or pool are supported.
+		209520	Kid > : key (%v) was not found in token
+		209521	Kid > : Kid (%v) was not found in public key set
+		210030	Region, Environment > : Failed to fetch remote JWK (status = 404) for %v region %v environment
+		210090	Parameter name > : URL is missing (%v)
+		210098	Parameter name > : Start up parameter is out of value range (%v)
+		210099	Parameter name > : Start up parameter is missing (%v)
+		210100	List of required parameters > : Call doesn't match API signature. Caller must provide the following parameter names: %v
 */
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (soteErr SoteError) {
 	sLogger.DebugMethod()
@@ -228,12 +228,12 @@ func GetSError(code int, params []interface{}, errorDetails map[string]string) (
 	if soteErr.ErrCode != code {
 		s := make([]interface{}, 1)
 		s[0] = code
-		soteErr = GetSError(410000, s, errorDetails)
+		soteErr = GetSError(208200, s, errorDetails)
 	} else if soteErr.ParamCount != len(params) {
 		s := make([]interface{}, 2)
 		s[0] = soteErr.ParamCount
 		s[1] = len(params)
-		soteErr = GetSError(230060, s, errorDetails)
+		soteErr = GetSError(203060, s, errorDetails)
 	} else {
 		if soteErr.ParamCount == 0 {
 			soteErr.ErrorDetails = errorDetails
@@ -277,7 +277,7 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 		s := make([]interface{}, 2)
 		s[0] = "err"
 		s[1] = "sError"
-		soteErr = GetSError(400111, s, EmptyMap)
+		soteErr = GetSError(207111, s, EmptyMap)
 	}
 	return
 }

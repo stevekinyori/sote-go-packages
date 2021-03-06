@@ -29,31 +29,31 @@ const (
 
 func TestValidToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 500050 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500050 or nil: %v", soteErr.ErrCode)
+	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.ErrCode)
 	}
 }
 func TestValidFakeToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 500056 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500050 or nil: %v", soteErr.FmtErrMsg)
+	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidMissingSegmentToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 500056 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500055 or nil: %v", soteErr.FmtErrMsg)
+	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208355 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestInValidSignatureToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 500050 && soteErr.ErrCode != 500055  && soteErr.ErrCode != 500056 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500050, 500055 or 500056: %v", soteErr.ErrCode)
+	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355  && soteErr.ErrCode != 208356 {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.ErrCode)
 	}
 }
 func TestInValidToken(t *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 500055 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 500055: %v", soteErr.ErrCode)
+	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
+		t.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.ErrCode)
 	}
 }

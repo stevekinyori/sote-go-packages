@@ -18,7 +18,7 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 		if len(strings.Split(rawToken, ".")) == 3 {
 			token, err := jwt.Parse(rawToken, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-					holdSoteErr = sError.GetSError(605000, nil, sError.EmptyMap)
+					holdSoteErr = sError.GetSError(209500, nil, sError.EmptyMap)
 				}
 
 				if holdSoteErr.ErrCode == nil {
@@ -28,7 +28,7 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 						keys []jwk.Key
 					)
 					if kid, ok = token.Header["kid"].(string); !ok {
-						holdSoteErr = sError.GetSError(605010, nil, sError.EmptyMap)
+						holdSoteErr = sError.GetSError(209510, nil, sError.EmptyMap)
 					}
 
 					if holdSoteErr.ErrCode == nil {
@@ -44,13 +44,13 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 
 			if err != nil {
 				if strings.Contains(err.Error(), "expired") {
-					holdSoteErr = sError.GetSError(500050, nil, sError.EmptyMap)
+					holdSoteErr = sError.GetSError(208350, nil, sError.EmptyMap)
 				}
 				if strings.Contains(err.Error(), "invalid type") || strings.Contains(err.Error(), "invalid character") {
-					holdSoteErr = sError.GetSError(500055, nil, sError.EmptyMap)
+					holdSoteErr = sError.GetSError(208355, nil, sError.EmptyMap)
 				}
 				if strings.Contains(err.Error(), "invalid number of segments") {
-					holdSoteErr = sError.GetSError(500056, nil, sError.EmptyMap)
+					holdSoteErr = sError.GetSError(208356, nil, sError.EmptyMap)
 				}
 			}
 
@@ -58,12 +58,12 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 					holdSoteErr = validateClaims(claims, tApplication, tEnvironment)
 				} else {
-					holdSoteErr = sError.GetSError(500055, nil, sError.EmptyMap)
+					holdSoteErr = sError.GetSError(208355, nil, sError.EmptyMap)
 				}
 			}
 			soteErr = holdSoteErr
 		} else {
-			soteErr = sError.GetSError(500056, nil, sError.EmptyMap)
+			soteErr = sError.GetSError(208356, nil, sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
 		}
 	} else {
@@ -83,7 +83,7 @@ func matchKid(tEnvironment, kid string) (keys []jwk.Key, soteErr sError.SoteErro
 	keySet, soteErr = getPublicKey(tEnvironment)
 	keys = keySet.LookupKeyID(kid)
 	if len(keys) == 0 {
-		soteErr = sError.GetSError(605021, sError.BuildParams([]string{kid}), sError.EmptyMap)
+		soteErr = sError.GetSError(209521, sError.BuildParams([]string{kid}), sError.EmptyMap)
 	}
 
 	return
@@ -101,7 +101,7 @@ func getPublicKey(tEnvironment string) (keySet *jwk.Set, soteErr sError.SoteErro
 	if region, soteErr := sConfigParams.GetRegion(); soteErr.ErrCode == nil {
 		if userPoolId, soteErr := sConfigParams.GetUserPoolId(tEnvironment); soteErr.ErrCode == nil {
 			if keySet, soteErr = fetchPublicKey(region, userPoolId, tEnvironment); soteErr.ErrCode != nil {
-				soteErr = sError.GetSError(605030, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
+				soteErr = sError.GetSError(210030, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
 				panic(soteErr.FmtErrMsg)
 			}
 		}
@@ -124,7 +124,7 @@ func fetchPublicKey(region, userPoolId, tEnvironment string) (keySet *jwk.Set, s
 	keySet, err = jwk.Fetch(keyPubLocation)
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "remote JWK") {
-			soteErr = sError.GetSError(605030, sError.BuildParams([]string{region, tEnvironment}), sError.EmptyMap)
+			soteErr = sError.GetSError(210030, sError.BuildParams([]string{region, tEnvironment}), sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
 		}
 	}
@@ -149,7 +149,7 @@ func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (so
 			case "scope":
 				claimCount++
 				if claim != "aws.cognito.signin.user.admin" {
-					soteErr = sError.GetSError(500060, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
+					soteErr = sError.GetSError(208360, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 					sLogger.Info(soteErr.FmtErrMsg)
 				} else {
 					sLogger.Info("Claim (scope) was found")
@@ -157,7 +157,7 @@ func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (so
 			case "token_use":
 				claimCount++
 				if claim != "access" {
-					soteErr = sError.GetSError(500060, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
+					soteErr = sError.GetSError(208360, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 					sLogger.Info(soteErr.FmtErrMsg)
 				} else {
 					sLogger.Info("Claim (token_use) was found")
@@ -168,17 +168,17 @@ func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (so
 					if userPoolId, soteErr = sConfigParams.GetUserPoolId(tEnvironment); soteErr.ErrCode == nil {
 						issuerURL := "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId
 						if claim != issuerURL {
-							soteErr = sError.GetSError(500060, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
+							soteErr = sError.GetSError(208360, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 							sLogger.Info(soteErr.FmtErrMsg)
 						} else {
 							sLogger.Info("Claim (iss) was found")
 						}
 					} else {
-						soteErr = sError.GetSError(500060, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
+						soteErr = sError.GetSError(208360, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 						sLogger.Info(soteErr.FmtErrMsg)
 					}
 				} else {
-					soteErr = sError.GetSError(500060, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
+					soteErr = sError.GetSError(208360, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 					sLogger.Info(soteErr.FmtErrMsg)
 				}
 			case "client_id":
@@ -193,7 +193,7 @@ func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (so
 	}
 
 	if claimCount != 4 && soteErr.ErrCode == nil {
-		soteErr = sError.GetSError(500070, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(208370, nil, sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
@@ -207,7 +207,7 @@ func validateClientId(tClientId, tApplication, tEnvironment string) (soteErr sEr
 
 	if clientId, soteErr = sConfigParams.GetClientId(tApplication, tEnvironment); soteErr.ErrCode == nil {
 		if tClientId != clientId {
-			soteErr = sError.GetSError(500040, nil, sError.EmptyMap)
+			soteErr = sError.GetSError(208340, nil, sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
 		}
 	} else if soteErr.ErrCode != nil {

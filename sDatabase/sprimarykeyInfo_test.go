@@ -94,7 +94,7 @@ func init() {
 // }
 // func TestNoConnection(t *testing.T) {
 // 	var tConnInfo = ConnInfo{nil, ConnValues{}}
-// 	if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 602999 {
-// 		t.Errorf("pkLookup Failed: Expected error code to be 602999.")
+// 	if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 209299 {
+// 		t.Errorf("pkLookup Failed: Expected error code to be 209299.")
 // 	}
 // }

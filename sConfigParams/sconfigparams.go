@@ -353,7 +353,7 @@ func ValidateEnvironment(environment string) (soteErr sError.SoteError) {
 	case DEMO:
 	case PRODUCTION:
 	default:
-		soteErr = sError.GetSError(601010, sError.BuildParams([]string{environment}), sError.EmptyMap)
+		soteErr = sError.GetSError(209110, sError.BuildParams([]string{environment}), sError.EmptyMap)
 	}
 
 	return

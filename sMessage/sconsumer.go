@@ -7,7 +7,7 @@ CONSUMERS:
 	JetStream will deliver the messages as fast as possible to a subject of your choice or pull based for typical work queue like
 	behavior.
 
-	The Consumer subject filter must be a subset of the Stream subject. Error Code: 336100
+	The Consumer subject filter must be a subset of the Stream subject. Error Code: 206700
 	Here are some examples:
 		Stream subject: IMAGES  Consumer subject filter: IMAGES -> works
 		Stream subject: IMAGES  Consumer subject filter: IMAGES.cat -> DOES NOT works
@@ -78,9 +78,9 @@ func CreatePullConsumerWithReplayInstant(streamName, consumerName, durableName, 
 		if err != nil {
 			errDetails["NATS ERROR:"] = err.Error()
 			if strings.Contains("consumer filter subject is not a valid subset of the interest subjects", err.Error()) {
-				soteErr = sError.GetSError(336100, sError.BuildParams([]string{streamName, subjectFilter}), errDetails)
+				soteErr = sError.GetSError(206700, sError.BuildParams([]string{streamName, subjectFilter}), errDetails)
 			} else {
-				soteErr = sError.GetSError(805000, nil, errDetails)
+				soteErr = sError.GetSError(210400, nil, errDetails)
 				log.Fatal(soteErr.FmtErrMsg)
 			}
 		}
@@ -122,9 +122,9 @@ func CreatePullConsumerWithReplayOriginal(streamName, consumerName, durableName,
 		if err != nil {
 			errDetails["NATS ERROR:"] = err.Error()
 			if strings.Contains("consumer filter subject is not a valid subset of the interest subjects", err.Error()) {
-				soteErr = sError.GetSError(336100, sError.BuildParams([]string{streamName, subjectFilter}), errDetails)
+				soteErr = sError.GetSError(206700, sError.BuildParams([]string{streamName, subjectFilter}), errDetails)
 			} else {
-				soteErr = sError.GetSError(805000, nil, errDetails)
+				soteErr = sError.GetSError(210400, nil, errDetails)
 				log.Fatal(soteErr.FmtErrMsg)
 			}
 		}
@@ -139,7 +139,7 @@ func DeleteConsumer(pConsumer *jsm.Consumer) (soteErr sError.SoteError) {
 	if soteErr = validateConsumer(pConsumer); soteErr.ErrCode == nil {
 		err := pConsumer.Delete()
 		if err != nil {
-			soteErr = sError.GetSError(805000, nil, nil)
+			soteErr = sError.GetSError(210400, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
 	}

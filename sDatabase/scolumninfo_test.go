@@ -18,8 +18,8 @@ func init() {
 
 func TestGetColumnInfo(t *testing.T) {
 	var tConnInfo ConnInfo
-	if _, soteErr := GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 602999 {
-		t.Errorf("GetColumnInfo Failed: Expected error code of 602999")
+	if _, soteErr := GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 209299 {
+		t.Errorf("GetColumnInfo Failed: Expected error code of 209299")
 		t.Fail()
 	}
 

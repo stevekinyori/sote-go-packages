@@ -60,7 +60,7 @@ func CreateOrLoadLimitsStream(streamName, subjects, storage string, replicas int
 			sLogger.Info(fmt.Sprintf("%v storage has been set to File.", streamName))
 		}
 		if err != nil {
-			soteErr = sError.GetSError(805000, nil, nil)
+			soteErr = sError.GetSError(210400, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
 	}
@@ -94,7 +94,7 @@ func CreateOrLoadWorkStream(streamName, subjects, storage string, replicas int, 
 			stream, err = jsmmManager.Manager.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.WorkQueueRetention())
 		}
 		if err != nil {
-			soteErr = sError.GetSError(805000, sError.BuildParams([]string{streamName}), nil)
+			soteErr = sError.GetSError(210400, sError.BuildParams([]string{streamName}), nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
 	}
@@ -111,7 +111,7 @@ func DeleteStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
 	if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
 		err := pStream.Delete()
 		if err != nil {
-			soteErr = sError.GetSError(805000, nil, nil)
+			soteErr = sError.GetSError(210400, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
 	}
@@ -132,7 +132,7 @@ func StreamInfo(pStream *jsm.Stream) (info *api.StreamInfo, soteErr sError.SoteE
 	if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
 		info, err = pStream.LatestInformation()
 		if err != nil {
-			soteErr = sError.GetSError(805000, nil, nil)
+			soteErr = sError.GetSError(210400, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
 	}
@@ -149,7 +149,7 @@ func PurgeStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
 	if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
 		err := pStream.Purge()
 		if err != nil {
-			soteErr = sError.GetSError(805000, nil, nil)
+			soteErr = sError.GetSError(210400, nil, nil)
 			log.Fatal(soteErr.FmtErrMsg)
 		}
 	}
@@ -164,7 +164,7 @@ func DeleteMessageFromStream(pStream *jsm.Stream, sequenceNumber int) (soteErr s
 	sLogger.DebugMethod()
 
 	if sequenceNumber <= 0 {
-		soteErr = sError.GetSError(400005, sError.BuildParams([]string{"sequenceNumber", "0"}), nil)
+		soteErr = sError.GetSError(207005, sError.BuildParams([]string{"sequenceNumber", "0"}), nil)
 	} else {
 		// TODO Test what happens if there is no message with the sequence number
 		if soteErr = validateStream(pStream); soteErr.ErrCode == nil {
@@ -173,7 +173,7 @@ func DeleteMessageFromStream(pStream *jsm.Stream, sequenceNumber int) (soteErr s
 				if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "EOF") {
 					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"sequenceNumber(" + strconv.Itoa(sequenceNumber) + ")"}), nil)
 				} else {
-					soteErr = sError.GetSError(805000, nil, nil)
+					soteErr = sError.GetSError(210400, nil, nil)
 					log.Fatal(soteErr.FmtErrMsg)
 				}
 			}
@@ -211,7 +211,7 @@ func validateStream(pStream *jsm.Stream) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if pStream == nil {
-		soteErr = sError.GetSError(335260, nil, nil)
+		soteErr = sError.GetSError(206300, nil, nil)
 	}
 
 	return

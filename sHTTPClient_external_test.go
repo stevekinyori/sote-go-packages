@@ -22,8 +22,8 @@ func TestHTTPClientNew(t *testing.T) {
 		t.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 
-	if _, soteErr := sHTTPClient.New("", TOKEN); soteErr.ErrCode != 609990 {
-		t.Errorf("New Failed: Expected error code 609990 but got : %v", soteErr.ErrCode)
+	if _, soteErr := sHTTPClient.New("", TOKEN); soteErr.ErrCode != 210090 {
+		t.Errorf("New Failed: Expected error code 210090 but got : %v", soteErr.ErrCode)
 	}
 }
 
@@ -38,12 +38,12 @@ func TestGet(t *testing.T) {
 			"q": "news",
 		}
 
-		if soteErr = httpm.Get("/get", reqParams); soteErr.ErrCode != 400200 {
-			t.Errorf("Get failed: Expected error code 400200 but got %v", soteErr)
+		if soteErr = httpm.Get("/get", reqParams); soteErr.ErrCode != 207200 {
+			t.Errorf("Get failed: Expected error code 207200 but got %v", soteErr)
 		}
 
-		if soteErr = httpm.Get("/delete", reqParams); soteErr.ErrCode != 201000 {
-			t.Errorf("Get failed: Expected error code 201000 but got %v", soteErr.ErrCode)
+		if soteErr = httpm.Get("/delete", reqParams); soteErr.ErrCode != 200600 {
+			t.Errorf("Get failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {
 		t.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
@@ -59,12 +59,12 @@ func TestDelete(t *testing.T) {
 	if httpm, soteErr = sHTTPClient.New(SURL, TOKEN); soteErr.ErrCode == nil {
 		reqParams := make(map[string]interface{})
 
-		if soteErr = httpm.Delete("/delete", reqParams); soteErr.ErrCode != 400200 {
-			t.Errorf("Post failed: Expected error code 400200 but got %v", soteErr.ErrCode)
+		if soteErr = httpm.Delete("/delete", reqParams); soteErr.ErrCode != 207200 {
+			t.Errorf("Post failed: Expected error code 207200 but got %v", soteErr.ErrCode)
 		}
 
-		if soteErr = httpm.Delete("/get", reqParams); soteErr.ErrCode != 201000 {
-			t.Errorf("Post failed: Expected error code 201000 but got %v", soteErr.ErrCode)
+		if soteErr = httpm.Delete("/get", reqParams); soteErr.ErrCode != 200600 {
+			t.Errorf("Post failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {
 		t.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
@@ -82,12 +82,12 @@ func TestPost(t *testing.T) {
 			"name": "value",
 		}
 
-		if soteErr = httpm.Post("/post", reqParams); soteErr.ErrCode != 400200 {
-			t.Errorf("Post failed: Expected error code 400200 but got %v", soteErr.ErrCode)
+		if soteErr = httpm.Post("/post", reqParams); soteErr.ErrCode != 207200 {
+			t.Errorf("Post failed: Expected error code 207200 but got %v", soteErr.ErrCode)
 		}
 
-		if soteErr = httpm.Post("/get", reqParams); soteErr.ErrCode != 201000 {
-			t.Errorf("Post failed: Expected error code 201000 but got %v", soteErr.ErrCode)
+		if soteErr = httpm.Post("/get", reqParams); soteErr.ErrCode != 200600 {
+			t.Errorf("Post failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {
 		t.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)

@@ -53,14 +53,14 @@ func TestNewExpect200513(t *testing.T) {
 		t.Errorf("New Failed: Expected error code of 200513")
 	}
 }
-func TestNewExpect601010(t *testing.T) {
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, "", "", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != 601010 {
-		t.Errorf("New Failed: Expected error code of 601010")
+func TestNewExpect209110(t *testing.T) {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, "", "", TESTSYNADIAURL, 1, 250*time.Millisecond); soteErr.ErrCode != 209110 {
+		t.Errorf("New Failed: Expected error code of 209110")
 	}
 }
-func TestNewExpect609990(t *testing.T) {
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", "", 1, 250*time.Millisecond); soteErr.ErrCode != 609990 {
-		t.Errorf("New Failed: Expected error code of 609990")
+func TestNewExpect210090(t *testing.T) {
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", "", 1, 250*time.Millisecond); soteErr.ErrCode != 210090 {
+		t.Errorf("New Failed: Expected error code of 210090")
 	}
 }
 func TestNewExpectNil(t *testing.T) {

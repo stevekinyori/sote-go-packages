@@ -12,8 +12,8 @@ import (
 )
 
 func TestValidateStreamWhenNil(t *testing.T) {
-	if soteErr := validateStream(nil); soteErr.ErrCode != 335260 {
-		t.Errorf("validateStream Failed: Expected error code of 335260")
+	if soteErr := validateStream(nil); soteErr.ErrCode != 206300 {
+		t.Errorf("validateStream Failed: Expected error code of 206300")
 	}
 }
 func TestValidateStreamName(t *testing.T) {
@@ -66,8 +66,8 @@ func TestValidateStreamParams(t *testing.T) {
 }
 func TestDeleteStream(t *testing.T) {
 	// Testing when the Stream pointer is nil
-	if soteErr := DeleteStream(nil); soteErr.ErrCode != 335260 {
-		t.Errorf("DeleteStream Failed: Expected error code of 335260")
+	if soteErr := DeleteStream(nil); soteErr.ErrCode != 206300 {
+		t.Errorf("DeleteStream Failed: Expected error code of 206300")
 	}
 }
 func TestCreateOrLoadLimitsStreamDeleteStream(t *testing.T) {
@@ -133,8 +133,8 @@ func TestStreamInfo(t *testing.T) {
 	)
 
 	// Testing when stream doesn't exist
-	if info, soteErr = StreamInfo(nil); soteErr.ErrCode != 335260 {
-		t.Errorf("StreamInfo Failed: Expected error code of 335260")
+	if info, soteErr = StreamInfo(nil); soteErr.ErrCode != 206300 {
+		t.Errorf("StreamInfo Failed: Expected error code of 206300")
 	}
 
 	// Setup
@@ -166,8 +166,8 @@ func TestPurgeStream(t *testing.T) {
 	)
 
 	// Testing when stream doesn't exist
-	if soteErr = PurgeStream(nil); soteErr.ErrCode != 335260 {
-		t.Errorf("PurgeStream Failed: Expected error code of 335260")
+	if soteErr = PurgeStream(nil); soteErr.ErrCode != 206300 {
+		t.Errorf("PurgeStream Failed: Expected error code of 206300")
 	}
 
 	// Setup
@@ -198,8 +198,8 @@ func TestDeleteMessageFromStream(t *testing.T) {
 	)
 
 	// Testing when stream doesn't exist
-	if soteErr = DeleteMessageFromStream(nil, 0); soteErr.ErrCode != 400005 {
-		t.Errorf("DeleteMessageFromStream Failed: Expected error code of 400005")
+	if soteErr = DeleteMessageFromStream(nil, 0); soteErr.ErrCode != 207005 {
+		t.Errorf("DeleteMessageFromStream Failed: Expected error code of 207005")
 	}
 
 	// Setup
