@@ -240,10 +240,10 @@ func (jsmm *JSMManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 	nc, err = nats.Connect(jsmm.sURL, jsmm.connOpts...)
 	if err != nil {
 		if strings.Contains(err.Error(), "no servers") {
-			soteErr = sError.GetSError(603999, nil, sError.EmptyMap)
+			soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
 		} else if strings.Contains(err.Error(), "no nkey seed found") {
-			soteErr = sError.GetSError(603998, nil, sError.EmptyMap)
+			soteErr = sError.GetSError(209398, nil, sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
 		} else {
 			var errDetails = make(map[string]string)

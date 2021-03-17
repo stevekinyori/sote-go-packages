@@ -121,7 +121,7 @@ fi
 echo -n 'processing test coverage .'
 #
 # # To output the results from the -coverprofile, using the following command
-go tool cover -func=sLogger/coverage.out > coverage_review.out
+go tool cover -func=sLogger/coverage.out >> coverage_review.out
 go tool cover -func=sError/coverage.out >> coverage_review.out
 go tool cover -func=sDatabase/coverage.out >> coverage_review.out
 go tool cover -func=sConfigParams/coverage.out >> coverage_review.out
