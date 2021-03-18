@@ -7,7 +7,7 @@ import (
 )
 
 /*  This will return prefix location of tesseracts training data */
-func GetTessdataPrefix()  (tessdataPrefix string){
+func SGetTessdataPrefix()  (tessdataPrefix string){
 	sLogger.DebugMethod()
 
 	if tessdataPrefix = os.Getenv("TESSDATA_PREFIX"); tessdataPrefix == ""{

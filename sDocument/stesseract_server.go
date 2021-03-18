@@ -1,3 +1,6 @@
+/*
+This will create an tesseract instance that is used for Optical Character Recognitions(OCR) of Sote Documents.
+*/
 package sDocument
 
 import (
@@ -10,27 +13,52 @@ import (
 	"sync"
 )
 
-/* Limits characters tesseract is looking for */
 const (
+	/* Limits characters tesseract is looking for */
 	WHITELIST = ` !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_abcdefghijklmnopqrstuvwxyz{|}~` + "`"
 )
 
 type DocumentManager struct {
 	SManager        *tesseract.Tess
 	stessdataPrefix string
-	pPix            *leptonica.Pix
 
 	sync.Mutex
 }
 
-func New(tessdataLocation string) (pdocumentManager *DocumentManager, soteError sError.SoteError) {
+/* Creates a new tesseract instance for OCR. */
+func New(tessdataPrefix string) (pdocumentManager *DocumentManager, soteError sError.SoteError) {
 	sLogger.DebugMethod()
 	var sinstance *tesseract.Tess
 
-	pdocumentManager = &DocumentManager{stessdataPrefix: tessdataLocation}
+	pdocumentManager = &DocumentManager{stessdataPrefix: tessdataPrefix}
 
 	if sinstance, soteError = pdocumentManager.connect(); soteError.ErrCode == nil {
 		pdocumentManager = &DocumentManager{SManager: sinstance}
+	}
+
+	return
+}
+
+/* GetTextFromFile performs Optical Character Recognition on a file/image. It returns resulting text and a SoteError */
+func (dm *DocumentManager) GetTextFromFile(sfilename string) (stext string, soteError sError.SoteError) {
+	sLogger.DebugMethod()
+
+	// open a new Pix from file with leptonica
+	if ppix, serr := leptonica.NewPixFromFile(sfilename); serr == nil {
+		// set the page seg mode to autodetect
+		dm.SManager.SetPageSegMode(tesseract.PSM_AUTO_OSD)
+
+		// setup a whitelist of all basic ascii
+		if soteError = dm.setWhitelist(); soteError.ErrCode == nil {
+			// set the image to the tesseract instance
+			dm.SManager.SetImagePix(ppix)
+			stext = dm.SManager.Text()
+		}
+
+	} else {
+		soteError = sError.GetSError(209110, sError.BuildParams([]string{serr.Error()}), sError.EmptyMap)
+		sLogger.Info(soteError.FmtErrMsg)
+
 	}
 
 	return
@@ -59,30 +87,6 @@ func (dm *DocumentManager) connect() (pti *tesseract.Tess, soteError sError.Sote
 			sLogger.Info(sError.GetSError(210400, nil, errDetails).FmtErrMsg)
 			panic("sDocument.connect Failed")
 		}
-
-	}
-
-	return
-}
-
-func (dm *DocumentManager) GetTextFromDocument(sfilename string) (stext string, soteError sError.SoteError) {
-	sLogger.DebugMethod()
-
-	// open a new Pix from file with leptonica
-	if ppix, serr := leptonica.NewPixFromFile(sfilename); serr == nil {
-		// set the page seg mode to autodetect
-		dm.SManager.SetPageSegMode(tesseract.PSM_AUTO_OSD)
-
-		// setup a whitelist of all basic ascii
-		if soteError = dm.setWhitelist(); soteError.ErrCode == nil {
-			// set the image to the tesseract instance
-			dm.SManager.SetImagePix(ppix)
-			stext = dm.SManager.Text()
-		}
-
-	} else {
-		soteError = sError.GetSError(209110, sError.BuildParams([]string{serr.Error()}), sError.EmptyMap)
-		sLogger.Info(soteError.FmtErrMsg)
 
 	}
 
