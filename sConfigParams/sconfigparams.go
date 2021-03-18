@@ -29,7 +29,7 @@ import (
 
 const (
 	// Environment variables
-	APPENV    = "APP_ENVIRONMENT"
+	APPENV = "APP_ENVIRONMENT"
 	// Environments
 	DEVELOPMENT = "development" // Also referred to as local
 	STAGING     = "staging"
@@ -46,6 +46,7 @@ const (
 	DBSSLMODEKEY  = "DB_SSL_MODE"
 	DBUSERKEY     = "DB_USERNAME"
 	URL           = "url"
+	TLSURLMASK    = "tls-urlmask"
 	USERPOOLIDKEY = "COGNITO_USER_POOL_ID"
 	// Root Path
 	ROOTPATH = "/sote"
@@ -321,6 +322,24 @@ func GetNATSURL(application, environment string) (natsURL string, soteErr sError
 			if tNatsURL != nil {
 				natsURL = tNatsURL.(string)
 			}
+		}
+	}
+
+	return
+}
+
+/*
+   This will retrieve the messaging server TLS URL mask needed. Application is required.
+*/
+func GetNATSTLSURLMask(application string) (natsTLSURLMask string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tNATSTLSURLMask interface{}
+
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		tNATSTLSURLMask, soteErr = getParameter(application, "", TLSURLMASK)
+		if tNATSTLSURLMask != nil {
+			natsTLSURLMask = tNATSTLSURLMask.(string)
 		}
 	}
 

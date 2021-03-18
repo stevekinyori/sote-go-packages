@@ -190,3 +190,14 @@ func TestGetNATSURL(t *testing.T) {
 		t.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
+func TestGetNATSTLSURLMask(t *testing.T) {
+	if _, soteErr := GetNATSTLSURLMask(SYNADIA); soteErr.ErrCode != nil {
+		t.Errorf("GetNATSURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetNATSTLSURLMask("SCOTT"); soteErr.ErrCode != 109999 {
+		t.Errorf("GetNATSURL failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetNATSTLSURLMask(""); soteErr.ErrCode != 200513 {
+		t.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+	}
+}
