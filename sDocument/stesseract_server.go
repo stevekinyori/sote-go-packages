@@ -1,7 +1,6 @@
 package sDocument
 
 import (
-	"fmt"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 	leptonica "gopkg.in/GeertJohan/go.leptonica.v1"
@@ -13,12 +12,13 @@ import (
 
 /* Limits characters tesseract is looking for */
 const (
-	WHITELIST = `!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_abcdefghijklmnopqrstuvwxyz{|}~` + "`"
+	WHITELIST = ` !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_abcdefghijklmnopqrstuvwxyz{|}~` + "`"
 )
 
 type DocumentManager struct {
 	SManager        *tesseract.Tess
 	stessdataPrefix string
+	pPix            *leptonica.Pix
 
 	sync.Mutex
 }
@@ -67,14 +67,23 @@ func (dm *DocumentManager) connect() (pti *tesseract.Tess, soteError sError.Sote
 
 func (dm *DocumentManager) GetTextFromDocument(sfilename string) (stext string, soteError sError.SoteError) {
 	sLogger.DebugMethod()
-	var ppix *leptonica.Pix
 
-	if ppix, soteError = dm.getPIXFromFile(sfilename); soteError.ErrCode == nil {
-		if soteError = dm.setWhitelist(); soteError.ErrCode == nil{
-			dm.SManager.SetPageSegMode(tesseract.PSM_AUTO) // set the page seg mode to autodetect
+	// open a new Pix from file with leptonica
+	if ppix, serr := leptonica.NewPixFromFile(sfilename); serr == nil {
+		// set the page seg mode to autodetect
+		dm.SManager.SetPageSegMode(tesseract.PSM_AUTO_OSD)
+
+		// setup a whitelist of all basic ascii
+		if soteError = dm.setWhitelist(); soteError.ErrCode == nil {
+			// set the image to the tesseract instance
 			dm.SManager.SetImagePix(ppix)
 			stext = dm.SManager.Text()
 		}
+
+	} else {
+		soteError = sError.GetSError(209110, sError.BuildParams([]string{serr.Error()}), sError.EmptyMap)
+		sLogger.Info(soteError.FmtErrMsg)
+
 	}
 
 	return
@@ -90,21 +99,6 @@ func (dm *DocumentManager) setWhitelist() (soteError sError.SoteError) {
 	}
 
 	return
-}
-
-/* getPIXFromFile opens a new PIX from file using leptonica */
-func (dm *DocumentManager) getPIXFromFile(sfilename string) (ppix *leptonica.Pix, soteError sError.SoteError) {
-	sLogger.DebugMethod()
-	var serr error
-
-	if ppix, serr = leptonica.NewPixFromFile(sfilename); serr != nil {
-		fmt.Println(serr.Error())
-	}
-
-	defer ppix.Close()
-
-	return
-
 }
 
 /*
