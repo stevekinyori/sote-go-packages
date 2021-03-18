@@ -363,18 +363,6 @@ func ValidateEnvironment(environment string) (soteErr sError.SoteError) {
 This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
 the function will return an error code for not found.
 */
-func GetEnvironmentAWSRegion() (envValue string, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	envValue, soteErr = GetEnvironmentVariable(AWSREGIONIKEY)
-
-	return
-}
-
-/*
-This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
-the function will return an error code for not found.
-*/
 func GetEnvironmentAppEnvironment() (envValue string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
