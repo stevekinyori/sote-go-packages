@@ -9,12 +9,12 @@ STREAMS:
 	can be set to old or new.  Oldest record the newest record is removed.
 
 	Interest streams retain messages so long as there is a consumer active for the subject.  At this time, this is not support by
-	Sote sMessage wrapper. Interest stream limits using age, size and count still apply as upper bounds.
+	Sote sJetStream wrapper. Interest stream limits using age, size and count still apply as upper bounds.
 
 	Work or Work Queue streams will retain the messages until the message is consumed by any one consumer. The message is then
 	removed by the stream. Work stream limits using age, size and count still apply as upper bounds.
 */
-package sMessage
+package sJetStream
 
 import (
 	"fmt"

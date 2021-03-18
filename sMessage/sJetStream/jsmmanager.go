@@ -65,7 +65,7 @@ These are values that can be set natively.  sstream and consumer place limitatio
 		RateLimit: Default value: 0
 			value is set using: >0
 */
-package sMessage
+package sJetStream
 
 import (
 	"log"

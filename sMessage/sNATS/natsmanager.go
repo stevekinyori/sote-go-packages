@@ -1,4 +1,7 @@
-package sMessage
+/*
+	This is a wrapper for Sote Golang developers to access services from NATS. This does not support JetStream.
+ */
+package sNATS
 
 import (
 	"fmt"
@@ -17,8 +20,7 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-type NCManager struct {
-	Manager     *jsm.Manager
+type NatsManager struct {
 	NC          *nats.Conn
 	Application string
 	Environment string
@@ -29,10 +31,10 @@ type NCManager struct {
 }
 
 /*
-	NewNC will create a Sote Jetstream Manager for NATS.  The application and environment are required.
-	credentialFileName is optional and should not be used except in development.
+	New will create a Sote NATS Manager.
 */
-func NewNC(application, environment, credentialFileName, sURL string, maxReconnect int, reconnectWait time.Duration) (pNCManager *NCManager, soteErr sError.SoteError) {
+func New(application, environment, credentialFileName, sURL, connectionName string, secure bool, maxReconnect int,
+	reconnectWait time.Duration) (pNatsManager *NatsManager, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -41,51 +43,68 @@ func NewNC(application, environment, credentialFileName, sURL string, maxReconne
 	)
 
 	if soteErr = sConfigParams.ValidateApplication(application); soteErr.ErrCode == nil {
-		pNCManager = &NCManager{Application: application}
+		pNatsManager = &NatsManager{Application: application}
 	}
 
 	if soteErr.ErrCode == nil {
 		if soteErr = sConfigParams.ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			pNCManager.Environment = environment
+			pNatsManager.Environment = environment
 		}
 	}
 
 	if soteErr.ErrCode == nil {
 		if len(sURL) > 0 {
-			soteErr = pNCManager.setURL(sURL)
+			soteErr = pNatsManager.setURL(sURL)
 		} else {
 			var getURL string
-			getURL, soteErr = sConfigParams.GetNATSURL(pNCManager.Application, pNCManager.Environment)
-			soteErr = pNCManager.setURL(getURL)
+			getURL, soteErr = sConfigParams.GetNATSURL(pNatsManager.Application, pNatsManager.Environment)
+			soteErr = pNatsManager.setURL(getURL)
 		}
 
-		soteErr = pNCManager.setURL(sURL)
+		soteErr = pNatsManager.setURL(sURL)
 	}
+
+	// Connect Options.
+	opts := []nats.Option{nats.Name("NATS Sample Publisher")}
+
+	// Use UserCredentials
+	if *userCreds != "" {
+		opts = append(opts, nats.UserCredentials(*userCreds))
+	}
+
+	// Connect to NATS
+	nc, err := nats.Connect(*urls, opts...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nc.Close()
+
+
 
 	// Setting connection options
-	if soteErr.ErrCode == nil {
-		soteErr = pNCManager.setReconnectOptions(maxReconnect, reconnectWait)
-	}
-
-	if soteErr.ErrCode == nil {
-		if len(credentialFileName) > 0 {
-			soteErr = pNCManager.setCredentialsFile(credentialFileName)
-		} else {
-			getCreds := sConfigParams.GetNATSCredentials()
-			tmpCreds, soteErr = getCreds(pNCManager.Application, pNCManager.Environment)
-			pNCManager.connOpts = append(pNCManager.connOpts, pNCManager.userCredsFromRaw([]byte(tmpCreds.(string))))
-		}
-		// Making connection to server
-		if soteErr.ErrCode == nil {
-			if pNCManager.NC, soteErr = pNCManager.connect(); soteErr.ErrCode == nil {
-				// Creating the JSM Manager
-				pNCManager.Manager, err = jsm.New(pNCManager.NC)
-				if err != nil {
-					log.Panic(err.Error())
-				}
-			}
-		}
-	}
+	// if soteErr.ErrCode == nil {
+	// 	soteErr = pNatsManager.setReconnectOptions(maxReconnect, reconnectWait)
+	// }
+	//
+	// if soteErr.ErrCode == nil {
+	// 	if len(credentialFileName) > 0 {
+	// 		soteErr = pNatsManager.setCredentialsFile(credentialFileName)
+	// 	} else {
+	// 		getCreds := sConfigParams.GetNATSCredentials()
+	// 		tmpCreds, soteErr = getCreds(pNatsManager.Application, pNatsManager.Environment)
+	// 		pNatsManager.connOpts = append(pNatsManager.connOpts, pNatsManager.userCredsFromRaw([]byte(tmpCreds.(string))))
+	// 	}
+	// 	// Making connection to server
+	// 	if soteErr.ErrCode == nil {
+	// 		if pNatsManager.NC, soteErr = pNatsManager.connect(); soteErr.ErrCode == nil {
+	// 			// Creating the JSM Manager
+	// 			pNatsManager.Manager, err = jsm.New(pNatsManager.NC)
+	// 			if err != nil {
+	// 				log.Panic(err.Error())
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	return
 }
@@ -94,7 +113,7 @@ func NewNC(application, environment, credentialFileName, sURL string, maxReconne
 	setCredentialsFile will pull the credentials from the file system.
 	** THIS IS NOT THE RECOMMENDED APPROACH! YOU SHOULD USE setCredentialFromSystemParameters **
 */
-func (ncm *NCManager) setCredentialsFile(streamCredentialFile string) (soteErr sError.SoteError) {
+func (ncm *NatsManager) setCredentialsFile(streamCredentialFile string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if len(streamCredentialFile) == 0 {
@@ -111,7 +130,7 @@ func (ncm *NCManager) setCredentialsFile(streamCredentialFile string) (soteErr s
 /*
 	UserCredsFromRaw will take a credential file content that is not stored on the file system, such as AWS System Manager Parameters
 */
-func (ncm *NCManager) userCredsFromRaw(rawCredentials []byte) nats.Option {
+func (ncm *NatsManager) userCredsFromRaw(rawCredentials []byte) nats.Option {
 	return nats.UserJWT(
 		func() (string, error) { return nkeys.ParseDecoratedJWT(rawCredentials) },
 		func(nonce []byte) ([]byte, error) {
@@ -129,7 +148,7 @@ func (ncm *NCManager) userCredsFromRaw(rawCredentials []byte) nats.Option {
 	setReconnectOptions expects a maxReconnect value between 1 and 5; if not, it is set to 1. The reconnectWait value
 	between 250 milliseconds and 1 minute; if not, it is set to 1 second.
 */
-func (ncm *NCManager) setReconnectOptions(maxReconnect int, reconnectWait time.Duration) (soteErr sError.SoteError) {
+func (ncm *NatsManager) setReconnectOptions(maxReconnect int, reconnectWait time.Duration) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if reconnectWait < 250*time.Millisecond || reconnectWait > 1*time.Minute {
@@ -148,7 +167,7 @@ func (ncm *NCManager) setReconnectOptions(maxReconnect int, reconnectWait time.D
 	return
 }
 
-func (ncm *NCManager) setURL(sURL string) (soteErr sError.SoteError) {
+func (ncm *NatsManager) setURL(sURL string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if _, err := url.Parse(sURL); err != nil || sURL == "" {
@@ -161,9 +180,9 @@ func (ncm *NCManager) setURL(sURL string) (soteErr sError.SoteError) {
 }
 
 /*
-	This will connect to the NATS network using the values set in the NCManager
+	This will connect to the NATS network using the values set in the NatsManager
 */
-func (ncm *NCManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
+func (ncm *NatsManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -195,9 +214,9 @@ func (ncm *NCManager) connect() (nc *nats.Conn, soteErr sError.SoteError) {
 }
 
 /*
-	This will close the connection to the NATS network using the NCManager
+	This will close the connection to the NATS network using the NatsManager
 */
-func (ncm *NCManager) Close() {
+func (ncm *NatsManager) Close() {
 	sLogger.DebugMethod()
 
 	// Closing connect to NATS  --  default "euwest1.aws.ngs.global"
@@ -208,7 +227,7 @@ func (ncm *NCManager) Close() {
 	return
 }
 
-func (ncm *NCManager) natsErrorHandle(err error, subject string, data []byte) (soteErr sError.SoteError) {
+func (ncm *NatsManager) natsErrorHandle(err error, subject string, data []byte) (soteErr sError.SoteError) {
 	if err == nil {
 		ncm.NC.Flush()
 
@@ -234,7 +253,7 @@ func (ncm *NCManager) natsErrorHandle(err error, subject string, data []byte) (s
 	SPublish will publish the data argument to the given subject. The data argument is left untouched and needs
 	to be correctly interpreted on the receiver
 */
-func (ncm *NCManager) SPublish(subject string, data []byte) (soteErr sError.SoteError) {
+func (ncm *NatsManager) SPublish(subject string, data []byte) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var err error
 
@@ -248,7 +267,7 @@ func (ncm *NCManager) SPublish(subject string, data []byte) (soteErr sError.Sote
 /*
 	SPublishMsg publishes the Msg structure, which includes the Subject, an optional Reply and an optional Data field.
 */
-func (ncm *NCManager) SPublishMsg(m *nats.Msg) (soteErr sError.SoteError) {
+func (ncm *NatsManager) SPublishMsg(m *nats.Msg) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var err error
 
@@ -262,7 +281,7 @@ func (ncm *NCManager) SPublishMsg(m *nats.Msg) (soteErr sError.SoteError) {
 /*
 	SPublishRequest will perform a Publish() expecting a response on the reply subject.
 */
-func (ncm *NCManager) SPublishRequest(subject string, reply string, data []byte) (soteErr sError.SoteError) {
+func (ncm *NatsManager) SPublishRequest(subject string, reply string, data []byte) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var err error
 
@@ -287,7 +306,7 @@ func (ncm *NCManager) SPublishRequest(subject string, reply string, data []byte)
 	SSubscribe will express interest in the given subject. The subject can have wildcards (partial:*, full:>).
 	Messages will be delivered to the associated MsgHandler. Returns an error and the subscription.
 */
-func (ncm *NCManager) SSubscribe(subject string) (s *nats.Subscription, soteErr sError.SoteError) {
+func (ncm *NatsManager) SSubscribe(subject string) (s *nats.Subscription, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var err error
 
@@ -308,7 +327,7 @@ func (ncm *NCManager) SSubscribe(subject string) (s *nats.Subscription, soteErr 
 	An error is returned if the subscription is invalid (ErrBadSubscription), the connection is closed (ErrConnectionClosed),
 	or the timeout is reached (ErrTimeout).
 */
-func (ncm *NCManager) SNextMsg(s *nats.Subscription, t time.Duration) (soteErr sError.SoteError) {
+func (ncm *NatsManager) SNextMsg(s *nats.Subscription, t time.Duration) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var (
 		m   *nats.Msg
@@ -331,7 +350,7 @@ func (ncm *NCManager) SNextMsg(s *nats.Subscription, t time.Duration) (soteErr s
 	SRequest will send a request payload and deliver the response message, or an error,
 	including a timeout if no message was received properly
 */
-func (ncm *NCManager) SRequest(subject string, data []byte, time time.Duration) (soteErr sError.SoteError) {
+func (ncm *NatsManager) SRequest(subject string, data []byte, time time.Duration) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -358,7 +377,7 @@ func (ncm *NCManager) SRequest(subject string, data []byte, time time.Duration) 
 	SRequestReply listens  to subject argument and sends data argument as reply to a request. Returns the subscription
 	and error.
 */
-func (ncm *NCManager) SRequestReply(subject string, data []byte) (s *nats.Subscription, soteErr sError.SoteError) {
+func (ncm *NatsManager) SRequestReply(subject string, data []byte) (s *nats.Subscription, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var err error
 
@@ -387,7 +406,7 @@ func (ncm *NCManager) SRequestReply(subject string, data []byte) (s *nats.Subscr
 	SRequestMsg will send a request payload including optional headers and deliver the response message, or an error,
 	including a timeout if no message was received properly.
 */
-func (ncm *NCManager) SRequestMsg(m *nats.Msg, time time.Duration) (soteErr sError.SoteError) {
+func (ncm *NatsManager) SRequestMsg(m *nats.Msg, time time.Duration) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var (
 		msg *nats.Msg

@@ -18,7 +18,7 @@ CONSUMERS:
 		Stream subject: IMAGES.CATS  Consumer subject filter: IMAGES -> DOES NOT works
 		Stream subject: IMAGES.cat  Consumer subject filter: IMAGES.* -> works
 */
-package sMessage
+package sJetStream
 
 import (
 	"log"

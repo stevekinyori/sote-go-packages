@@ -1,4 +1,4 @@
-package sMessage
+package sJetStream
 
 import (
 	"testing"
