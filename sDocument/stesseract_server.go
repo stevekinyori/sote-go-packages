@@ -50,12 +50,24 @@ func (dm *DocumentManager) connect() (pti *tesseract.Tess, soteErr sError.SoteEr
 		if strings.Contains(err.Error(), "could not initiate new Tess instance"){
 			soteErr = sError.GetSError(209100, sError.BuildParams([]string{"TESSDATA_PREFIX"}), sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
+		}else {
+			var errDetails = make(map[string]string)
+			errDetails, soteErr = sError.ConvertErr(err)
+			if soteErr.ErrCode != nil {
+				sLogger.Info(soteErr.FmtErrMsg)
+				panic("sError.ConvertErr Failed")
+			}
+			sLogger.Info(sError.GetSError(210400, nil, errDetails).FmtErrMsg)
+			panic("sDocument.connect Failed")
 		}
+
 
 	}
 
 	return
 }
+
+
 
 /*
 	This will close connection to tesseract instance
