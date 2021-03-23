@@ -24,6 +24,11 @@ func Test100100Error(t *testing.T) {
 	s := BuildParams([]string{"SUPER_USER, EXECUTIVE", "DELETE"})
 	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test101010Error(t *testing.T) {
+	var errCode = 101010
+	s := BuildParams([]string{"SERVICE_NAME"})
+	validateReply(t, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test109999Error(t *testing.T) {
 	var errCode = 109999
 	s := BuildParams([]string{"ITEM_NAME"})
@@ -304,7 +309,7 @@ func TestErrorDetails(t *testing.T) {
 	errDetails["test_2"] = "Test_2_Value"
 	errDetails["test_3"] = "Test_3_Value"
 	validateReply(t, errCode, s, GetSError(errCode, s, errDetails))
-	errCode = 210400
+	errCode = 210499
 	validateReply(t, errCode, nil, GetSError(errCode, nil, errDetails))
 	validateReply(t, errCode, nil, GetSError(errCode, nil, EmptyMap))
 }

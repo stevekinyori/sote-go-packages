@@ -61,9 +61,9 @@ var (
 		100100: {100100, USERERROR, 2, "List of users roles, Requested action", ": Your roles %v are not authorized to %v", EmptyMap, ""},
 		100200: {100200, PROCESSERROR, 0, "None", ": Row has been updated since reading it, re-read the row", EmptyMap, ""},
 		100500: {100500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, ""},
-		101010: {101010, PROCESSERROR, 0, "None", ": Timeout", EmptyMap, ""},
+		101010: {101010, PROCESSERROR, 1, "Service Name", ": %v timed out", EmptyMap, ""},
 		109999: {109999, USERERROR, 1, "Item name", ": No %v was/were found", EmptyMap, ""},
-		199999: {199999, GENERALERROR, 0, "None", ": An error has occurred that is not expected.", EmptyMap, ""},
+		199999: {199999, GENERALERROR, 1, "Error Details", ": An error has occurred that is not expected. See Log! %v", EmptyMap, ""},
 		// ======================================================================
 		// Errors where the Back End can take action or the system needs to panic
 		200100: {200100, PROCESSERROR, 0, "None", ": Table doesn't exist", EmptyMap, ""},
@@ -186,6 +186,7 @@ var (
 		100100	List of users roles, Requested action > : Your roles %v are not authorized to %v
 		100200	None > : Row has been updated since reading it, re-read the row
 		100500	Thing being changed > : You are making changes to a canceled or completed %v
+		101010	Service Name > : %v timed out
 		109999	Item name > : No %v was/were found
 		199999	None > : An error has occurred that is not expected.
 		200100	None > : Table doesn't exist
@@ -242,7 +243,7 @@ var (
 		208120	JSON array name, Thing being changed, System Id for the thing > : The %v was empty for %v with id %v
 		208200	Error message number > : %v error message is missing from sError package
 		208300	None > : iss (Issuer) is not valid
-		208310	None > : sub (Subject) was not present
+		208310	Subject > : sub (Subject: %v) was not present
 		208320	None > : token_use is not valid
 		208330	None > : client id is not valid
 		208340	None > : client id is not valid for this application
@@ -274,7 +275,8 @@ var (
 		210200	None > : Postgres error has occurred that is not expected.
 		210299	None > : Postgres is not responding over TCP. Container may not be running.
 		210399	None > : AWS session error has occurred that is not expected
-		210400	None > : Synadia error has occurred that is not expected.
+		210499	None > : Synadia error has occurred that is not expected.
+		210599	None > : Business Service error has occurred that is not expected.
 */
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (soteErr SoteError) {
 	sLogger.DebugMethod()
