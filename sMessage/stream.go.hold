@@ -24,6 +24,7 @@ import (
 
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/api"
+	"github.com/nats-io/nats.go"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
@@ -37,26 +38,47 @@ const (
 CreateLimitsStream will create a limits stream.  If it exists, it will load the stream
 	Required parameters:
 		streamName
-		subjects (Multiple subject are allowed with a comma separating values)
-			example: images,animals,cars,BILLS
+		subjects
 		storage
 			Sote defaults value: f
 		replicas
 			Sote defaults value: 1 (Sote Max value is 10)
 		nc (pointer to a Jetstream connection)
 */
-func CreateOrLoadLimitsStream(streamName, subjects, storage string, replicas int, jsmmManager *JSMManager) (stream *jsm.Stream, soteErr sError.SoteError) {
+func (jsm *JetStreamManager) CreateOrLoadLimitsStream(streamName, storage string, subjects []string, replicas int) (stream *jsm.Stream,
+	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
 		err error
 	)
 
-	if soteErr = validateStreamParams(streamName, subjects, jsmmManager); soteErr.ErrCode == nil {
+	tStreamConfig := nats.StreamConfig{
+		Name:         streamName,
+		Subjects:     subjects,
+		Retention:    0,
+		MaxConsumers: 0,
+		MaxMsgs:      0,
+		MaxBytes:     0,
+		Discard:      0,
+		MaxAge:       0,
+		MaxMsgSize:   0,
+		Storage:      nil,
+		Replicas:     replicas,
+		NoAck:        false,
+		Template:     "",
+		Duplicates:   0,
+		Placement:    nil,
+		Mirror:       nil,
+		Sources:      nil,
+	}
+
+	if soteErr = jsm.validateStreamParams(streamName, tStreamConfig.Subjects); soteErr.ErrCode == nil {
 		if strings.ToLower(storage) == MEMORY || strings.ToLower(storage) == M {
-			stream, err = jsmmManager.Manager.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.LimitsRetention())
+			stream, err = jsm.JSManager.LoadOrNewStream(streamName, tStreamConfig)
 		} else {
-			stream, err = jsmmManager.Manager.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.LimitsRetention())
+			stream, err = jsm.JSManager.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)),
+				jsm.LimitsRetention())
 			sLogger.Info(fmt.Sprintf("%v storage has been set to File.", streamName))
 		}
 		if err != nil {
@@ -80,18 +102,20 @@ CreateOrLoadWorkStream will create a work stream.  If it exists, it will load th
 			Sote defaults value: 1 (Sote Max value is 10)
 		nc (pointer to a Jetstream connection)
 */
-func CreateOrLoadWorkStream(streamName, subjects, storage string, replicas int, jsmmManager *JSMManager) (stream *jsm.Stream, soteErr sError.SoteError) {
+func CreateOrLoadWorkStream(streamName, subjects, storage string, replicas int, jsm *JSMManager) (stream *jsm.Stream, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
 		err error
 	)
 
-	if soteErr = validateStreamParams(streamName, subjects, jsmmManager); soteErr.ErrCode == nil {
+	if soteErr = validateStreamParams(streamName, subjects, jsm); soteErr.ErrCode == nil {
 		if strings.ToLower(storage) == MEMORY || strings.ToLower(storage) == M {
-			stream, err = jsmmManager.Manager.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)), jsm.WorkQueueRetention())
+			stream, err = jsm.Manager.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.MemoryStorage(), jsm.Replicas(setReplicas(replicas)),
+				jsm.WorkQueueRetention())
 		} else {
-			stream, err = jsmmManager.Manager.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)), jsm.WorkQueueRetention())
+			stream, err = jsm.Manager.LoadOrNewStream(streamName, jsm.Subjects(subjects), jsm.FileStorage(), jsm.Replicas(setReplicas(replicas)),
+				jsm.WorkQueueRetention())
 		}
 		if err != nil {
 			soteErr = sError.GetSError(210400, sError.BuildParams([]string{streamName}), nil)
@@ -183,14 +207,14 @@ func DeleteMessageFromStream(pStream *jsm.Stream, sequenceNumber int) (soteErr s
 	return
 }
 
-func validateStreamParams(streamName, subjects string, jsmmManager *JSMManager) (soteErr sError.SoteError) {
+func (jsm *JetStreamManager) validateStreamParams(streamName string, subjects []string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil && len(subjects) == 0 {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"subjects"}), nil)
 	}
 
-	if soteErr.ErrCode == nil && jsmmManager == nil {
+	if soteErr.ErrCode == nil && jsm == nil {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"JSMManager"}), nil)
 	}
 
