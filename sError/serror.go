@@ -61,8 +61,10 @@ var (
 		100100: {100100, USERERROR, 2, "List of users roles, Requested action", ": Your roles %v are not authorized to %v", EmptyMap, ""},
 		100200: {100200, PROCESSERROR, 0, "None", ": Row has been updated since reading it, re-read the row", EmptyMap, ""},
 		100500: {100500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, ""},
+		101010: {101010, PROCESSERROR, 0, "None", ": Timeout", EmptyMap, ""},
 		109999: {109999, USERERROR, 1, "Item name", ": No %v was/were found", EmptyMap, ""},
 		199999: {199999, GENERALERROR, 0, "None", ": An error has occurred that is not expected.", EmptyMap, ""},
+		// ======================================================================
 		// Errors where the Back End can take action or the system needs to panic
 		200100: {200100, PROCESSERROR, 0, "None", ": Table doesn't exist", EmptyMap, ""},
 		200200: {200200, PROCESSERROR, 2, "Parameter name, Data type of parameter", ": %v must be of type %v", EmptyMap, ""},
@@ -136,7 +138,7 @@ var (
 					EmptyMap, ""},
 		208200: {208200, CONTENTERROR, 1, "Error message number", ": %v error message is missing from sError package", EmptyMap, ""},
 		208300: {208300, PERMISSIONERROR, 0, "None", ": iss (Issuer) is not valid", EmptyMap, ""},
-		208310: {208310, PERMISSIONERROR, 0, "None", ": sub (Subject) was not present", EmptyMap, ""},
+		208310: {208310, PERMISSIONERROR, 1, "Subject", ": sub (Subject: %v) was not present", EmptyMap, ""},
 		208320: {208320, PERMISSIONERROR, 0, "None", ": token_use is not valid", EmptyMap, ""},
 		208330: {208330, PERMISSIONERROR, 0, "None", ": client id is not valid", EmptyMap, ""},
 		208340: {208340, PERMISSIONERROR, 0, "None", ": client id is not valid for this application", EmptyMap, ""},
@@ -171,7 +173,8 @@ var (
 		210200: {210200, GENERALERROR, 0, "None", ": Postgres error has occurred that is not expected.", EmptyMap, ""},
 		210299: {210299, GENERALERROR, 0, "None", ": Postgres is not responding over TCP. Container may not be running.", EmptyMap, ""},
 		210399: {210399, GENERALERROR, 0, "None", ": AWS session error has occurred that is not expected", EmptyMap, ""},
-		210400: {210400, GENERALERROR, 0, "None", ": Synadia error has occurred that is not expected.", EmptyMap, ""},
+		210499: {210499, GENERALERROR, 0, "None", ": Synadia error has occurred that is not expected.", EmptyMap, ""},
+		210599: {210599, GENERALERROR, 0, "None", ": Business Service error has occurred that is not expected.", EmptyMap, ""},
 	}
 )
 
