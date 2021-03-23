@@ -1,6 +1,7 @@
 package sError
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -307,18 +308,21 @@ func TestErrorDetails(t *testing.T) {
 	validateReply(t, errCode, nil, GetSError(errCode, nil, errDetails))
 	validateReply(t, errCode, nil, GetSError(errCode, nil, EmptyMap))
 }
-func TestGenMarkDown(t *testing.T) {
-	if x := GenMarkDown(); !strings.Contains(x, MARKDOWNTITLEBAR) {
-		t.Errorf("GenMarkDown doesn't have the correct header, so there appears something wrong with the code.")
+func TestGenerateDocumentation(t *testing.T) {
+	x, y := GenerateDocumentation();
+
+	if !strings.Contains(x, MARKDOWNTITLEBAR) {
+		t.Errorf("TestGenerateDocumentation doesn't have the correct header, so there appears something wrong with the code.")
 	} else {
-		println(x)
+		// This outputs the documentation so it can be cut/paste to the wiki.
+		fmt.Print(x)
 	}
-}
-func TestGenErrorListRequiredParams(t *testing.T) {
-	if x := GenErrorListRequiredParams(); !strings.Contains(x, FUNCCOMMENTSHEADER) {
-		t.Errorf("GenMarkDown doesn't have the correct header, so there appears something wrong with the code.")
+
+	if !strings.Contains(y, FUNCCOMMENTSHEADER) {
+		t.Errorf("TestGenerateDocumentation doesn't have the correct header, so there appears something wrong with the code.")
 	} else {
-		println(x)
+		// This outputs the documentation so it can be cut/paste to the source code.
+		fmt.Print(y)
 	}
 }
 func validateReply(t *testing.T, errCode int, params []interface{}, x SoteError) {

@@ -47,11 +47,13 @@ const MARKDOWNTITLEBAR string = "| Error Code | Category | Parameter Description
 const FUNCCOMMENTSHEADER string = "\tError Code with requiring parameters:\n"
 const SQLSTATE string = "SQLSTATE"
 
- var (
+var (
 	EmptyMap = make(map[string]string)
 	/*
 		Error code Ranges are not limited to a single error category.
 		The required format for the FmtErrMsg value is ": <sprintf string>" where the ":" followed by the space must start the value.
+
+		ErrType is for general grouping and doesn't affect the use of the error. If the error fits your needs, disregard the ErrType.
 	*/
 	soteErrors = map[int]SoteError{
 		// Errors where the Front End can take action
@@ -62,15 +64,18 @@ const SQLSTATE string = "SQLSTATE"
 		109999: {109999, USERERROR, 1, "Item name", ": No %v was/were found", EmptyMap, ""},
 		199999: {199999, GENERALERROR, 0, "None", ": An error has occurred that is not expected.", EmptyMap, ""},
 		// Errors where the Back End can take action or the system needs to panic
- 		200100: {200100, PROCESSERROR, 0, "None", ": Table doesn't exist", EmptyMap, ""},
+		200100: {200100, PROCESSERROR, 0, "None", ": Table doesn't exist", EmptyMap, ""},
 		200200: {200200, PROCESSERROR, 2, "Parameter name, Data type of parameter", ": %v must be of type %v", EmptyMap, ""},
-		200250: {200250, PROCESSERROR, 3, "Parameter name, Parameter value, List of values allowed", ": %v (%v) must contain one of these values: %v", EmptyMap, ""},
-		200260: {200260, PROCESSERROR, 3, "Other parameter name, Parameter name, Parameter value", ": %v must be provided when %v is set to (%v)", EmptyMap, ""},
+		200250: {200250, PROCESSERROR, 3, "Parameter name, Parameter value, List of values allowed", ": %v (%v) must contain one of these values: %v",
+					EmptyMap, ""},
+		200260: {200260, PROCESSERROR, 3, "Other parameter name, Parameter name, Parameter value", ": %v must be provided when %v is set to (%v)",
+					EmptyMap, ""},
 		200510: {200510, PROCESSERROR, 3, "Parameter name, Field name, Field value", ": %v can't be updated because %v is set to %v", EmptyMap, ""},
 		200511: {200511, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated or null", EmptyMap, ""},
 		200512: {200512, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated", EmptyMap, ""},
 		200513: {200513, PROCESSERROR, 1, "Parameter name", ": %v must be populated", EmptyMap, ""},
-		200514: {200514, PROCESSERROR, 3, "Parameter name, Another parameter name, Another parameter name", ": %v, %v and %v must all be populated", EmptyMap, ""},
+		200514: {200514, PROCESSERROR, 3, "Parameter name, Another parameter name, Another parameter name", ": %v, %v and %v must all be populated",
+					EmptyMap, ""},
 		200515: {200515, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v must be empty when %v is populated", EmptyMap, ""},
 		200600: {200600, PROCESSERROR, 1, "Info returned from HTTP/HTTPS Request", ": Bad HTTP/HTTPS Request - %v", EmptyMap, ""},
 		200700: {200700, PROCESSERROR, 1, "Environment Name", ": The API you are calling is not available in this environment (%v)", EmptyMap, ""},
@@ -78,8 +83,10 @@ const SQLSTATE string = "SQLSTATE"
 		200900: {200900, PROCESSERROR, 0, "None", ": Database constraint error - see Details", EmptyMap, ""},
 		200999: {200999, PROCESSERROR, 0, "None", ": SQL error - see Details", EmptyMap, ""},
 		201999: {201999, PROCESSERROR, 0, "None", ": Cognito error - see Details", EmptyMap, ""},
-		203000: {203000, PROCESSERROR, 0, "None", ": The number of parameters provided for the error message does not match the required number", EmptyMap, ""},
-		203050: {203050, PROCESSERROR, 2, "Name, Application/Package name", ": Number of parameters defined in the %v is not support by %v", EmptyMap, ""},
+		203000: {203000, PROCESSERROR, 0, "None", ": The number of parameters provided for the error message does not match the required number",
+					EmptyMap, ""},
+		203050: {203050, PROCESSERROR, 2, "Name, Application/Package name", ": Number of parameters defined in the %v is not support by %v", EmptyMap,
+					""},
 		203060: {203060, PROCESSERROR, 2, "Provided parameter count, Expected parameter count",
 			": Number of parameters provided (%v) doesn't match the number expected (%v)", EmptyMap, ""},
 		205000: {205000, PROCESSERROR, 0, "None", ": AWS SES error - see details in retPack", EmptyMap, ""},
@@ -96,7 +103,7 @@ const SQLSTATE string = "SQLSTATE"
 			"Stream Name: %v Consumer Name: %v", EmptyMap, ""},
 		206700: {206700, NATSERROR, 2, "Stream Name, Consumer Subject Filter",
 			": The consumer subject filter must be a subset of the stream subject. " +
-			"Stream Name: %v Consumer Subject Filter: %v", EmptyMap, ""},
+				"Stream Name: %v Consumer Subject Filter: %v", EmptyMap, ""},
 		207000: {207000, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not numeric", EmptyMap, ""},
 		207005: {207005, CONTENTERROR, 2, "Field name, Minimal length", ": %v must have a value greater than %v", EmptyMap, ""},
 		207010: {207010, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a string", EmptyMap, ""},
@@ -107,18 +114,26 @@ const SQLSTATE string = "SQLSTATE"
 		207060: {207060, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters which are not allowed", EmptyMap, ""},
 		207065: {207065, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters other than underscore", EmptyMap, ""},
 		207070: {207070, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid date", EmptyMap, ""},
-		207080: {207080, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap, ""},
-		207090: {207090, CONTENTERROR, 6, "Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size", ": %v (%v) is too %v. %v size: %v Actual size: %v", EmptyMap, ""},
-		207095: {207095, CONTENTERROR, 4, "Field name, Field value, greater than value, less than value", ": %v (%v) must be greater than %v and less than %v", EmptyMap, ""},
-		207100: {207100, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v - JSON conversion error", EmptyMap, ""},
-		207105: {207105, CONTENTERROR, 2, "Data Structure Name, Data Structure Type", ": %v (%v) couldn't be converted to JSON - JSON conversion error", EmptyMap, ""},
+		207080: {207080, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap,
+					""},
+		207090: {207090, CONTENTERROR, 6, "Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size",
+					": %v (%v) is too %v. %v size: %v Actual size: %v", EmptyMap, ""},
+		207095: {207095, CONTENTERROR, 4, "Field name, Field value, greater than value, less than value",
+					": %v (%v) must be greater than %v and less than %v", EmptyMap, ""},
+		207100: {207100, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v - JSON conversion error",
+					EmptyMap, ""},
+		207105: {207105, CONTENTERROR, 2, "Data Structure Name, Data Structure Type",
+					": %v (%v) couldn't be converted to JSON - JSON conversion error", EmptyMap, ""},
 		207110: {207110, CONTENTERROR, 1, "Parameter name", ": %v couldn't be parsed - Invalid JSON error", EmptyMap, ""},
-		207111: {207111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v couldn't be converted to a map/keyed array - %v", EmptyMap, ""},
+		207111: {207111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v couldn't be converted to a map/keyed array - %v",
+					EmptyMap, ""},
 		207200: {207200, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v", EmptyMap, ""},
 		208000: {208000, CONTENTERROR, 0, "None", ": Column must have a non-null value. Details: ", EmptyMap, ""},
 		208010: {208010, CONTENTERROR, 0, "None", ": Column data type is not support or invalid. Details: ", EmptyMap, ""},
-		208110: {208110, CONTENTERROR, 2, "Thing being changed, System Id for the thing", ": No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
-		208120: {208120, CONTENTERROR, 3, "JSON array name, Thing being changed, System Id for the thing", ": The %v was empty for %v with id %v", EmptyMap, ""},
+		208110: {208110, CONTENTERROR, 2, "Thing being changed, System Id for the thing",
+					": No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
+		208120: {208120, CONTENTERROR, 3, "JSON array name, Thing being changed, System Id for the thing", ": The %v was empty for %v with id %v",
+					EmptyMap, ""},
 		208200: {208200, CONTENTERROR, 1, "Error message number", ": %v error message is missing from sError package", EmptyMap, ""},
 		208300: {208300, PERMISSIONERROR, 0, "None", ": iss (Issuer) is not valid", EmptyMap, ""},
 		208310: {208310, PERMISSIONERROR, 0, "None", ": sub (Subject) was not present", EmptyMap, ""},
@@ -134,7 +149,8 @@ const SQLSTATE string = "SQLSTATE"
 		209010: {209010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", ": %v file was not found. Message return: %v", EmptyMap, ""},
 		209100: {209100, CONFIGURATIONISSUE, 1, "Environment name", ": environment variable is missing (%v)", EmptyMap, ""},
 		209110: {209110, CONFIGURATIONISSUE, 1, "Environment name", ": environment value (%v) is invalid", EmptyMap, ""},
-		209200: {209200, CONFIGURATIONISSUE, 3, "Database name, Database driver name, Port value", ": Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
+		209200: {209200, CONFIGURATIONISSUE, 3, "Database name, Database driver name, Port value",
+					": Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
 		209210: {209210, CONFIGURATIONISSUE, 0, "None", ": Unable to pass database authentication", EmptyMap, ""},
 		209220: {209220, CONFIGURATIONISSUE, 1, "SSL Mode", ": Only disable, allow, prefer and required are supported.", EmptyMap, ""},
 		209230: {209230, CONFIGURATIONISSUE, 1, "Connection Type", ": Only single or pool are supported.", EmptyMap, ""},
@@ -163,12 +179,16 @@ const SQLSTATE string = "SQLSTATE"
 	This will return the formatted message using the supplied code and parameters
 
 	Error Code with requiring parameters:
+		100000	None > : Item already exists
 		100100	List of users roles, Requested action > : Your roles %v are not authorized to %v
+		100200	None > : Row has been updated since reading it, re-read the row
+		100500	Thing being changed > : You are making changes to a canceled or completed %v
 		109999	Item name > : No %v was/were found
+		199999	None > : An error has occurred that is not expected.
+		200100	None > : Table doesn't exist
 		200200	Parameter name, Data type of parameter > : %v must be of type %v
 		200250	Parameter name, Parameter value, List of values allowed > : %v (%v) must contain one of these values: %v
 		200260	Other parameter name, Parameter name, Parameter value > : %v must be provided when %v is set to (%v)
-		200500	Thing being changed > : You are making changes to a canceled or completed %v
 		200510	Parameter name, Field name, Field value > : %v can't be updated because %v is set to %v
 		200511	Parameter name, Another parameter name > : %v and %v must both be populated or null
 		200512	Parameter name, Another parameter name > : %v and %v must both be populated
@@ -177,12 +197,22 @@ const SQLSTATE string = "SQLSTATE"
 		200515	Parameter name, Another parameter name > : %v must be empty when %v is populated
 		200600	Info returned from HTTP/HTTPS Request > : Bad HTTP/HTTPS Request - %v
 		200700	Environment Name > : The API you are calling is not available in this environment (%v)
+		200800	None > : QuickSight error - see Details
+		200900	None > : Database constraint error - see Details
+		200999	None > : SQL error - see Details
+		201999	None > : Cognito error - see Details
+		203000	None > : The number of parameters provided for the error message does not match the required number
 		203050	Name, Application/Package name > : Number of parameters defined in the %v is not support by %v
 		203060	Provided parameter count, Expected parameter count > : Number of parameters provided (%v) doesn't match the number expected (%v)
+		205000	None > : AWS SES error - see details in retPack
+		205005	None > : AWS STS error - see details in retPack
+		206000	None > : Jetstream is not enabled
 		206100	Key name > : Upper or lower case %v key is missing
 		206105	Key name > : Upper or lower case %v keys value is missing
 		206200	List of required parameters > : Message doesn't match signature. Sender must provide the following parameter names: %v
+		206300	None > : Stream pointer is nil. Must be a validate pointer to a stream.
 		206400	Stream Name > : Stream creation encountered an error that is not expected. Stream Name: %v
+		206500	None > : Stream already exists.
 		206600	Stream Name, Consumer Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Consumer Name: %v
 		206700	Stream Name, Consumer Subject Filter > : The consumer subject filter must be a subset of the stream subject. Stream Name: %v Consumer Subject Filter: %v
 		207000	Field name, Field value > : %v (%v) is not numeric
@@ -198,21 +228,39 @@ const SQLSTATE string = "SQLSTATE"
 		207080	Field name, Field value > : %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu
 		207090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size > : %v (%v) is too %v. %v size: %v Actual size: %v
 		207095	Field name, Field value, greater than value, less than value > : %v (%v) must be greater than %v and less than %v
-		207010	Parameter name, Data Structure Type > : %v couldn't be converted to an %v - JSON conversion error
+		207100	Parameter name, Data Structure Type > : %v couldn't be converted to an %v - JSON conversion error
 		207105	Data Structure Name, Data Structure Type > : %v (%v) couldn't be converted to JSON - JSON conversion error
 		207110	Parameter name > : %v couldn't be parsed - Invalid JSON error
 		207111	Parameter name, Application/Package name > : %v couldn't be converted to a map/keyed array - %v
 		207200	Parameter name, Data Structure Type > : %v couldn't be converted to an %v
+		208000	None > : Column must have a non-null value. Details:
+		208010	None > : Column data type is not support or invalid. Details:
 		208110	Thing being changed, System Id for the thing > : No update is needed. No fields where changed for %v with id %v
 		208120	JSON array name, Thing being changed, System Id for the thing > : The %v was empty for %v with id %v
 		208200	Error message number > : %v error message is missing from sError package
+		208300	None > : iss (Issuer) is not valid
+		208310	None > : sub (Subject) was not present
+		208320	None > : token_use is not valid
+		208330	None > : client id is not valid
+		208340	None > : client id is not valid for this application
+		208350	None > : Token is expired
+		208355	None > : Token is invalid
+		208356	None > : Token contains an invalid number of segments
 		208360	Claim names > : These claims are invalid: %v
+		208370	None > : Required claim(s) is/are missing
+		209000	None > : .env files are missing
 		209010	File name, Message returned from Open > : %v file was not found. Message return: %v
 		209100	Environment name > : environment variable is missing (%v)
 		209110	Environment name > : environment value (%v) is invalid
 		209200	Database name, Database driver name, Port value > : Unable to connect to database %v using driver %v on port %v
+		209210	None > : Unable to pass database authentication
 		209220	SSL Mode > : Only disable, allow, prefer and required are supported.
 		209230	Connection Type > : Only single or pool are supported.
+		209299	None > : No database connection has been established
+		209398	None > : no nkey seed found
+		209499	None > : No nats connection has been established
+		209500	None > : Unexpected signing method
+		209510	None > : Kid header not found
 		209520	Kid > : key (%v) was not found in token
 		209521	Kid > : Kid (%v) was not found in public key set
 		210030	Region, Environment > : Failed to fetch remote JWK (status = 404) for %v region %v environment
@@ -220,6 +268,10 @@ const SQLSTATE string = "SQLSTATE"
 		210098	Parameter name > : Start up parameter is out of value range (%v)
 		210099	Parameter name > : Start up parameter is missing (%v)
 		210100	List of required parameters > : Call doesn't match API signature. Caller must provide the following parameter names: %v
+		210200	None > : Postgres error has occurred that is not expected.
+		210299	None > : Postgres is not responding over TCP. Container may not be running.
+		210399	None > : AWS session error has occurred that is not expected
+		210400	None > : Synadia error has occurred that is not expected.
 */
 func GetSError(code int, params []interface{}, errorDetails map[string]string) (soteErr SoteError) {
 	sLogger.DebugMethod()
@@ -298,9 +350,9 @@ func BuildParams(values []string) (s []interface{}) {
 
 /*
 	This will generate the markdown syntax that can be published on a Wiki page.  This makes
-	this code the master source of Sote Error messages
+	this code the master source of Sote Error messages. Results are output to the console.
 */
-func GenMarkDown() (markDown string) {
+func GenerateDocumentation() (markDown, funcComments string){
 	sLogger.DebugMethod()
 
 	// Sort the Keys from SError map
@@ -309,34 +361,13 @@ func GenMarkDown() (markDown string) {
 		errorKeys = append(errorKeys, i2.ErrCode.(int))
 	}
 	sort.Ints(errorKeys)
-	// Generate the markdown syntax
+	// Generate Documentation
 	markDown = MARKDOWNTITLEBAR
+	funcComments = FUNCCOMMENTSHEADER
 	for _, i2 := range errorKeys {
 		x := soteErrors[i2]
 		markDown += fmt.Sprintf("| %v | %v | %v | %v |\n", x.ErrCode, x.ErrType, x.ParamDescription, x.FmtErrMsg)
-	}
-	return
-}
-
-/*
-	This will generate plain text comments about error code that require parameters.  This can be used
-	to update the GetSError function comments
-*/
-func GenErrorListRequiredParams() (funcComments string) {
-	sLogger.DebugMethod()
-
-	// Sort the Keys from SError map
-	var errorKeys []int
-	for _, i2 := range soteErrors {
-		errorKeys = append(errorKeys, i2.ErrCode.(int))
-	}
-	sort.Ints(errorKeys)
-	// Generate the plain text
-	funcComments = FUNCCOMMENTSHEADER
-	for _, i2 := range errorKeys {
-		if x := soteErrors[i2]; x.ParamCount > 0 {
-			funcComments += fmt.Sprintf("\t\t%v\t%v > %v\n", x.ErrCode, x.ParamDescription, x.FmtErrMsg)
-		}
+		funcComments += fmt.Sprintf("\t\t%v\t%v > %v\n", x.ErrCode, x.ParamDescription, x.FmtErrMsg)
 	}
 	return
 }
