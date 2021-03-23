@@ -1,6 +1,6 @@
 package sDocument
 
-type SS3Manager struct {
+type DocumentManager struct {
 	
 }
-func NewDocumentManagementServer(){}
+func New(){}

@@ -18,7 +18,7 @@ const (
 	WHITELIST = ` !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_abcdefghijklmnopqrstuvwxyz{|}~` + "`"
 )
 
-type DocumentManager struct {
+type TesseractServerManager struct {
 	SManager        *tesseract.Tess
 	stessdataPrefix string
 
@@ -26,33 +26,33 @@ type DocumentManager struct {
 }
 
 /* Creates a new tesseract instance for OCR. */
-func New(tessdataPrefix string) (pdocumentManager *DocumentManager, soteError sError.SoteError) {
+func NewTesseractServer(tessdataPrefix string) (pdocumentManager *TesseractServerManager, soteError sError.SoteError) {
 	sLogger.DebugMethod()
 	var sinstance *tesseract.Tess
 
-	pdocumentManager = &DocumentManager{stessdataPrefix: tessdataPrefix}
+	pdocumentManager = &TesseractServerManager{stessdataPrefix: tessdataPrefix}
 
 	if sinstance, soteError = pdocumentManager.connect(); soteError.ErrCode == nil {
-		pdocumentManager = &DocumentManager{SManager: sinstance}
+		pdocumentManager = &TesseractServerManager{SManager: sinstance}
 	}
 
 	return
 }
 
 /* GetTextFromFile performs Optical Character Recognition on a file/image. It returns resulting text and a SoteError */
-func (dm *DocumentManager) GetTextFromFile(sfilename string) (stext string, soteError sError.SoteError) {
+func (tsm *TesseractServerManager) GetTextFromFile(sfilename string) (stext string, soteError sError.SoteError) {
 	sLogger.DebugMethod()
 
 	// open a new Pix from file with leptonica
 	if ppix, serr := leptonica.NewPixFromFile(sfilename); serr == nil {
 		// set the page seg mode to autodetect
-		dm.SManager.SetPageSegMode(tesseract.PSM_AUTO_OSD)
+		tsm.SManager.SetPageSegMode(tesseract.PSM_AUTO_OSD)
 
 		// setup a whitelist of all basic ascii
-		if soteError = dm.setWhitelist(); soteError.ErrCode == nil {
+		if soteError = tsm.setWhitelist(); soteError.ErrCode == nil {
 			// set the image to the tesseract instance
-			dm.SManager.SetImagePix(ppix)
-			stext = dm.SManager.Text()
+			tsm.SManager.SetImagePix(ppix)
+			stext = tsm.SManager.Text()
 		}
 
 	} else {
@@ -67,12 +67,12 @@ func (dm *DocumentManager) GetTextFromFile(sfilename string) (stext string, sote
 /*
 	This will connect to a new tesseract instance and point it to tessdata location.
 */
-func (dm *DocumentManager) connect() (pti *tesseract.Tess, soteError sError.SoteError) {
+func (tsm *TesseractServerManager) connect() (pti *tesseract.Tess, soteError sError.SoteError) {
 	sLogger.DebugMethod()
 	var serr error
 
 	// Create a new tesseract instance
-	pti, serr = tesseract.NewTess(filepath.Join(dm.stessdataPrefix, "tessdata"), "eng")
+	pti, serr = tesseract.NewTess(filepath.Join(tsm.stessdataPrefix, "tessdata"), "eng")
 	if serr != nil {
 		if strings.Contains(serr.Error(), "could not initiate new Tess instance") {
 			soteError = sError.GetSError(209100, sError.BuildParams([]string{"TESSDATA_PREFIX"}), sError.EmptyMap)
@@ -94,10 +94,10 @@ func (dm *DocumentManager) connect() (pti *tesseract.Tess, soteError sError.Sote
 }
 
 /* setWhitelist restricts the TesseractOCR function to a set of pre-defined (white-listed) characters */
-func (dm *DocumentManager) setWhitelist() (soteError sError.SoteError) {
+func (tsm *TesseractServerManager) setWhitelist() (soteError sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if serr := dm.SManager.SetVariable("tessedit_char_whitelist", WHITELIST); serr != nil {
+	if serr := tsm.SManager.SetVariable("tessedit_char_whitelist", WHITELIST); serr != nil {
 		soteError = sError.GetSError(209110, sError.BuildParams([]string{"tessedit_char_whitelist"}), sError.EmptyMap)
 		sLogger.Info(soteError.FmtErrMsg)
 	}
@@ -108,12 +108,12 @@ func (dm *DocumentManager) setWhitelist() (soteError sError.SoteError) {
 /*
 	This will close connection to tesseract instance
 */
-func (dm *DocumentManager) close() {
+func (tsm *TesseractServerManager) close() {
 	sLogger.DebugMethod()
 
-	dm.SManager.Close()
+	tsm.SManager.Close()
 
-	dm = nil
+	tsm = nil
 
 	return
 
