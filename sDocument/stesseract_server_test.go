@@ -1,11 +1,10 @@
 package sDocument
 
 import (
-	"fmt"
 	"testing"
 )
 
-func TestNew(t *testing.T) {
+func TestNewTesseractServer(t *testing.T) {
 	if _, soteError := NewTesseractServer(SGetTessdataPrefix()); soteError.ErrCode != nil {
 		t.Errorf("New failed: Expected error code to be nil")
 	}
@@ -15,12 +14,17 @@ func TestNew(t *testing.T) {
 	}
 }
 func TestTesseractServerManager_GetTextFromFile(t *testing.T) {
-	var stext string
 	sfilename := "../img/testing_materials/Container Guarantee Form back.jpg"
 
-	if tsm, soteError := NewTesseractServer(SGetTessdataPrefix()); soteError.ErrCode == nil {
-		stext, soteError = tsm.GetTextFromFile(sfilename)
-		fmt.Println(stext)
+	if tsm, soteErr := NewTesseractServer(SGetTessdataPrefix()); soteErr.ErrCode == nil {
+		if _, soteErr = tsm.GetTextFromFile(sfilename); soteErr.ErrCode != nil {
+
+		}
+	}
+	if tsm, soteErr := NewTesseractServer(""); soteErr.ErrCode == nil {
+		if _, soteErr = tsm.GetTextFromFile(sfilename); soteErr.ErrCode != 209100 {
+			t.Errorf("New failed: Expected error code to be 209100 %v", soteErr.ErrCode)
+		}
 	}
 
 }

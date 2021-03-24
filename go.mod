@@ -12,7 +12,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.19
 	github.com/nats-io/nats.go v1.10.1-0.20201013114232-5a33ce07522f
 	github.com/nats-io/nkeys v0.2.0
-	gocv.io/x/gocv v0.26.0
 	gopkg.in/GeertJohan/go.leptonica.v1 v1.0.0-20141028105504-69e757e167e0
 	gopkg.in/GeertJohan/go.tesseract.v1 v1.0.0-20141020125520-b5aa24edea39
+	gopkg.in/gographics/imagick.v3 v3.3.0
 )
