@@ -27,33 +27,33 @@ const (
 	SDCC = "sdcc"
 )
 
-func TestValidToken(t *testing.T) {
+func TestValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.ErrCode)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.ErrCode)
 	}
 }
-func TestValidFakeToken(t *testing.T) {
+func TestValidFakeToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestValidMissingSegmentToken(t *testing.T) {
+func TestValidMissingSegmentToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208355 or nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestInValidSignatureToken(t *testing.T) {
+func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355  && soteErr.ErrCode != 208356 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.ErrCode)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.ErrCode)
 	}
 }
-func TestInValidToken(t *testing.T) {
+func TestInValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = sAuthorize.ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.ErrCode)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.ErrCode)
 	}
 }

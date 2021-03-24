@@ -19,185 +19,185 @@ func init() {
 }
 
 //  THIS MUST BE THE FIRST TEST RUN - DO NOT MOVE OR PLACE A TEST BEFORE TestGetRegion
-func TestGetRegion(t *testing.T) {
+func TestGetRegion(tPtr *testing.T) {
 	if _, soteErr := GetRegion(); soteErr.ErrCode != nil {
-		t.Errorf("GetRegion failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
-		t.Fatalf("RUN AWS_CONFIG or verify that ~/.aws/config exists and the region is set: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetRegion failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Fatalf("RUN AWS_CONFIG or verify that ~/.aws/config exists and the region is set: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetParametersFound(t *testing.T) {
+func TestGetParametersFound(tPtr *testing.T) {
 	parameters := make(map[string]interface{})
 	var soteErr sError.SoteError
 	if parameters, soteErr = GetParameters(API, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetParameters failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetParameters failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if len(parameters) == 0 {
-		t.Error("GetParameters failed: Expected parameters to have at least one entry")
+		tPtr.Error("GetParameters failed: Expected parameters to have at least one entry")
 	}
 }
-func TestGetParametersNotFound(t *testing.T) {
+func TestGetParametersNotFound(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if _, soteErr = GetParameters(API, "SCOTT"); soteErr.ErrCode != 209110 {
-		t.Errorf("GetParameters failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetParameters failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr = GetParameters("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetParameters failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetParameters failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr = GetParameters("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetParameters failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetParameters failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetDBPassword(t *testing.T) {
+func TestGetDBPassword(tPtr *testing.T) {
 	if _, soteErr := GetDBPassword(API, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetDBPassword failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBPassword failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBPassword("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetDBPassword failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBPassword failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBPassword("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetDBPassword failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBPassword failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetDBName(t *testing.T) {
+func TestGetDBName(tPtr *testing.T) {
 	if _, soteErr := GetDBName(API, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetDBName failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBName failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBName("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetDBName failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBName failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBName("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetDBName failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBName failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetDBHost(t *testing.T) {
+func TestGetDBHost(tPtr *testing.T) {
 	if _, soteErr := GetDBHost(API, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetDBHost failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBHost failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBHost("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetDBHost failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBHost failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBHost("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetDBHost failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBHost failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetDBPort(t *testing.T) {
+func TestGetDBPort(tPtr *testing.T) {
 	if _, soteErr := GetDBPort(API, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetDBPort failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBPort failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBPort("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetDBPort failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBPort failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBPort("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetDBPort failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBPort failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetDBSSLMode(t *testing.T) {
+func TestGetDBSSLMode(tPtr *testing.T) {
 	if _, soteErr := GetDBSSLMode(API, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetDBSSLMode failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBSSLMode failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBSSLMode("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetDBSSLMode failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBSSLMode failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBSSLMode("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetDBSSLMode failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBSSLMode failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetDBUser(t *testing.T) {
+func TestGetDBUser(tPtr *testing.T) {
 	if _, soteErr := GetDBUser(API, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetDBUser failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBUser failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBUser("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetDBUser failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBUser failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetDBUser("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetDBUser failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetDBUser failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetUserPoolId(t *testing.T) {
+func TestGetUserPoolId(tPtr *testing.T) {
 	if _, soteErr := GetUserPoolId(STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetUserPoolId failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetUserPoolId failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetUserPoolId(""); soteErr.ErrCode != 209110 {
-		t.Errorf("GetUserPoolId failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetUserPoolId failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetClientId(t *testing.T) {
+func TestGetClientId(tPtr *testing.T) {
 	if _, soteErr := GetClientId(SDCC, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetClientId failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetClientId failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetClientId("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetClientId failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetClientId failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetClientId("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetClientId failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetClientId failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestValidateEnvironment(t *testing.T) {
+func TestValidateEnvironment(tPtr *testing.T) {
 	if soteErr := ValidateEnvironment(DEVELOPMENT); soteErr.ErrCode != nil {
-		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if soteErr := ValidateEnvironment(STAGING); soteErr.ErrCode != nil {
-		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if soteErr := ValidateEnvironment(DEMO); soteErr.ErrCode != nil {
-		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if soteErr := ValidateEnvironment(PRODUCTION); soteErr.ErrCode != nil {
-		t.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidateEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if soteErr := ValidateEnvironment("BAD_ENV"); soteErr.ErrCode != 209110 {
-		t.Errorf("ValidateEnvironment failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidateEnvironment failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
 	}
 	if soteErr := ValidateEnvironment(""); soteErr.ErrCode != 209110 {
-		t.Errorf("ValidateEnvironment failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidateEnvironment failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetEnvironmentVariable(t *testing.T) {
+func TestGetEnvironmentVariable(tPtr *testing.T) {
 	if _, soteErr := GetEnvironmentVariable(APPENV); soteErr.ErrCode != nil {
-		t.Errorf("GetEnvironmentVariable failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetEnvironmentVariable failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetEnvironmentAppEnvironment(); soteErr.ErrCode != nil {
-		t.Errorf("GetEnvironmentAppEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetEnvironmentAppEnvironment failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetNATSCredentials(t *testing.T) {
+func TestGetNATSCredentials(tPtr *testing.T) {
 	var (
 		credValues func(string, string) (interface{}, sError.SoteError)
 		soteErr sError.SoteError
 	)
 	if credValues = GetNATSCredentials(); soteErr.ErrCode != nil {
-		t.Errorf("GetNATSCredentials failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSCredentials failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 
 	if _, soteErr = credValues(SYNADIA, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSCredentials failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr = credValues("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSCredentials failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr = credValues(SYNADIA, ""); soteErr.ErrCode != 209110 {
-		t.Errorf("GetNATSCredentials failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSCredentials failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetNATSURL(t *testing.T) {
+func TestGetNATSURL(tPtr *testing.T) {
 	if _, soteErr := GetNATSURL(SYNADIA, STAGING); soteErr.ErrCode != nil {
-		t.Errorf("GetNATSURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetNATSURL("SCOTT", STAGING); soteErr.ErrCode != 109999 {
-		t.Errorf("GetNATSURL failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSURL failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetNATSURL("", STAGING); soteErr.ErrCode != 200513 {
-		t.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetNATSTLSURLMask(t *testing.T) {
+func TestGetNATSTLSURLMask(tPtr *testing.T) {
 	if _, soteErr := GetNATSTLSURLMask(SYNADIA); soteErr.ErrCode != nil {
-		t.Errorf("GetNATSURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetNATSTLSURLMask("SCOTT"); soteErr.ErrCode != 109999 {
-		t.Errorf("GetNATSURL failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSURL failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetNATSTLSURLMask(""); soteErr.ErrCode != 200513 {
-		t.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }

@@ -67,7 +67,7 @@ echo -n '.'
 echo -n 'sAuthorize ' 1>> /tmp/tmp_$$.out
 rm sAuthorize/coverage.out 2> /dev/null; go test sAuthorize/*.go -coverprofile sAuthorize/coverage.out 1>> /tmp/tmp_$$.out
 echo -n '.'
-echo -n 'sMessage ' 1>> /tmp/tmp_$$.out
+echo -n 'sJetStream ' 1>> /tmp/tmp_$$.out
 rm sMessage/coverage.out 2> /dev/null; go test sMessage/*.go -coverprofile sMessage/coverage.out 1>> /tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sHTTPClient ' 1>> /tmp/tmp_$$.out

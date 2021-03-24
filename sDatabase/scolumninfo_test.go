@@ -16,37 +16,37 @@ func init() {
 	sLogger.SetLogMessagePrefix("scolumninfo_test.go")
 }
 
-func TestGetColumnInfo(t *testing.T) {
+func TestGetColumnInfo(tPtr *testing.T) {
 	var tConnInfo ConnInfo
 	if _, soteErr := GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 209299 {
-		t.Errorf("GetColumnInfo Failed: Expected error code of 209299")
-		t.Fail()
+		tPtr.Errorf("GetColumnInfo Failed: Expected error code of 209299")
+		tPtr.Fail()
 	}
 
 	if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
-		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
-		t.Fatal()
+		tPtr.Errorf("getAWSParams Failed: Expected error code to be nil.")
+		tPtr.Fatal()
 	}
 
 	tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	if soteErr.ErrCode != nil {
-		t.Errorf("GetConnection Failed: Please Investigate")
-		t.Fail()
+		tPtr.Errorf("GetConnection Failed: Please Investigate")
+		tPtr.Fail()
 	}
 
 	var columnInfo []SColumnInfo
 	if columnInfo, soteErr = GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != nil {
-		t.Errorf("GetColumnInfo Failed: Expected error code to be nil [" + strconv.Itoa(soteErr.ErrCode.(int)) + "]")
-		t.Fail()
+		tPtr.Errorf("GetColumnInfo Failed: Expected error code to be nil [" + strconv.Itoa(soteErr.ErrCode.(int)) + "]")
+		tPtr.Fail()
 	}
 
 	if len(columnInfo) == 0 {
-		t.Errorf("GetColumnInfo Failed: Expected at least one column's info to be returned")
-		t.Fail()
+		tPtr.Errorf("GetColumnInfo Failed: Expected at least one column's info to be returned")
+		tPtr.Fail()
 	} else {
 		if columnInfo[0].ColName == "" {
-			t.Errorf("GetColumnInfo Failed: Expected the column name to be returned")
-			t.Fail()
+			tPtr.Errorf("GetColumnInfo Failed: Expected the column name to be returned")
+			tPtr.Fail()
 		}
 	}
 }

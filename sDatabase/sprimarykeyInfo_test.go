@@ -18,83 +18,83 @@ func init() {
 	sLogger.SetLogMessagePrefix("sprimarykeyInfo_test.go")
 }
 
-// func TestPKPrimer(t *testing.T) {
+// func TestPKPrimer(tPtr *testing.T) {
 	// if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
-	// 	t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+	// 	tPtr.Errorf("getAWSParams Failed: Expected error code to be nil.")
 	// 	t.Fatal()
 	// }
 	//
 	// tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	// if soteErr.ErrCode != nil {
-	// 	t.Errorf("GetConnection Failed: Please investigate")
-	// 	t.Fail()
+	// 	tPtr.Errorf("GetConnection Failed: Please investigate")
+	// 	tPtr.Fail()
 	// }
 	//
 	// if pkPrimer("sotetest", tConnInfo); len(pkList) == 0 {
-	// 	t.Errorf("pkPrimer Failed: Expected the pkList to have at least one entry.")
+	// 	tPtr.Errorf("pkPrimer Failed: Expected the pkList to have at least one entry.")
 	// }
 // }
-// func TestPkPrimer(t *testing.T) {
+// func TestPkPrimer(tPtr *testing.T) {
 	// if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
-	// 	t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+	// 	tPtr.Errorf("getAWSParams Failed: Expected error code to be nil.")
 	// 	t.Fatal()
 	// }
 	//
 	// tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	// if soteErr.ErrCode != nil {
-	// 	t.Errorf("GetConnection Failed: Please investigate")
-	// 	t.Fail()
+	// 	tPtr.Errorf("GetConnection Failed: Please investigate")
+	// 	tPtr.Fail()
 	// }
 	//
 	// if pkPrimer("sotetest", tConnInfo); len(pkList) == 0 {
-	// 	t.Errorf("pkPrimer Failed: Expected the pkList to have at least one entry.")
+	// 	tPtr.Errorf("pkPrimer Failed: Expected the pkList to have at least one entry.")
 	// }
 // }
-// func TestPKLookup(t *testing.T) {
+// func TestPKLookup(tPtr *testing.T) {
 	// if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
-	// 	t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+	// 	tPtr.Errorf("getAWSParams Failed: Expected error code to be nil.")
 	// 	t.Fatal()
 	// }
 	//
 	// tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	// if soteErr.ErrCode != nil {
-	// 	t.Errorf("GetConnection Failed: Please investigate")
-	// 	t.Fail()
+	// 	tPtr.Errorf("GetConnection Failed: Please investigate")
+	// 	tPtr.Fail()
 	// }
 	//
 	// if tbName, soteErr := PKLookup(SOTETESTSCHEMA, REFERENCETABLE, REFTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != nil && tbName != SELF {
-	// 	t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be self.")
+	// 	tPtr.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be self.")
 	// }
 	//
 	// if tbName, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != nil && tbName != REFERENCETABLE {
-	// 	t.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
+	// 	tPtr.Errorf("pkLookup Failed: Expected error code to be nil and tbName should be referencetable.")
 	// }
 // }
-// func TestPKLookupEmptyValues(t *testing.T) {
+// func TestPKLookupEmptyValues(tPtr *testing.T) {
 	// if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
-	// 	t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+	// 	tPtr.Errorf("getAWSParams Failed: Expected error code to be nil.")
 	// 	t.Fatal()
 	// }
 	//
 	// tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	// if soteErr.ErrCode != nil {
-	// 	t.Errorf("GetConnection Failed: Please investigate")
-	// 	t.Fail()
+	// 	tPtr.Errorf("GetConnection Failed: Please investigate")
+	// 	tPtr.Fail()
 	// }
 	//
 	// if _, soteErr := PKLookup(EMPTYVALUE, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 200513 {
-	// 	t.Errorf("pkLookup Failed: Expected error code to be 200513.")
+	// 	tPtr.Errorf("pkLookup Failed: Expected error code to be 200513.")
 	// }
 	// if _, soteErr := PKLookup(SOTETESTSCHEMA, EMPTYVALUE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 200513 {
-	// 	t.Errorf("pkLookup Failed: Expected error code to be 200513.")
+	// 	tPtr.Errorf("pkLookup Failed: Expected error code to be 200513.")
 	// }
 	// if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, EMPTYVALUE, tConnInfo); soteErr.ErrCode != 200513 {
-	// 	t.Errorf("pkLookup Failed: Expected error code to be 200513.")
+	// 	tPtr.Errorf("pkLookup Failed: Expected error code to be 200513.")
 	// }
 // }
-// func TestNoConnection(t *testing.T) {
+// func TestNoConnection(tPtr *testing.T) {
 // 	var tConnInfo = ConnInfo{nil, ConnValues{}}
 // 	if _, soteErr := PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 209299 {
-// 		t.Errorf("pkLookup Failed: Expected error code to be 209299.")
+// 		tPtr.Errorf("pkLookup Failed: Expected error code to be 209299.")
 // 	}
 // }

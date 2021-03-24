@@ -8,32 +8,32 @@ func init() {
 	sLogger.SetLogMessagePrefix("stableinfo_test.go")
 }
 
-// func TestGetTables(t *testing.T) {
+// func TestGetTables(tPtr *testing.T) {
 // 	var tConnInfo ConnInfo
 // 	if _, soteErr := GetTableList("sote", tConnInfo); soteErr.ErrCode != 209299 {
-// 		t.Errorf("GetTableList Failed: Expected error code of 209299")
-// 		t.Fail()
+// 		tPtr.Errorf("GetTableList Failed: Expected error code of 209299")
+// 		tPtr.Fail()
 // 	}
 //
 // 	if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
-// 		t.Errorf("getAWSParams Failed: Expected error code to be nil.")
+// 		tPtr.Errorf("getAWSParams Failed: Expected error code to be nil.")
 // 		t.Fatal()
 // 	}
 //
 // 	tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 // 	if soteErr.ErrCode != nil {
-// 		t.Errorf("GetConnection Failed: Please Investigate")
-// 		t.Fail()
+// 		tPtr.Errorf("GetConnection Failed: Please Investigate")
+// 		tPtr.Fail()
 // 	}
 //
 // 	var tableList []string
 // 	if tableList, soteErr = GetTableList("sote", tConnInfo); soteErr.ErrCode != nil {
-// 		t.Errorf("GetTableList Failed: Expected error code to be nil")
-// 		t.Fail()
+// 		tPtr.Errorf("GetTableList Failed: Expected error code to be nil")
+// 		tPtr.Fail()
 // 	}
 //
 // 	if len(tableList) == 0 {
-// 		t.Errorf("GetTableList Failed: Expected at least one table name to be returned")
-// 		t.Fail()
+// 		tPtr.Errorf("GetTableList Failed: Expected at least one table name to be returned")
+// 		tPtr.Fail()
 // 	}
 // }

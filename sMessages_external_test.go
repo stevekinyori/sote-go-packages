@@ -30,36 +30,36 @@ const (
 	TESTAPPLICATIONSYNADIA = "synadia"
 )
 
-func TestNew(t *testing.T) {
+func TestNew(tPtr *testing.T) {
 	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,1, 250*time.Millisecond); soteErr.ErrCode != nil {
-		t.Errorf("New Failed: Expected error code to be nil")
+		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 
 	if _, soteErr := sJetStream.New("", sConfigParams.STAGING, "", TESTSYNADIAURL,1, 250*time.Millisecond); soteErr.ErrCode != 200513 {
-		t.Errorf("New Failed: Expected error code of 200513")
+		tPtr.Errorf("New Failed: Expected error code of 200513")
 	}
 
 	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, "", "", TESTSYNADIAURL,1, 250*time.Millisecond); soteErr.ErrCode != 209110 {
-		t.Errorf("New Failed: Expected error code of 209110")
+		tPtr.Errorf("New Failed: Expected error code of 209110")
 	}
 
 	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", "",1, 250*time.Millisecond); soteErr.ErrCode != 210090 {
-		t.Errorf("New Failed: Expected error code of 210090")
+		tPtr.Errorf("New Failed: Expected error code of 210090")
 	}
 
 	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,0, 250*time.Millisecond); soteErr.ErrCode != nil {
-		t.Errorf("New Failed: Expected error code to be nil")
+		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 
 	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,200, 250*time.Millisecond); soteErr.ErrCode != nil {
-		t.Errorf("New Failed: Expected error code to be nil")
+		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 
 	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,1, 1*time.Millisecond); soteErr.ErrCode != nil {
-		t.Errorf("New Failed: Expected error code to be nil")
+		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 
 	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL,1, 2*time.Minute); soteErr.ErrCode != nil {
-		t.Errorf("New Failed: Expected error code to be nil")
+		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 }

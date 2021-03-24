@@ -7,33 +7,33 @@ import (
 	"testing"
 )
 
-func TestDefaultLogLevel(t *testing.T) {
+func TestDefaultLogLevel(tPtr *testing.T) {
 	if logLevel := GetLogLevel(); logLevel != InfoLogLevel {
-		t.Errorf("The default log level should be INFO.  It is " + logLevel)
+		tPtr.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 	if logLevel := GetLogLevel(); logLevel == DebugLogLevel {
-		t.Errorf("The default log level should be INFO.  It is " + logLevel)
+		tPtr.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 }
-func TestSetLogLevelDebug(t *testing.T) {
+func TestSetLogLevelDebug(tPtr *testing.T) {
 	SetLogLevelDebug()
 	if logLevel := GetLogLevel(); logLevel == InfoLogLevel {
-		t.Errorf("The default log level should be INFO.  It is " + logLevel)
+		tPtr.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 	if logLevel := GetLogLevel(); logLevel != DebugLogLevel {
-		t.Errorf("The default log level should be INFO.  It is " + logLevel)
+		tPtr.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 }
-func TestSetLogLevelInfo(t *testing.T) {
+func TestSetLogLevelInfo(tPtr *testing.T) {
 	SetLogLevelInfo()
 	if logLevel := GetLogLevel(); logLevel != InfoLogLevel {
-		t.Errorf("The default log level should be INFO.  It is " + logLevel)
+		tPtr.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 	if logLevel := GetLogLevel(); logLevel == DebugLogLevel {
-		t.Errorf("The default log level should be INFO.  It is " + logLevel)
+		tPtr.Errorf("The default log level should be INFO.  It is " + logLevel)
 	}
 }
-func TestDebugMessage(t *testing.T) {
+func TestDebugMessage(tPtr *testing.T) {
 	SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
@@ -41,10 +41,10 @@ func TestDebugMessage(t *testing.T) {
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	if ! strings.Contains(string(out), DebugLogLevel) {
-		t.Errorf("The Debug message didn't was not found on StdOut.")
+		tPtr.Errorf("The Debug message didn't was not found on StdOut.")
 	}
 }
-func TestDebugInfoMessage(t *testing.T) {
+func TestDebugInfoMessage(tPtr *testing.T) {
 	SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
@@ -52,7 +52,7 @@ func TestDebugInfoMessage(t *testing.T) {
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	if ! strings.Contains(string(out), DebugLogLevel) {
-		t.Errorf("The Debug message didn't was not found on StdOut.")
+		tPtr.Errorf("The Debug message didn't was not found on StdOut.")
 	}
 	r, w, _ = os.Pipe()
 	os.Stdout = w
@@ -60,10 +60,10 @@ func TestDebugInfoMessage(t *testing.T) {
 	w.Close()
 	out, _ = ioutil.ReadAll(r)
 	if ! strings.Contains(string(out), InfoLogLevel) {
-		t.Errorf("The Info message didn't was not found on StdOut.")
+		tPtr.Errorf("The Info message didn't was not found on StdOut.")
 	}
 }
-func TestDebugMethod(t *testing.T) {
+func TestDebugMethod(tPtr *testing.T) {
 	SetLogLevelDebug()
 	r, w, _ := os.Pipe()
 	os.Stdout = w
@@ -72,13 +72,13 @@ func TestDebugMethod(t *testing.T) {
 	out, _ := ioutil.ReadAll(r)
 	output := strings.TrimSuffix(string(out), "\n")
 	if ! strings.Contains(output, DebugLogLevel) {
-		t.Errorf("The Debug message didn't was not found on StdOut.")
+		tPtr.Errorf("The Debug message didn't was not found on StdOut.")
 	}
 	if ! strings.Contains(output, "TestDebugMethod") {
-		t.Errorf("The Debug message didn't have the func name for this test in Stdout.")
+		tPtr.Errorf("The Debug message didn't have the func name for this test in Stdout.")
 	}
 }
-func TestSetLogMessagePrefix(t *testing.T) {
+func TestSetLogMessagePrefix(tPtr *testing.T) {
 	SetLogLevelDebug()
 	SetLogMessagePrefix("sLogger_test")
 	r, w, _ := os.Pipe()
@@ -88,9 +88,9 @@ func TestSetLogMessagePrefix(t *testing.T) {
 	out, _ := ioutil.ReadAll(r)
 	output := strings.TrimSuffix(string(out), "\n")
 	if ! strings.Contains(output, DebugLogLevel) && ! strings.Contains(output, "SLOGGER_TEST") {
-		t.Errorf("The Debug message didn't was not found on StdOut.")
+		tPtr.Errorf("The Debug message didn't was not found on StdOut.")
 	}
 	if ! strings.Contains(output, "TestDebugMethod") && ! strings.Contains(output, "SLOGGER_TEST") {
-		t.Errorf("The Debug message didn't have the func name for this test in Stdout.")
+		tPtr.Errorf("The Debug message didn't have the func name for this test in Stdout.")
 	}
 }

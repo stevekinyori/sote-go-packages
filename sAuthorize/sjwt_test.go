@@ -33,61 +33,61 @@ func init() {
 	sLogger.SetLogMessagePrefix("sjwt_test.go")
 }
 
-func TestValidToken(t *testing.T) {
+func TestValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestValidMissingSegmentToken(t *testing.T) {
+func TestValidMissingSegmentToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestValidFakeToken(t *testing.T) {
+func TestValidFakeToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestInValidSignatureToken(t *testing.T) {
+func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestValidTokenMissingParams(t *testing.T) {
+func TestValidTokenMissingParams(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = ValidToken("", sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 200514 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 200514 %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 200514 %v", soteErr.FmtErrMsg)
 	}
 }
-func TestInValidToken(t *testing.T) {
+func TestInValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
-		t.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestMatchKid(t *testing.T) {
+func TestMatchKid(tPtr *testing.T) {
 	if keys, soteErr := matchKid(sConfigParams.DEVELOPMENT, KIDGOOD); soteErr.ErrCode == nil {
 		if len(keys) == 0 {
-			t.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keys))
+			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keys))
 		}
 	} else {
-		t.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestGetPublicKey(t *testing.T) {
+func TestGetPublicKey(tPtr *testing.T) {
 	if keySet, soteErr := getPublicKey(sConfigParams.DEVELOPMENT); soteErr.ErrCode == nil {
 		if len(keySet.Keys) == 0 {
-			t.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keySet.Keys))
+			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keySet.Keys))
 		}
 	} else {
-		t.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestFetchPublicKey(t *testing.T) {
+func TestFetchPublicKey(tPtr *testing.T) {
 	var (
 		region, userPoolId string
 		soteErr            sError.SoteError
@@ -95,60 +95,60 @@ func TestFetchPublicKey(t *testing.T) {
 	)
 
 	if region, soteErr = sConfigParams.GetRegion(); soteErr.ErrCode != nil {
-		t.Fatalf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Fatalf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 
 	if userPoolId, soteErr = sConfigParams.GetUserPoolId(sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
-		t.Fatalf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Fatalf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 
 	if keySet, soteErr = fetchPublicKey(region, userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode == nil {
 		if len(keySet.Keys) == 0 {
-			t.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keySet.Keys))
+			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keySet.Keys))
 		}
 	} else {
-		t.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 
 	if keySet, soteErr = fetchPublicKey("SCOTT_LAND", userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 210030 {
-		t.Errorf("matchKid failed: Expected soteErr to be 210030: %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("matchKid failed: Expected soteErr to be 210030: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestValidateClaims(t *testing.T) {
+func TestValidateClaims(tPtr *testing.T) {
 	var claims jwt.MapClaims
 	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208370 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 208370")
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208370")
 	}
 	claims = make(map[string]interface{})
 	claims["scope"] = "scott.fake.scope"
 	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 208360")
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
 	claims = make(map[string]interface{})
 	claims["token_use"] = "scott.fake.use"
 	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 208360")
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
 	claims = make(map[string]interface{})
 	claims["iss"] = "scott.fake.iss"
 	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 208360")
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
 	claims = make(map[string]interface{})
 	claims["client_id"] = "scott.fake.client_id"
 	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208340 {
-		t.Errorf("validateClaims failed: Expected soteErr to be 208340")
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208340")
 	}
 }
-func TestValidateClientId(t *testing.T) {
+func TestValidateClientId(tPtr *testing.T) {
 	clientId, soteErr := sConfigParams.GetClientId(SDCC, sConfigParams.STAGING)
 	if soteErr.ErrCode == nil {
 		if soteErr = validateClientId(clientId, SDCC, sConfigParams.STAGING); soteErr.ErrCode != nil {
-			t.Errorf("validateClientId failed: Expected clientId to match")
+			tPtr.Errorf("validateClientId failed: Expected clientId to match")
 		}
 	}
 	clientId = "FAKE_CLIENT_ID"
 	if soteErr = validateClientId(clientId, SDCC, sConfigParams.STAGING); soteErr.ErrCode == nil {
-		t.Errorf("validateClientId failed: Expected soteErr to be other than nil")
+		tPtr.Errorf("validateClientId failed: Expected soteErr to be other than nil")
 	}
 }

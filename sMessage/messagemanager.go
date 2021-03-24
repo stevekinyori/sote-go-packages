@@ -18,12 +18,13 @@ import (
 )
 
 type MessageManager struct {
-	NatsConnection    *nats.Conn
+	NatsConnectionPtr *nats.Conn
 	application       string
 	environment       string
 	connectionURL     string
 	connectionOptions []nats.Option
 	SyncSubscriptions map[string]*nats.Subscription
+	Subscriptions     map[string]*nats.Subscription
 
 	sync.Mutex // TODO Do we need this?
 }
@@ -32,7 +33,7 @@ type MessageManager struct {
 	New will create a Sote Message Manager and a connection to the NATS network.
 */
 func New(application, environment, credentialFileName, connectionURL, connectionName string, secure bool, maxReconnect int,
-	reconnectWait time.Duration) (pMessageManager *MessageManager, soteErr sError.SoteError) {
+	reconnectWait time.Duration) (MessageManagerPtr *MessageManager, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -40,8 +41,8 @@ func New(application, environment, credentialFileName, connectionURL, connection
 	)
 
 	// Initialize the values for Nats Manager
-	pMessageManager = &MessageManager{
-		NatsConnection:    nil,
+	MessageManagerPtr = &MessageManager{
+		NatsConnectionPtr: nil,
 		application:       "synadia",
 		environment:       "staging",
 		connectionURL:     "localhost",
@@ -50,42 +51,42 @@ func New(application, environment, credentialFileName, connectionURL, connection
 	}
 
 	if soteErr = sConfigParams.ValidateApplication(application); soteErr.ErrCode == nil {
-		pMessageManager.application = application
+		MessageManagerPtr.application = application
 	}
 
 	if soteErr.ErrCode == nil {
 		if soteErr = sConfigParams.ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			pMessageManager.environment = environment
+			MessageManagerPtr.environment = environment
 		}
 	}
 
 	if soteErr.ErrCode == nil {
 		if len(connectionURL) == 0 {
-			connectionURL, soteErr = sConfigParams.GetNATSURL(pMessageManager.application, pMessageManager.environment)
+			connectionURL, soteErr = sConfigParams.GetNATSURL(MessageManagerPtr.application, MessageManagerPtr.environment)
 		}
-		soteErr = pMessageManager.setURL(connectionURL, secure)
+		soteErr = MessageManagerPtr.setURL(connectionURL, secure)
 	}
 
 	// Setting connection options
 	if soteErr.ErrCode == nil {
-		soteErr = pMessageManager.setReconnectOptions(maxReconnect, reconnectWait)
+		soteErr = MessageManagerPtr.setReconnectOptions(maxReconnect, reconnectWait)
 	}
 
 	// Setting credentials
 	if soteErr.ErrCode == nil {
 		if len(credentialFileName) > 0 {
-			soteErr = pMessageManager.setCredentialsFile(credentialFileName)
+			soteErr = MessageManagerPtr.setCredentialsFile(credentialFileName)
 		} else {
 			// This will retrieve value from AWS System Manager Parameter Store
 			getCreds := sConfigParams.GetNATSCredentials()
-			tmpCreds, soteErr = getCreds(pMessageManager.application, pMessageManager.environment)
-			pMessageManager.connectionOptions = append(pMessageManager.connectionOptions,
-				pMessageManager.setCredentialFromSystemParameters([]byte(tmpCreds.(string))))
+			tmpCreds, soteErr = getCreds(MessageManagerPtr.application, MessageManagerPtr.environment)
+			MessageManagerPtr.connectionOptions = append(MessageManagerPtr.connectionOptions,
+				MessageManagerPtr.setCredentialFromSystemParameters([]byte(tmpCreds.(string))))
 		}
 		// Making connection to server
 		if soteErr.ErrCode == nil {
-			soteErr = pMessageManager.connect()
-			pMessageManager.SyncSubscriptions = make(map[string]*nats.Subscription)
+			soteErr = MessageManagerPtr.connect()
+			MessageManagerPtr.SyncSubscriptions = make(map[string]*nats.Subscription)
 		}
 	}
 
@@ -95,11 +96,11 @@ func New(application, environment, credentialFileName, connectionURL, connection
 /*
 	Close will terminate the connection to the NATS network
 */
-func (mm *MessageManager) Close() (nmOut *MessageManager) {
+func (mmPtr *MessageManager) Close() (nmOutPtr *MessageManager) {
 	sLogger.DebugMethod()
 
 	// Closing connect to NATS
-	mm.NatsConnection.Close()
+	mmPtr.NatsConnectionPtr.Close()
 
 	return
 }
@@ -108,7 +109,7 @@ func (mm *MessageManager) Close() (nmOut *MessageManager) {
 	setCredentialsFile will pull the credentials from the file system.
 	** THIS IS NOT THE RECOMMENDED APPROACH! YOU SHOULD USE setCredentialFromSystemParameters **
 */
-func (mm *MessageManager) setCredentialsFile(streamCredentialFile string) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) setCredentialsFile(streamCredentialFile string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if len(streamCredentialFile) == 0 {
@@ -116,7 +117,7 @@ func (mm *MessageManager) setCredentialsFile(streamCredentialFile string) (soteE
 	} else if _, err := os.Stat(streamCredentialFile); err != nil {
 		soteErr = sError.GetSError(209010, sError.BuildParams([]string{streamCredentialFile, err.Error()}), sError.EmptyMap)
 	} else {
-		mm.connectionOptions = append(mm.connectionOptions, nats.UserCredentials(streamCredentialFile))
+		mmPtr.connectionOptions = append(mmPtr.connectionOptions, nats.UserCredentials(streamCredentialFile))
 	}
 
 	return
@@ -125,7 +126,7 @@ func (mm *MessageManager) setCredentialsFile(streamCredentialFile string) (soteE
 /*
 	setCredentialFromSystemParameters will take a credential file content that is not stored on the file system, such as AWS System Manager Parameters
 */
-func (mm *MessageManager) setCredentialFromSystemParameters(rawCredentials []byte) nats.Option {
+func (mmPtr *MessageManager) setCredentialFromSystemParameters(rawCredentials []byte) nats.Option {
 	return nats.UserJWT(
 		func() (string, error) { return nkeys.ParseDecoratedJWT(rawCredentials) },
 		func(nonce []byte) ([]byte, error) {
@@ -143,26 +144,26 @@ func (mm *MessageManager) setCredentialFromSystemParameters(rawCredentials []byt
 	setReconnectOptions expects a maxReconnect value between 1 and 5; if not, it is set to 1. The reconnectWait value
 	between 250 milliseconds and 1 minute; if not, it is set to 1 second.
 */
-func (mm *MessageManager) setReconnectOptions(maxReconnect int, reconnectWait time.Duration) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) setReconnectOptions(maxReconnect int, reconnectWait time.Duration) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if reconnectWait < 250*time.Millisecond || reconnectWait > 1*time.Minute {
-		mm.connectionOptions = append(mm.connectionOptions, nats.ReconnectWait(1*time.Second))
+		mmPtr.connectionOptions = append(mmPtr.connectionOptions, nats.ReconnectWait(1*time.Second))
 		sLogger.Info("Resetting reconnectWait to 1 second")
 	} else {
-		mm.connectionOptions = append(mm.connectionOptions, nats.ReconnectWait(reconnectWait))
+		mmPtr.connectionOptions = append(mmPtr.connectionOptions, nats.ReconnectWait(reconnectWait))
 	}
 	if maxReconnect < 1 || maxReconnect > 5 {
-		mm.connectionOptions = append(mm.connectionOptions, nats.MaxReconnects(1))
+		mmPtr.connectionOptions = append(mmPtr.connectionOptions, nats.MaxReconnects(1))
 		sLogger.Info("Resetting maxReconnect to 1 try")
 	} else {
-		mm.connectionOptions = append(mm.connectionOptions, nats.MaxReconnects(maxReconnect))
+		mmPtr.connectionOptions = append(mmPtr.connectionOptions, nats.MaxReconnects(maxReconnect))
 	}
 
 	return
 }
 
-func (mm *MessageManager) setURL(connectionURL string, secure bool) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) setURL(connectionURL string, secure bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -173,10 +174,10 @@ func (mm *MessageManager) setURL(connectionURL string, secure bool) (soteErr sEr
 		soteErr = sError.GetSError(210090, sError.BuildParams([]string{connectionURL}), nil)
 	} else {
 		if secure {
-			mask, soteErr = sConfigParams.GetNATSTLSURLMask(mm.application)
+			mask, soteErr = sConfigParams.GetNATSTLSURLMask(mmPtr.application)
 			connectionURL = mask + connectionURL
 		}
-		mm.connectionURL = connectionURL
+		mmPtr.connectionURL = connectionURL
 	}
 
 	return
@@ -185,7 +186,7 @@ func (mm *MessageManager) setURL(connectionURL string, secure bool) (soteErr sEr
 /*
 	This will connect to the NATS network using the values set in the MessageManager
 */
-func (mm *MessageManager) connect() (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) connect() (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -193,15 +194,15 @@ func (mm *MessageManager) connect() (soteErr sError.SoteError) {
 	)
 
 	// Connect to NATS
-	mm.NatsConnection, err = nats.Connect(mm.connectionURL, mm.connectionOptions...)
+	mmPtr.NatsConnectionPtr, err = nats.Connect(mmPtr.connectionURL, mmPtr.connectionOptions...)
 	if err != nil {
-		soteErr = mm.natsErrorHandle(err, "", "", "", nil)
+		soteErr = mmPtr.natsErrorHandle(err, "", "", "", "")
 	}
 
 	return
 }
 
-func (mm *MessageManager) natsErrorHandle(err error, subject, reply, subscriptionName string, data []byte) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) natsErrorHandle(err error, subject, reply, subscriptionName string, data string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -226,7 +227,7 @@ func (mm *MessageManager) natsErrorHandle(err error, subject, reply, subscriptio
 	default:
 		soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 	}
-	sLogger.Info(fmt.Sprintf("ERROR IN: messagemanager.go err: %v subject: %v reply: %v subscription name: %v data: %v",err.Error(), subject,
+	sLogger.Info(fmt.Sprintf("ERROR IN: messagemanager.go err: %v subject: %v reply: %v subscription name: %v data: %v", err.Error(), subject,
 		reply, subscriptionName, data))
 	sLogger.Info(soteErr.FmtErrMsg)
 
