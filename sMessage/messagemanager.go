@@ -193,27 +193,30 @@ func (mmPtr *MessageManager) connect() (soteErr sError.SoteError) {
 		err error
 	)
 
+	params := make(map[string]string)
+	params["Connection URL: "] = mmPtr.connectionURL
 	// Connect to NATS
 	mmPtr.NatsConnectionPtr, err = nats.Connect(mmPtr.connectionURL, mmPtr.connectionOptions...)
 	if err != nil {
-		soteErr = mmPtr.natsErrorHandle(err, "", "", "", "")
+		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 
 	return
 }
 
-func (mmPtr *MessageManager) natsErrorHandle(err error, subject, reply, subscriptionName string, data string) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
 		panicError = true
+
 	)
 
 	switch err.Error() {
 	case "nats: invalid connection":
 		soteErr = sError.GetSError(210499, nil, sError.EmptyMap)
 	case "nats: invalid subject":
-		soteErr = sError.GetSError(208310, sError.BuildParams([]string{subject}), sError.EmptyMap)
+		soteErr = sError.GetSError(208310, sError.BuildParams([]string{params["subject"]}), sError.EmptyMap)
 	case "nats: no servers available for connection":
 		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
 	case "no nkey seed found":
@@ -224,15 +227,27 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, subject, reply, subscrip
 	case "nats: connection closed":
 		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
 		panicError = false
+	case "stream not found":
+		soteErr = sError.GetSError(109999, sError.BuildParams([]string{"Stream Name Needed"}), sError.EmptyMap)
+		panicError = false
 	default:
 		soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 	}
-	sLogger.Info(fmt.Sprintf("ERROR IN: messagemanager.go err: %v subject: %v reply: %v subscription name: %v data: %v", err.Error(), subject,
-		reply, subscriptionName, data))
+	sLogger.Info(fmt.Sprintf("ERROR IN: messagemanager.go err: %v | %v", err.Error(), dumpParams(params)))
 	sLogger.Info(soteErr.FmtErrMsg)
 
 	if panicError {
 		panic(soteErr.FmtErrMsg)
+	}
+
+	return
+}
+
+func dumpParams(params map[string]string) (paramString string){
+	sLogger.DebugMethod()
+
+	for key, value := range params {
+		paramString += fmt.Sprintf("%v: %v", key, value)
 	}
 
 	return
