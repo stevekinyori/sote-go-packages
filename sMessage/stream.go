@@ -17,6 +17,7 @@ STREAMS:
 package sMessage
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/nats-io/nats.go"
@@ -25,65 +26,56 @@ import (
 )
 
 const (
-	M              = "m"
-	MEMORY         = "memory"
-)
-
-var (
-	sStreamConfigPtr *nats.StreamConfig
+	LIMITSFILESTREAM = "limits-file"
+	LIMITSMEMORYSTREAM = "limits-memory"
+	WORKQUEUEFILESTREAM = "workqueue-file"
+	WORKQUEUEMEMORYSTREAM = "workqueue-memory"
 )
 
 /*
-	CreateLimitsStream will create a stream that has limited retention of messages.
+	CreateLimitsStreamWithFileStorage will create a file based stream that has limited retention of messages.
 */
-func (mmPtr *MessageManager) CreateLimitsStream(streamName, storage string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+func (mmPtr *MessageManager) CreateLimitsStreamWithFileStorage(streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
-		if strings.ToLower(storage) == MEMORY || strings.ToLower(storage) == M {
-			sStreamConfigPtr.Storage = 1
-		}
-		sStreamConfigPtr.Name = streamName
-		sStreamConfigPtr.Subjects = subjects
-		sStreamConfigPtr.Replicas = replicas
-		js, err := mmPtr.NatsConnectionPtr.JetStream()
-		if err != nil {
-			mmPtr.natsErrorHandle(err, "", "", "", "")
-		}
-		sStream, err = js.AddStream(sStreamConfigPtr)
-		if err != nil {
-			mmPtr.natsErrorHandle(err, "", "", "", "")
-		}
-	}
+	sStream, soteErr = mmPtr.createStream(LIMITSFILESTREAM, streamName, subjects, replicas)
 
 	return
 }
 
 /*
-	CreateWorkQueueStream will create a stream that once the message is pulled, it will be removed from the stream.
+	CreateLimitsStreamWithMemoryStorage will create a memory based stream that has limited retention of messages.
 */
-func (mmPtr *MessageManager) CreateWorkQueueStream(streamName, storage string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+func (mmPtr *MessageManager) CreateLimitsStreamWithMemoryStorage(streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if soteErr = validateStreamName(streamName); soteErr.ErrCode == nil {
-		if strings.ToLower(storage) == MEMORY || strings.ToLower(storage) == M {
-			sStreamConfigPtr.Storage = 1
-		}
-		sStreamConfigPtr.Name = streamName
-		sStreamConfigPtr.Subjects = subjects
-		sStreamConfigPtr.Replicas = replicas
-		sStreamConfigPtr.Retention = nats.WorkQueuePolicy
-		js, err := mmPtr.NatsConnectionPtr.JetStream()
-		if err != nil {
-			mmPtr.natsErrorHandle(err, "", "", "", "")
-		}
-		sStream, err = js.AddStream(sStreamConfigPtr)
-		if err != nil {
-			mmPtr.natsErrorHandle(err, "", "", "", "")
-		}
-	}
+	sStream, soteErr = mmPtr.createStream(LIMITSMEMORYSTREAM, streamName, subjects, replicas)
+
+	return
+}
+
+/*
+	CreateWorkQueueStreamWithFileStorage will create a stream that once the message is pulled, it will be removed from the stream.
+*/
+func (mmPtr *MessageManager) CreateWorkQueueStreamWithFileStorage(streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+	soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	sStream, soteErr = mmPtr.createStream(WORKQUEUEFILESTREAM, streamName, subjects, replicas)
+
+	return
+}
+
+/*
+	CreateWorkQueueStreamWithFileStorage will create a stream that once the message is pulled, it will be removed from the stream.
+*/
+func (mmPtr *MessageManager) CreateWorkQueueStreamWithMemoryStorage(streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+	soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	sStream, soteErr = mmPtr.createStream(WORKQUEUEMEMORYSTREAM, streamName, subjects, replicas)
 
 	return
 }
@@ -94,24 +86,125 @@ func (mmPtr *MessageManager) CreateWorkQueueStream(streamName, storage string, s
 func (mmPtr *MessageManager) DeleteStream(streamName string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
+	params := make(map[string]string)
+	params["Stream Name: "] = streamName
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
-		mmPtr.natsErrorHandle(err, "", "", "", "")
+		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 
 	err = js.DeleteStream(streamName)
 	if err != nil {
-		mmPtr.natsErrorHandle(err, "", "", "", "")
+		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 
 	return
 }
 
-func validateStreamName(streamName string) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) createStream(streamType, streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if len(streamName) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamName"}), nil)
+	var (
+		sStreamConfig *nats.StreamConfig
+	)
+
+	params := make(map[string]string)
+	params["Stream Name:"] = streamName
+	params["Subjects:"] = strings.Join(subjects, ", ")
+	params["Replicas:"] = strconv.Itoa(replicas)
+	js, err := mmPtr.NatsConnectionPtr.JetStream()
+	if err != nil {
+		soteErr = mmPtr.natsErrorHandle(err, params)
+	}
+
+	// The default sote setting will change over time, so they are called out here.
+	switch streamType {
+	case LIMITSFILESTREAM:
+		sStreamConfig = &nats.StreamConfig{
+			Name:         streamName,
+			Subjects:     subjects,
+			Retention:    nats.LimitsPolicy,
+			MaxConsumers: 0,
+			MaxMsgs:      10000,
+			MaxBytes:     0,
+			Discard:      nats.DiscardOld,
+			MaxAge:       1209600000000000,
+			MaxMsgSize:   102400,
+			Storage:      nats.FileStorage,
+			Replicas:     replicas,
+			NoAck:        false,
+			Template:     "",
+			Duplicates:   0,
+			Placement:    nil,
+			Mirror:       nil,
+			Sources:      nil,
+		}
+	case LIMITSMEMORYSTREAM:
+		sStreamConfig = &nats.StreamConfig{
+			Name:         streamName,
+			Subjects:     subjects,
+			Retention:    nats.LimitsPolicy,
+			MaxConsumers: 0,
+			MaxMsgs:      10000,
+			MaxBytes:     0,
+			Discard:      nats.DiscardOld,
+			MaxAge:       1209600000000000,
+			MaxMsgSize:   102400,
+			Storage:      nats.MemoryStorage,
+			Replicas:     replicas,
+			NoAck:        false,
+			Template:     "",
+			Duplicates:   0,
+			Placement:    nil,
+			Mirror:       nil,
+			Sources:      nil,
+		}
+	case WORKQUEUEFILESTREAM:
+		sStreamConfig = &nats.StreamConfig{
+			Name:         streamName,
+			Subjects:     subjects,
+			Retention:    nats.WorkQueuePolicy,
+			MaxConsumers: 0,
+			MaxMsgs:      10000,
+			MaxBytes:     0,
+			Discard:      nats.DiscardOld,
+			MaxAge:       1209600000000000,
+			MaxMsgSize:   102400,
+			Storage:      nats.FileStorage,
+			Replicas:     replicas,
+			NoAck:        false,
+			Template:     "",
+			Duplicates:   0,
+			Placement:    nil,
+			Mirror:       nil,
+			Sources:      nil,
+		}
+	case WORKQUEUEMEMORYSTREAM:
+		sStreamConfig = &nats.StreamConfig{
+			Name:         streamName,
+			Subjects:     subjects,
+			Retention:    nats.WorkQueuePolicy,
+			MaxConsumers: 0,
+			MaxMsgs:      10000,
+			MaxBytes:     0,
+			Discard:      nats.DiscardOld,
+			MaxAge:       1209600000000000,
+			MaxMsgSize:   102400,
+			Storage:      nats.MemoryStorage,
+			Replicas:     replicas,
+			NoAck:        false,
+			Template:     "",
+			Duplicates:   0,
+			Placement:    nil,
+			Mirror:       nil,
+			Sources:      nil,
+		}
+	}
+
+	sStream, err = js.AddStream(sStreamConfig)
+	if err != nil {
+		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 
 	return
