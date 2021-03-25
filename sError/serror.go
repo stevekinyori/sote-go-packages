@@ -57,7 +57,7 @@ var (
 	*/
 	soteErrors = map[int]SoteError{
 		// Errors where the Front End can take action
-		100000: {100000, USERERROR, 0, "None", ": Item already exists", EmptyMap, ""},
+		100000: {100000, USERERROR, 1, "Item Name", ": %v already exists", EmptyMap, ""},
 		100100: {100100, USERERROR, 2, "List of users roles, Requested action", ": Your roles %v are not authorized to %v", EmptyMap, ""},
 		100200: {100200, PROCESSERROR, 0, "None", ": Row has been updated since reading it, re-read the row", EmptyMap, ""},
 		100500: {100500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, ""},
@@ -100,7 +100,6 @@ var (
 			": Message doesn't match signature. Sender must provide the following parameter names: %v", EmptyMap, ""},
 		206300: {206300, NATSERROR, 0, "None", ": Stream pointer is nil. Must be a validate pointer to a stream.", EmptyMap, ""},
 		206400: {206400, NATSERROR, 1, "Stream Name", ": Stream creation encountered an error that is not expected. Stream Name: %v", EmptyMap, ""},
-		206500: {206500, NATSERROR, 0, "None", ": Stream already exists.", EmptyMap, ""},
 		206600: {206600, NATSERROR, 2, "Stream Name, Consumer Name", ": Consumer creation encountered an error that is not expected. " +
 			"Stream Name: %v Consumer Name: %v", EmptyMap, ""},
 		206700: {206700, NATSERROR, 2, "Stream Name, Consumer Subject Filter",
@@ -188,7 +187,7 @@ var (
 		100500	Thing being changed > : You are making changes to a canceled or completed %v
 		101010	Service Name > : %v timed out
 		109999	Item name > : No %v was/were found
-		199999	None > : An error has occurred that is not expected.
+		199999	Error Details > : An error has occurred that is not expected. See Log! %v
 		200100	None > : Table doesn't exist
 		200200	Parameter name, Data type of parameter > : %v must be of type %v
 		200250	Parameter name, Parameter value, List of values allowed > : %v (%v) must contain one of these values: %v
@@ -216,7 +215,8 @@ var (
 		206200	List of required parameters > : Message doesn't match signature. Sender must provide the following parameter names: %v
 		206300	None > : Stream pointer is nil. Must be a validate pointer to a stream.
 		206400	Stream Name > : Stream creation encountered an error that is not expected. Stream Name: %v
-		206500	None > : Stream already exists.
+		206500	Stream Name > : Stream (%v) already exists.
+		206550	Stream Name > : Stream (%v) already exists.
 		206600	Stream Name, Consumer Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Consumer Name: %v
 		206700	Stream Name, Consumer Subject Filter > : The consumer subject filter must be a subset of the stream subject. Stream Name: %v Consumer Subject Filter: %v
 		207000	Field name, Field value > : %v (%v) is not numeric
