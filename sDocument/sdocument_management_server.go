@@ -1,3 +1,4 @@
+
 package sDocument
 
 import (
@@ -26,7 +27,16 @@ func New() (documentServerPtr *DocumentServerManager, soteErr sError.SoteError) 
 	return
 }
 
-/* ConvertFileFormat writes out the image in the same/different format */
+/*
+	ConvertImageFormat writes out the image in the same/different format
+
+	EXAMPLE:
+		if dsm, soteErr := New(); soteErr.ErrCode == nil {
+			if _, soteErr = dsm.ConvertImageFormat("logo.jpg","out.png"); soteErr.ErrCode != nil {
+				sLogger.Info(fmt.Sprintf("ConvertImageFormat failed:Expected soteErr to be nil:%v ", soteErr.FmtErrMsg))
+			}
+		}
+*/
 func (dsm *DocumentServerManager) ConvertImageFormat(sourcePath string, targetPath string) (pdfFilePtr *imagick.ImageCommandResult,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()

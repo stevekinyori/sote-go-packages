@@ -4,13 +4,15 @@ This will create an tesseract instance that is used for Optical Character Recogn
 package sDocument
 
 import (
+	"path/filepath"
+	"strings"
+	"sync"
+
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 	leptonica "gopkg.in/GeertJohan/go.leptonica.v1"
 	tesseract "gopkg.in/GeertJohan/go.tesseract.v1"
-	"path/filepath"
-	"strings"
-	"sync"
+
 )
 
 const (
