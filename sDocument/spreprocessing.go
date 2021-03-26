@@ -23,10 +23,15 @@ func NewPreprocessor() (preprocessManagerPtr *PreprocessManager, soteErr sError.
 func (pm *PreprocessManager) CorrectSkew(sFilePath string) (sGrayScaleImage gocv.Mat, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
+	var tGrayScaleImage gocv.Mat = gocv.NewMat()
+
 	if _, soteErr = pm.checkIfPathExists(sFilePath); soteErr.ErrCode == nil {
 		sOriginalImage := gocv.IMRead(sFilePath, -1) // Load image and return it in original format
 		sGrayScaleImage = gocv.NewMat() // Create a new empty mat
-		gocv.CvtColor(sOriginalImage, &sGrayScaleImage, gocv.ColorBGRToGray) //convert the image to grayscale and flip the foreground
+		//convert the image to grayscale
+		gocv.CvtColor(sOriginalImage, &tGrayScaleImage, gocv.ColorBGRToGray)
+		//Flip the foreground and background to ensure foreground is now "white" and background is "black"
+		gocv.BitwiseNot(tGrayScaleImage, &sGrayScaleImage)
 
 		window := gocv.NewWindow("Hello")
 		window.IMShow(sGrayScaleImage)
