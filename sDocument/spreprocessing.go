@@ -24,8 +24,9 @@ func (pm *PreprocessManager) CorrectSkew(sFilePath string) (sGrayScaleImage gocv
 	sLogger.DebugMethod()
 
 	if _, soteErr = pm.checkIfPathExists(sFilePath); soteErr.ErrCode == nil {
-		// Load image and return it in original format
-		sGrayScaleImage = gocv.IMRead(sFilePath, -1)
+		sOriginalImage := gocv.IMRead(sFilePath, -1) // Load image and return it in original format
+		sGrayScaleImage = gocv.NewMat() // Create a new empty mat
+		gocv.CvtColor(sOriginalImage, &sGrayScaleImage, gocv.ColorBGRToGray) //convert the image to grayscale and flip the foreground
 
 		window := gocv.NewWindow("Hello")
 		window.IMShow(sGrayScaleImage)
