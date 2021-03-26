@@ -2,6 +2,7 @@
 package sDocument
 
 import (
+	"fmt"
 	"os"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
@@ -46,26 +47,25 @@ func (pm *PreprocessManager) CorrectSkew() (sGrayScaleImage gocv.Mat, soteErr sE
 	sLogger.DebugMethod()
 
 	var (
-		sBitwiseImage = gocv.NewMat()
-		//tThresholdedImage = gocv.NewMat()
-		//sThreshold        float32
+		sBitwiseImage     = gocv.NewMat()
+		sThresholdedImage = gocv.NewMat()
+		sThreshold        float32
 	)
 
 	sGrayScaleImage = pm.convertImageToGrayScale()
 	sBitwiseImage = pm.convertGrayscaleImageToBitwise(sGrayScaleImage)
-	//// Threshold image, set all foreground pixels to 255 and all background pixels to 0
-	//sThreshold = gocv.Threshold(sGrayScaleImage, &tThresholdedImage, 0, 255, gocv.ThresholdBinary|gocv.ThresholdOtsu)
-	//fmt.Println(sThreshold)
+	sThreshold, sThresholdedImage = pm.thresholdImage(sBitwiseImage)
+	fmt.Println(sThreshold)
 
 	window := gocv.NewWindow("Hello")
-	window.IMShow(sBitwiseImage)
+	window.IMShow(sThresholdedImage)
 	window.WaitKey(0)
 
 	return
 }
 
 /* convertImageToGrayScale Converts image to grayscale */
-func (pm PreprocessManager) convertImageToGrayScale() (sGrayScaleImage gocv.Mat) {
+func (pm *PreprocessManager) convertImageToGrayScale() (sGrayScaleImage gocv.Mat) {
 	sLogger.DebugMethod()
 
 	sGrayScaleImage = gocv.NewMat()
@@ -75,13 +75,30 @@ func (pm PreprocessManager) convertImageToGrayScale() (sGrayScaleImage gocv.Mat)
 	return
 }
 
-/* convertGrayscaleImageToBitwise flips the foreground and background to ensure foreground is "white" and background is "black" */
-func (pm PreprocessManager) convertGrayscaleImageToBitwise(sGrayScaleImage gocv.Mat) (sBitwiseImage gocv.Mat) {
+/*
+	convertGrayscaleImageToBitwise flips the foreground and background to ensure foreground is "white" and background is "black".
+	This makes all text dark and background light.
+*/
+func (pm *PreprocessManager) convertGrayscaleImageToBitwise(sGrayScaleImage gocv.Mat) (sBitwiseImage gocv.Mat) {
 	sLogger.DebugMethod()
 
 	sBitwiseImage = gocv.NewMat()
 
 	gocv.BitwiseNot(sGrayScaleImage, &sBitwiseImage)
+
+	return
+}
+
+/*
+	thresholdImage thresholds bitwise image, set all foreground pixels to 255(black) and all background pixels to 0(white).
+ 	This makes all text light and background dark.
+*/
+func (pm *PreprocessManager) thresholdImage(sGrayScaleImage gocv.Mat) (sThreshold float32, sThresholdedImage gocv.Mat) {
+	sLogger.DebugMethod()
+
+	sThresholdedImage = gocv.NewMat()
+
+	sThreshold = gocv.Threshold(sGrayScaleImage, &sThresholdedImage, 0, 255, gocv.ThresholdBinary|gocv.ThresholdOtsu)
 
 	return
 }
