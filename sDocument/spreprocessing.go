@@ -46,20 +46,19 @@ func (pm *PreprocessManager) CorrectSkew() (sGrayScaleImage gocv.Mat, soteErr sE
 	sLogger.DebugMethod()
 
 	var (
-	//sBitwiseImage   = gocv.NewMat()
-	//tThresholdedImage = gocv.NewMat()
-	//sThreshold        float32
+		sBitwiseImage = gocv.NewMat()
+		//tThresholdedImage = gocv.NewMat()
+		//sThreshold        float32
 	)
 
 	sGrayScaleImage = pm.convertImageToGrayScale()
-	////Flip the foreground and background to ensure foreground is now "white" and background is "black"
-	//gocv.BitwiseNot(tGrayScaleImage, &sGrayScaleImage)
+	sBitwiseImage = pm.convertGrayscaleImageToBitwise(sGrayScaleImage)
 	//// Threshold image, set all foreground pixels to 255 and all background pixels to 0
 	//sThreshold = gocv.Threshold(sGrayScaleImage, &tThresholdedImage, 0, 255, gocv.ThresholdBinary|gocv.ThresholdOtsu)
 	//fmt.Println(sThreshold)
 
 	window := gocv.NewWindow("Hello")
-	window.IMShow(sGrayScaleImage)
+	window.IMShow(sBitwiseImage)
 	window.WaitKey(0)
 
 	return
@@ -72,6 +71,17 @@ func (pm PreprocessManager) convertImageToGrayScale() (sGrayScaleImage gocv.Mat)
 	sGrayScaleImage = gocv.NewMat()
 
 	gocv.CvtColor(pm.sOriginalImage, &sGrayScaleImage, gocv.ColorBGRToGray)
+
+	return
+}
+
+/* convertGrayscaleImageToBitwise flips the foreground and background to ensure foreground is "white" and background is "black" */
+func (pm PreprocessManager) convertGrayscaleImageToBitwise(sGrayScaleImage gocv.Mat) (sBitwiseImage gocv.Mat) {
+	sLogger.DebugMethod()
+
+	sBitwiseImage = gocv.NewMat()
+
+	gocv.BitwiseNot(sGrayScaleImage, &sBitwiseImage)
 
 	return
 }
