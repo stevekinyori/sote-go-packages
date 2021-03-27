@@ -62,7 +62,7 @@ var (
 		100200: {100200, PROCESSERROR, 0, "None", ": Row has been updated since reading it, re-read the row", EmptyMap, ""},
 		100500: {100500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, ""},
 		101010: {101010, PROCESSERROR, 1, "Service Name", ": %v timed out", EmptyMap, ""},
-		109999: {109999, USERERROR, 1, "Item name", ": No %v was/were found", EmptyMap, ""},
+		109999: {109999, USERERROR, 1, "Item name", ": %v was/were not found", EmptyMap, ""},
 		199999: {199999, GENERALERROR, 1, "Error Details", ": An error has occurred that is not expected. See Log! %v", EmptyMap, ""},
 		// ======================================================================
 		// Errors where the Back End can take action or the system needs to panic
@@ -94,6 +94,7 @@ var (
 		205000: {205000, PROCESSERROR, 0, "None", ": AWS SES error - see details in retPack", EmptyMap, ""},
 		205005: {205005, PROCESSERROR, 0, "None", ": AWS STS error - see details in retPack", EmptyMap, ""},
 		206000: {206000, NATSERROR, 0, "None", ": Jetstream is not enabled", EmptyMap, ""},
+		206050: {206050, NATSERROR, 2, "Subscription Name, Subject", ": (%v) is an invalid subscription. Subject: %v", EmptyMap, ""},
 		206100: {206100, NATSERROR, 1, "Key name", ": Upper or lower case %v key is missing", EmptyMap, ""},
 		206105: {206105, NATSERROR, 1, "Key name", ": Upper or lower case %v keys value is missing", EmptyMap, ""},
 		206200: {206200, NATSERROR, 1, "List of required parameters",

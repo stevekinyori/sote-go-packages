@@ -87,6 +87,7 @@ func New(application, environment, credentialFileName, connectionURL, connection
 		if soteErr.ErrCode == nil {
 			soteErr = MessageManagerPtr.connect()
 			MessageManagerPtr.SyncSubscriptions = make(map[string]*nats.Subscription)
+			MessageManagerPtr.Subscriptions = make(map[string]*nats.Subscription)
 		}
 	}
 
@@ -194,7 +195,7 @@ func (mmPtr *MessageManager) connect() (soteErr sError.SoteError) {
 	)
 
 	params := make(map[string]string)
-	params["Connection URL: "] = mmPtr.connectionURL
+	params["Connection URL"] = mmPtr.connectionURL
 	// Connect to NATS
 	mmPtr.NatsConnectionPtr, err = nats.Connect(mmPtr.connectionURL, mmPtr.connectionOptions...)
 	if err != nil {
@@ -216,7 +217,7 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	case "nats: invalid connection":
 		soteErr = sError.GetSError(210499, nil, sError.EmptyMap)
 	case "nats: invalid subject":
-		soteErr = sError.GetSError(208310, sError.BuildParams([]string{params["subject"]}), sError.EmptyMap)
+		soteErr = sError.GetSError(208310, sError.BuildParams([]string{params["Subject"]}), sError.EmptyMap)
 	case "nats: no servers available for connection":
 		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
 	case "no nkey seed found":
@@ -227,8 +228,14 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	case "nats: connection closed":
 		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
 		panicError = false
+	case "nats: invalid subscription":
+		soteErr = sError.GetSError(206050, sError.BuildParams([]string{params["Subscription Name"], params["Subject"]}), sError.EmptyMap)
+		panicError = false
 	case "stream not found":
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{"Stream Name Needed"}), sError.EmptyMap)
+		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), sError.EmptyMap)
+		panicError = false
+	case "no message found":
+		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"], params["Message Sequence"]}), sError.EmptyMap)
 		panicError = false
 	default:
 		soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)

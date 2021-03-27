@@ -49,7 +49,7 @@ func TestPublishRequest(tPtr *testing.T) {
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.PublishRequest("greeting", "greeting-reply", []byte("Back At You!")); soteErr.ErrCode != nil {
+		if soteErr = mmPtr.PublishRequest("greeting", "greeting-reply", "Back At You!"); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestPublishRequest Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
 	}
@@ -107,7 +107,7 @@ func TestRequestReply(tPtr *testing.T) {
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond); soteErr.ErrCode == nil {
-		if _, soteErr = mmPtr.RequestReply("greeting", []byte("Hello World")); soteErr.ErrCode != nil {
+		if _, soteErr = mmPtr.RequestReply("greeting", "Hello World"); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestRequestReply Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
 	}

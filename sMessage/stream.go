@@ -1,18 +1,5 @@
 /*
-General information about the streams. (Gathered from https://github.com/nats-io/jetstream)
-STREAMS:
-	Limit streams are used to control the size of the stream.  Limited streams can be limited by the following parameters:
-		MaxAge of the message, (Sote supported)
-		MaxBytes of the stream,
-		MaxMsgs that can be in the stream. (Sote supported)
-	When one of these limits are reached the messages in the stream will be discarded based on the discard setting.  Discard
-	can be set to old or new.  Oldest record the newest record is removed.
-
-	Interest streams retain messages so long as there is a consumer active for the subject.  At this time, this is not support by
-	Sote sJetStream wrapper. Interest stream limits using age, size and count still apply as upper bounds.
-
-	Work or Work Queue streams will retain the messages until the message is consumed by any one consumer. The message is then
-	removed by the stream. Work stream limits using age, size and count still apply as upper bounds.
+	General information about the streams. (Gathered from https://github.com/nats-io/jetstream)
 */
 package sMessage
 
@@ -87,7 +74,7 @@ func (mmPtr *MessageManager) DeleteStream(streamName string) (soteErr sError.Sot
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
-	params["Stream Name: "] = streamName
+	params["Stream Name"] = streamName
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
@@ -110,9 +97,9 @@ func (mmPtr *MessageManager) createStream(streamType, streamName string, subject
 	)
 
 	params := make(map[string]string)
-	params["Stream Name:"] = streamName
-	params["Subjects:"] = strings.Join(subjects, ", ")
-	params["Replicas:"] = strconv.Itoa(replicas)
+	params["Stream Name"] = streamName
+	params["Subjects"] = strings.Join(subjects, ", ")
+	params["Replicas"] = strconv.Itoa(replicas)
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)

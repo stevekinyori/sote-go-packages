@@ -10,7 +10,6 @@ import (
 
 const (
 	TESTSTREAMNAME    = "test-stream-delete-me"
-	TESTMEMORYSTORAGE = "memory"
 )
 
 var (
