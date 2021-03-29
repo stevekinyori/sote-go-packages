@@ -98,7 +98,7 @@ func (mmPtr *MessageManager) PullSubscribe(subject, durableName string) (soteErr
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
-	mmPtr.Subscriptions[durableName], err = js.PullSubscribe(subject, nats.SubOpt(nats.Durable(durableName)))
+	mmPtr.PullSubscriptions[durableName], err = js.PullSubscribe(subject, nats.SubOpt(nats.Durable(durableName)))
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
