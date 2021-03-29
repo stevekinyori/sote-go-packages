@@ -164,7 +164,7 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int) (messag
 	params["Durable Name"] = durableName
 	params["Message Count"] = strconv.Itoa(messageCount)
 
-	messages, err = mmPtr.Subscriptions[durableName].Fetch(messageCount)
+	messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount)
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
