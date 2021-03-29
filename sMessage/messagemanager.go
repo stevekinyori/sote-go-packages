@@ -23,8 +23,9 @@ type MessageManager struct {
 	environment       string
 	connectionURL     string
 	connectionOptions []nats.Option
-	SyncSubscriptions map[string]*nats.Subscription
 	Subscriptions     map[string]*nats.Subscription
+	SyncSubscriptions map[string]*nats.Subscription
+	PullSubscriptions map[string]*nats.Subscription
 
 	sync.Mutex // TODO Do we need this?
 }
@@ -86,8 +87,9 @@ func New(application, environment, credentialFileName, connectionURL, connection
 		// Making connection to server
 		if soteErr.ErrCode == nil {
 			soteErr = MessageManagerPtr.connect()
-			MessageManagerPtr.SyncSubscriptions = make(map[string]*nats.Subscription)
 			MessageManagerPtr.Subscriptions = make(map[string]*nats.Subscription)
+			MessageManagerPtr.SyncSubscriptions = make(map[string]*nats.Subscription)
+			MessageManagerPtr.PullSubscriptions = make(map[string]*nats.Subscription)
 		}
 	}
 
