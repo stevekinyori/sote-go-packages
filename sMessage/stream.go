@@ -75,6 +75,7 @@ func (mmPtr *MessageManager) DeleteStream(streamName string) (soteErr sError.Sot
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
+
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
@@ -100,11 +101,11 @@ func (mmPtr *MessageManager) createStream(streamType, streamName string, subject
 	params["Stream Name"] = streamName
 	params["Subjects"] = strings.Join(subjects, ", ")
 	params["Replicas"] = strconv.Itoa(replicas)
+
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
-
 	// The default sote setting will change over time, so they are called out here.
 	switch streamType {
 	case LIMITSFILESTREAM:
