@@ -19,6 +19,7 @@ func (mmPtr *MessageManager) PPublish(subject, message string) (acknowledgement 
 
 	params := make(map[string]string)
 	params["Subject: "] = subject
+
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
@@ -38,12 +39,12 @@ func (mmPtr *MessageManager) PPublish(subject, message string) (acknowledgement 
 /*
 	PSubscribe will listen for message from the stream that owns the subject
 */
-func (mmPtr *MessageManager) PSubscribe(subject, subscriptionName string, callback nats.MsgHandler) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) PSubscribe(subject, durableName string, callback nats.MsgHandler) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Subject"] = subject
-	params["Subscription Name"] = subscriptionName
+	params["Durable Name"] = durableName
 
 	if callback == nil {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"callback"}), nil)
@@ -52,7 +53,7 @@ func (mmPtr *MessageManager) PSubscribe(subject, subscriptionName string, callba
 		if err != nil {
 			soteErr = mmPtr.natsErrorHandle(err, params)
 		}
-		mmPtr.Subscriptions[subscriptionName], err = js.Subscribe(subject, callback)
+		mmPtr.Subscriptions[durableName], err = js.Subscribe(subject, callback, nats.Durable(durableName))
 		if err != nil {
 			soteErr = mmPtr.natsErrorHandle(err, params)
 		}
@@ -64,17 +65,40 @@ func (mmPtr *MessageManager) PSubscribe(subject, subscriptionName string, callba
 /*
 	PSubscribeSync will listen synchronously for message from the stream that owns the subject
 */
-func (mmPtr *MessageManager) PSubscribeSync(subject, subscriptionName string) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) PSubscribeSync(subject, durableName string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Subject"] = subject
-	params["Subscription Name"] = subscriptionName
+	params["Durable Name"] = durableName
+
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
-	mmPtr.Subscriptions[subscriptionName], err = js.SubscribeSync(subject)
+	mmPtr.Subscriptions[durableName], err = js.SubscribeSync(subject, nats.Durable(durableName))
+	if err != nil {
+		soteErr = mmPtr.natsErrorHandle(err, params)
+	}
+
+	return
+}
+
+/*
+	PPullSubscribe creates a subscription that can be used to fetch messages
+*/
+func (mmPtr *MessageManager) PullSubscribe(subject, durableName string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	params := make(map[string]string)
+	params["Subject"] = subject
+	params["Durable Name"] = durableName
+
+	js, err := mmPtr.NatsConnectionPtr.JetStream()
+	if err != nil {
+		soteErr = mmPtr.natsErrorHandle(err, params)
+	}
+	mmPtr.Subscriptions[durableName], err = js.PullSubscribe(subject, nats.SubOpt(nats.Durable(durableName)))
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
@@ -85,12 +109,13 @@ func (mmPtr *MessageManager) PSubscribeSync(subject, subscriptionName string) (s
 /*
 	PDeleteMsg will remove a message from the stream
 */
-func (mmPtr *MessageManager) PDeleteMsg(streamName string, messageSequence int) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) DeleteMsg(streamName string, messageSequence int) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
 	params["Message Sequence"] = strconv.Itoa(messageSequence)
+
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
@@ -106,12 +131,13 @@ func (mmPtr *MessageManager) PDeleteMsg(streamName string, messageSequence int) 
 /*
 	PGetMsg retrieves a message using the sequence number directly from the stream
 */
-func (mmPtr *MessageManager) PGetMsg(streamName string, messageSequence int) (message *nats.RawStreamMsg, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int) (message *nats.RawStreamMsg, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
 	params["Message Sequence"] = strconv.Itoa(messageSequence)
+
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
@@ -125,30 +151,9 @@ func (mmPtr *MessageManager) PGetMsg(streamName string, messageSequence int) (me
 }
 
 /*
-	PPullSubscribe creates a subscription that can be used to fetch messages
-*/
-func (mmPtr *MessageManager) PPullSubscribe(subject, subscriptionName string) (soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	params := make(map[string]string)
-	params["Subject"] = subject
-	params["Subscription Name"] = subscriptionName
-	js, err := mmPtr.NatsConnectionPtr.JetStream()
-	if err != nil {
-		soteErr = mmPtr.natsErrorHandle(err, params)
-	}
-	mmPtr.Subscriptions[subscriptionName], err = js.PullSubscribe(subject)
-	if err != nil {
-		soteErr = mmPtr.natsErrorHandle(err, params)
-	}
-
-	return
-}
-
-/*
 	PFetch creates a subscription that can be used to fetch messages
 */
-func (mmPtr *MessageManager) PFetch(subscriptionName string, messageCount int) (messages []*nats.Msg, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) Fetch(durableName string, messageCount int) (messages []*nats.Msg, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -156,9 +161,10 @@ func (mmPtr *MessageManager) PFetch(subscriptionName string, messageCount int) (
 	)
 
 	params := make(map[string]string)
-	params["Subscription Name"] = subscriptionName
+	params["Durable Name"] = durableName
 	params["Message Count"] = strconv.Itoa(messageCount)
-	messages, err = mmPtr.Subscriptions[subscriptionName].Fetch(messageCount)
+
+	messages, err = mmPtr.Subscriptions[durableName].Fetch(messageCount)
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
@@ -167,20 +173,14 @@ func (mmPtr *MessageManager) PFetch(subscriptionName string, messageCount int) (
 }
 
 /*
-	PChanSubscribe creates a chan based subscription
+	PAck acknowledges a message
 */
-func (mmPtr *MessageManager) PChanSubscribe(subject, subscriptionName string, channel chan *nats.Msg) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) Ack(message *nats.Msg) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
-	params["Subject"] = subject
-	params["Subscription Name"] = subscriptionName
-	js, err := mmPtr.NatsConnectionPtr.JetStream()
-	if err != nil {
-		soteErr = mmPtr.natsErrorHandle(err, params)
-	}
-	mmPtr.Subscriptions[subscriptionName], err = js.ChanSubscribe(subject, channel)
-	if err != nil {
+
+	if err := message.Ack(); err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 
