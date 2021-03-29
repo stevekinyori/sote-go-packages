@@ -11,4 +11,5 @@ require (
 	github.com/lestrrat-go/jwx v1.0.3
 	github.com/nats-io/nats.go v1.10.1-0.20210318043104-a55ee30669a8 // Unreleased version
 	github.com/nats-io/nkeys v0.3.0
+	gopkg.in/gographics/imagick.v3 v3.3.0 // indirect
 )
