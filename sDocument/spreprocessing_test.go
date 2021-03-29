@@ -23,7 +23,7 @@ func TestCheckIfPathExists(t *testing.T) {
 	}
 }
 func TestPreprocessManager_CorrectSkew(t *testing.T) {
-	if pm, soteErr := NewPreprocessor("../img/testing_materials/Container Guarantee Form back.jpg"); soteErr.ErrCode == nil {
+	if pm, soteErr := NewPreprocessor("../img/testing_materials/Delivery Order.jpg"); soteErr.ErrCode == nil {
 		if _, soteErr = pm.CorrectSkew(); soteErr.ErrCode != nil {
 			t.Errorf("CorrectSkew failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 		}

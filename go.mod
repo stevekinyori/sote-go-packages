@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.32.4
 	github.com/ddliu/go-httpclient v0.6.9
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec
 	github.com/jackc/pgconn v1.5.0
 	github.com/jackc/pgx/v4 v4.6.0
 	github.com/lestrrat-go/jwx v1.0.3

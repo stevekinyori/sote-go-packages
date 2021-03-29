@@ -1,8 +1,16 @@
-/* This will prepare uploaded Sote documents for Optical Character Recognition (OCR)  */
+/*
+	This will prepare uploaded Sote documents for Optical Character Recognition (OCR).
+
+	The algorithm used to automatically detect and correct text on a skewed image is found here:
+		https://www.pyimagesearch.com/2017/02/20/text-skew-correction-opencv-python/
+
+	RESTRICTIONS:
+		Preprocessor Manager functions:
+		* Must has OpenCV 4 computer vision library installed in the system to be able to use GoCV.
+*/
 package sDocument
 
 import (
-	"fmt"
 	"os"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
@@ -11,14 +19,16 @@ import (
 )
 
 type PreprocessManager struct {
-	sOriginalImage gocv.Mat
+	sOriginalImage    gocv.Mat
+	sThresholdedImage gocv.Mat
+	sThreshold        float32
 }
 
 func NewPreprocessor(sFilePath string) (preprocessManagerPtr *PreprocessManager, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if _, soteErr = CheckIfPathExists(sFilePath); soteErr.ErrCode == nil {
-		tOriginalImage := gocv.IMRead(sFilePath, -1) // Load image and return it in original format
+		tOriginalImage := gocv.IMRead(sFilePath, gocv.IMReadColor) // Load image and return it in original format
 		preprocessManagerPtr = &PreprocessManager{sOriginalImage: tOriginalImage}
 	}
 
@@ -48,18 +58,19 @@ func (pm *PreprocessManager) CorrectSkew() (sGrayScaleImage gocv.Mat, soteErr sE
 
 	var (
 		sBitwiseImage     = gocv.NewMat()
-		sThresholdedImage = gocv.NewMat()
-		sThreshold        float32
+		tThresholdedImage = gocv.NewMat()
+		tThreshold        float32
 	)
 
 	sGrayScaleImage = pm.convertImageToGrayScale()
 	sBitwiseImage = pm.convertGrayscaleImageToBitwise(sGrayScaleImage)
-	sThreshold, sThresholdedImage = pm.thresholdImage(sBitwiseImage)
-	fmt.Println(sThreshold)
+	tThreshold, tThresholdedImage = pm.thresholdImage(sBitwiseImage)
+	pm.sThreshold = tThreshold
+	pm.sThresholdedImage = tThresholdedImage
 
-	window := gocv.NewWindow("Hello")
-	window.IMShow(sThresholdedImage)
-	window.WaitKey(0)
+	//window := gocv.NewWindow("Hello")
+	//window.IMShow(sBitwiseImage)
+	//window.WaitKey(0)
 
 	return
 }
@@ -93,12 +104,13 @@ func (pm *PreprocessManager) convertGrayscaleImageToBitwise(sGrayScaleImage gocv
 	thresholdImage thresholds bitwise image, set all foreground pixels to 255(black) and all background pixels to 0(white).
  	This makes all text light and background dark.
 */
-func (pm *PreprocessManager) thresholdImage(sGrayScaleImage gocv.Mat) (sThreshold float32, sThresholdedImage gocv.Mat) {
+func (pm *PreprocessManager) thresholdImage(sBitwiseImage gocv.Mat) (sThreshold float32, tThresholdedImage gocv.Mat) {
 	sLogger.DebugMethod()
 
-	sThresholdedImage = gocv.NewMat()
+	tThresholdedImage = gocv.NewMat()
 
-	sThreshold = gocv.Threshold(sGrayScaleImage, &sThresholdedImage, 0, 255, gocv.ThresholdBinary|gocv.ThresholdOtsu)
+	sThreshold = gocv.Threshold(sBitwiseImage, &tThresholdedImage, 0, 255, gocv.ThresholdBinary|gocv.ThresholdOtsu)
 
 	return
 }
+
