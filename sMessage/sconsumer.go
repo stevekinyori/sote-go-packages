@@ -49,7 +49,7 @@ CreatePullConsumerWithReplayInstant will create a consumer. If the consumer exis
 		DeliverySubject: "" (nil string is required for a pull consumer)
 		ReplayPolicy: instant
 */
-func (mmPtr *MessageManager) PullReplayInstantConsumer(streamName, durableName, subjectFilter string,
+func (mmPtr *MessageManager) CreatePullReplayInstantConsumer(streamName, durableName, subjectFilter string,
 	maxDeliveries int) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
