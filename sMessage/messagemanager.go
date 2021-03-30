@@ -26,6 +26,7 @@ type MessageManager struct {
 	Subscriptions     map[string]*nats.Subscription
 	SyncSubscriptions map[string]*nats.Subscription
 	PullSubscriptions map[string]*nats.Subscription
+	Messages          []*nats.Msg
 
 	sync.Mutex // TODO Do we need this?
 }
@@ -212,7 +213,6 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 
 	var (
 		panicError = true
-
 	)
 
 	switch err.Error() {
@@ -252,7 +252,7 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	return
 }
 
-func dumpParams(params map[string]string) (paramString string){
+func dumpParams(params map[string]string) (paramString string) {
 	sLogger.DebugMethod()
 
 	for key, value := range params {
