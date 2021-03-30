@@ -47,3 +47,26 @@ func TestPullReplayInstantConsumer(tPtr *testing.T) {
 		}
 	}
 }
+func TestGetConsumerInfo(tPtr *testing.T) {
+	var (
+		soteErr sError.SoteError
+		mmPtr   *MessageManager
+	)
+
+	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
+		250*time.Millisecond); soteErr.ErrCode == nil {
+		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+			tPtr.Errorf("TestGetConsumerInfo Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
+		}
+		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1); soteErr.ErrCode == nil {
+			if soteErr = mmPtr.PullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAME, testSubjects[0], 1); soteErr.ErrCode == nil {
+				if _, soteErr = mmPtr.GetConsumerInfo(TESTSTREAMNAME, TESTCONSUMERNAME); soteErr.ErrCode != nil {
+					tPtr.Errorf("TestGetConsumerInfo Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+				}
+			}
+			if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+				tPtr.Errorf("TestGetConsumerInfo Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
+			}
+		}
+	}
+}

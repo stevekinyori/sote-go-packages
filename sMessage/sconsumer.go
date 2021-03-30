@@ -125,6 +125,26 @@ func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableNam
 	return
 }
 
+func (mmPtr *MessageManager) GetConsumerInfo(streamName, durableName string) (sConsumer *nats.ConsumerInfo, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	params := make(map[string]string)
+	params["Stream Name"] = streamName
+	params["Durable Name"] = durableName
+
+	js, err := mmPtr.NatsConnectionPtr.JetStream()
+	if err != nil {
+		soteErr = mmPtr.natsErrorHandle(err, params)
+	}
+
+	sConsumer, err = js.ConsumerInfo(streamName, durableName)
+	if err != nil {
+		soteErr = mmPtr.natsErrorHandle(err, params)
+	}
+
+	return
+}
+
 /*
 	setMaxDeliver forces the value be between 1 and 10.  If it below 1, then 1 and if greater than 10, its set to 3.
 */
