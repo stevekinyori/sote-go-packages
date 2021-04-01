@@ -285,7 +285,7 @@ func TestErrorDetails(tPtr *testing.T) {
 	errDetails["test_2"] = "Test_2_Value"
 	errDetails["test_3"] = "Test_3_Value"
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, errDetails))
-	errCode = 210400
+	errCode = 210499
 	validateReply(tPtr, errCode, nil, sError.GetSError(errCode, nil, errDetails))
 	validateReply(tPtr, errCode, nil, sError.GetSError(errCode, nil, sError.EmptyMap))
 }

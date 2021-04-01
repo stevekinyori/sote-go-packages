@@ -106,7 +106,7 @@ func TestPPullSubscribe(tPtr *testing.T) {
 			tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 		}
 		if _, soteErr = mmPtr.CreateWorkQueueStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.PullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAME, testSubjects[0], 1); soteErr.ErrCode == nil {
+			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAME, testSubjects[0], 1); soteErr.ErrCode == nil {
 				if soteErr = mmPtr.PullSubscribe(testSubjects[0], TESTCONSUMERNAME); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
@@ -187,7 +187,7 @@ func TestPFetch(tPtr *testing.T) {
 			tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 		}
 		if _, soteErr = mmPtr.CreateWorkQueueStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.PullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAME, testSubjects[0], 1); soteErr.ErrCode == nil {
+			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAME, testSubjects[0], 1); soteErr.ErrCode == nil {
 				if _, soteErr = mmPtr.PPublish(testSubjects[0], "Hello world"); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPFetch Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}

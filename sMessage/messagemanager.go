@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -213,6 +214,7 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 
 	var (
 		panicError = true
+		testMode   = false
 	)
 
 	switch err.Error() {
@@ -245,7 +247,11 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	sLogger.Info(fmt.Sprintf("ERROR IN: messagemanager.go err: %v | %v", err.Error(), dumpParams(params)))
 	sLogger.Info(soteErr.FmtErrMsg)
 
-	if panicError {
+	if testMode, err = strconv.ParseBool(params["testMode"]); err != nil {
+		testMode = false
+	}
+
+	if panicError && !testMode {
 		panic(soteErr.FmtErrMsg)
 	}
 

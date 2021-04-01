@@ -31,73 +31,61 @@ func TestVerifyConnection(tPtr *testing.T) {
 
 	if soteErr = sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
-		t.Fatal()
 	}
 
 	tConnInfo, soteErr = sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
-		tPtr.Fail()
 	}
 
 	soteErr = sDatabase.VerifyConnection(tConnInfo)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("VerifyConnection Failed: Expected a nil error code.")
-		tPtr.Fail()
 	}
 }
 func TestToJSONString(tPtr *testing.T) {
 	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
-		t.Fatal()
 	}
 
 	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("GetConnection Failed: Please Investigate")
-		tPtr.Fail()
 	}
 
 	var dbConnJSONString string
 	if dbConnJSONString, soteErr = sDatabase.ToJSONString(tConnInfo.DSConnValues); soteErr.ErrCode != nil {
 		tPtr.Errorf("ToJSONString Failed: Please Investigate")
-		tPtr.Fail()
 	}
 
 	if len(dbConnJSONString) == 0 {
 		tPtr.Errorf("ToJSONString Failed: Please Investigate")
-		tPtr.Fail()
 	}
 }
 func TestContext(tPtr *testing.T) {
 	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
-		t.Fatal()
 	}
 
 	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
-		tPtr.Fail()
 	}
 
 	if tConnInfo.DBContext == nil {
 		tPtr.Errorf("TestContext testing DBContext Failed: Expected a non-nil error code.")
-		tPtr.Fail()
 	}
 }
 func TestSRow(tPtr *testing.T) {
 	tRow := sDatabase.SRow(nil)
 	if tRow != nil {
 		tPtr.Errorf("TestSRow testing creation of SRow variable Failed: Expected error code to be nil.")
-		tPtr.Fail()
 	}
 }
 func TestSRows(tPtr *testing.T) {
 	tRows := sDatabase.SRows(nil)
 	if tRows != nil {
 		tPtr.Errorf("TestSRows testing creation of SRows variable Failed: Expected error code to be nil.")
-		tPtr.Fail()
 	}
 }
 

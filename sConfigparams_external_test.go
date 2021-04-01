@@ -20,7 +20,7 @@ func TestGetParametersFound(tPtr *testing.T) {
 		tPtr.Errorf("GetParameters failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
 	}
 	if len(parameters) == 0 {
-		t.Error("GetParameters failed: Expected parameters to have at least one entry")
+		tPtr.Error("GetParameters failed: Expected parameters to have at least one entry")
 	}
 }
 func TestGetParametersNotFound(tPtr *testing.T) {
