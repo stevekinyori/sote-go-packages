@@ -22,11 +22,12 @@ const (
 /*
 	CreateLimitsStreamWithFileStorage will create a file based stream that has limited retention of messages.
 */
-func (mmPtr *MessageManager) CreateLimitsStreamWithFileStorage(streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+func (mmPtr *MessageManager) CreateLimitsStreamWithFileStorage(streamName string, subjects []string, replicas int,
+	testMode bool) (sStream *nats.StreamInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	sStream, soteErr = mmPtr.createStream(LIMITSFILESTREAM, streamName, subjects, replicas)
+	sStream, soteErr = mmPtr.createStream(LIMITSFILESTREAM, streamName, subjects, replicas, testMode)
 
 	return
 }
@@ -34,11 +35,12 @@ func (mmPtr *MessageManager) CreateLimitsStreamWithFileStorage(streamName string
 /*
 	CreateLimitsStreamWithMemoryStorage will create a memory based stream that has limited retention of messages.
 */
-func (mmPtr *MessageManager) CreateLimitsStreamWithMemoryStorage(streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+func (mmPtr *MessageManager) CreateLimitsStreamWithMemoryStorage(streamName string, subjects []string, replicas int,
+	testMode bool) (sStream *nats.StreamInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	sStream, soteErr = mmPtr.createStream(LIMITSMEMORYSTREAM, streamName, subjects, replicas)
+	sStream, soteErr = mmPtr.createStream(LIMITSMEMORYSTREAM, streamName, subjects, replicas, testMode)
 
 	return
 }
@@ -46,11 +48,12 @@ func (mmPtr *MessageManager) CreateLimitsStreamWithMemoryStorage(streamName stri
 /*
 	CreateWorkQueueStreamWithFileStorage will create a stream that once the message is pulled, it will be removed from the stream.
 */
-func (mmPtr *MessageManager) CreateWorkQueueStreamWithFileStorage(streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+func (mmPtr *MessageManager) CreateWorkQueueStreamWithFileStorage(streamName string, subjects []string, replicas int,
+	testMode bool) (sStream *nats.StreamInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	sStream, soteErr = mmPtr.createStream(WORKQUEUEFILESTREAM, streamName, subjects, replicas)
+	sStream, soteErr = mmPtr.createStream(WORKQUEUEFILESTREAM, streamName, subjects, replicas, testMode)
 
 	return
 }
@@ -58,11 +61,12 @@ func (mmPtr *MessageManager) CreateWorkQueueStreamWithFileStorage(streamName str
 /*
 	CreateWorkQueueStreamWithFileStorage will create a stream that once the message is pulled, it will be removed from the stream.
 */
-func (mmPtr *MessageManager) CreateWorkQueueStreamWithMemoryStorage(streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+func (mmPtr *MessageManager) CreateWorkQueueStreamWithMemoryStorage(streamName string, subjects []string, replicas int,
+	testMode bool) (sStream *nats.StreamInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	sStream, soteErr = mmPtr.createStream(WORKQUEUEMEMORYSTREAM, streamName, subjects, replicas)
+	sStream, soteErr = mmPtr.createStream(WORKQUEUEMEMORYSTREAM, streamName, subjects, replicas, testMode)
 
 	return
 }
@@ -70,11 +74,12 @@ func (mmPtr *MessageManager) CreateWorkQueueStreamWithMemoryStorage(streamName s
 /*
 	DeleteStream will destroy the stream
 */
-func (mmPtr *MessageManager) DeleteStream(streamName string) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) DeleteStream(streamName string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
@@ -89,7 +94,7 @@ func (mmPtr *MessageManager) DeleteStream(streamName string) (soteErr sError.Sot
 	return
 }
 
-func (mmPtr *MessageManager) createStream(streamType, streamName string, subjects []string, replicas int) (sStream *nats.StreamInfo,
+func (mmPtr *MessageManager) createStream(streamType, streamName string, subjects []string, replicas int, testMode bool) (sStream *nats.StreamInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -101,6 +106,7 @@ func (mmPtr *MessageManager) createStream(streamType, streamName string, subject
 	params["Stream Name"] = streamName
 	params["Subjects"] = strings.Join(subjects, ", ")
 	params["Replicas"] = strconv.Itoa(replicas)
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {

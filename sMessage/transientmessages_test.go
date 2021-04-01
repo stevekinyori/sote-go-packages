@@ -16,8 +16,8 @@ func TestPublish(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.Publish("greeting", "Hello world"); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode == nil {
+		if soteErr = mmPtr.Publish("greeting", "Hello world", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestPublish Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
 	}
@@ -32,8 +32,8 @@ func TestSubscribe(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode == nil {
-		if _, soteErr = mmPtr.Subscribe("greeting"); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode == nil {
+		if _, soteErr = mmPtr.Subscribe("greeting", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestSubscribe Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
 	}
@@ -48,8 +48,8 @@ func TestPublishRequest(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.PublishRequest("greeting", "greeting-reply", "Back At You!"); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode == nil {
+		if soteErr = mmPtr.PublishRequest("greeting", "greeting-reply", "Back At You!", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestPublishRequest Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
 	}
@@ -64,8 +64,8 @@ func TestSubscribeSync(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.SubscribeSync("greeting", "greeting-reply"); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode == nil {
+		if soteErr = mmPtr.SubscribeSync("greeting", "greeting-reply", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
 	}
@@ -80,14 +80,14 @@ func TestNextMsg(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.SubscribeSync("greeting", "greeting-reply"); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode == nil {
+		if soteErr = mmPtr.SubscribeSync("greeting", "greeting-reply", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
-		if soteErr = mmPtr.Publish("greeting-reply", "Hello world"); soteErr.ErrCode != nil {
+		if soteErr = mmPtr.Publish("greeting-reply", "Hello world", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestPublish Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
-		if _, soteErr = mmPtr.NextMsg("greeting"); soteErr.ErrCode != nil {
+		if _, soteErr = mmPtr.NextMsg("greeting", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestNextMsg Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
 	}
@@ -106,8 +106,8 @@ func TestRequestReply(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode == nil {
-		if _, soteErr = mmPtr.RequestReply("greeting", "Hello World"); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode == nil {
+		if _, soteErr = mmPtr.RequestReply("greeting", "Hello World", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("TestRequestReply Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		}
 	}

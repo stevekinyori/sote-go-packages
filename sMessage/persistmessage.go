@@ -14,11 +14,12 @@ import (
 /*
 	PPublish will send a persist message to the stream that owns the subject
 */
-func (mmPtr *MessageManager) PPublish(subject, message string) (acknowledgement *nats.PubAck, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) PPublish(subject, message string, testMode bool) (acknowledgement *nats.PubAck, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Subject: "] = subject
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
@@ -39,12 +40,13 @@ func (mmPtr *MessageManager) PPublish(subject, message string) (acknowledgement 
 /*
 	PSubscribe will listen for message from the stream that owns the subject
 */
-func (mmPtr *MessageManager) PSubscribe(subject, durableName string, callback nats.MsgHandler) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) PSubscribe(subject, durableName string, callback nats.MsgHandler, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Subject"] = subject
 	params["Durable Name"] = durableName
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	if callback == nil {
 		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"callback"}), nil)
@@ -65,12 +67,13 @@ func (mmPtr *MessageManager) PSubscribe(subject, durableName string, callback na
 /*
 	PSubscribeSync will listen synchronously for message from the stream that owns the subject
 */
-func (mmPtr *MessageManager) PSubscribeSync(subject, durableName string) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) PSubscribeSync(subject, durableName string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Subject"] = subject
 	params["Durable Name"] = durableName
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
@@ -87,12 +90,13 @@ func (mmPtr *MessageManager) PSubscribeSync(subject, durableName string) (soteEr
 /*
 	PPullSubscribe creates a subscription that can be used to fetch messages
 */
-func (mmPtr *MessageManager) PullSubscribe(subject, durableName string) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) PullSubscribe(subject, durableName string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Subject"] = subject
 	params["Durable Name"] = durableName
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
@@ -109,12 +113,13 @@ func (mmPtr *MessageManager) PullSubscribe(subject, durableName string) (soteErr
 /*
 	PDeleteMsg will remove a message from the stream
 */
-func (mmPtr *MessageManager) DeleteMsg(streamName string, messageSequence int) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) DeleteMsg(streamName string, messageSequence int, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
 	params["Message Sequence"] = strconv.Itoa(messageSequence)
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
@@ -131,12 +136,13 @@ func (mmPtr *MessageManager) DeleteMsg(streamName string, messageSequence int) (
 /*
 	PGetMsg retrieves a message using the sequence number directly from the stream
 */
-func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int) (message *nats.RawStreamMsg, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, testMode bool) (message *nats.RawStreamMsg, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
 	params["Message Sequence"] = strconv.Itoa(messageSequence)
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
@@ -153,7 +159,7 @@ func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int) (mes
 /*
 	PFetch creates a subscription that can be used to fetch messages
 */
-func (mmPtr *MessageManager) Fetch(durableName string, messageCount int) (messages []*nats.Msg, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMode bool) (messages []*nats.Msg, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -163,6 +169,7 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int) (messag
 	params := make(map[string]string)
 	params["Durable Name"] = durableName
 	params["Message Count"] = strconv.Itoa(messageCount)
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount)
 	if err != nil {
@@ -175,10 +182,11 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int) (messag
 /*
 	PAck acknowledges a message
 */
-func (mmPtr *MessageManager) Ack(message *nats.Msg) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) Ack(message *nats.Msg, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	if err := message.Ack(); err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)

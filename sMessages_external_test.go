@@ -32,41 +32,42 @@ const (
 
 func TestNew(tPtr *testing.T) {
 	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "myConnection", true, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 
 	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "myConnection", true, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("New Failed: Expected error code of 200513")
 	}
 
 	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "myConnection", true, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("New Failed: Expected error code of 209110")
 	}
 
 	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "myConnection", true, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("New Failed: Expected error code of 210090")
 	}
 
 	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "myConnection", true, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 
-	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 200,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "myConnection", true, 1,
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 
-	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 1,
-		1*time.Millisecond); soteErr.ErrCode != nil {
+	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "myConnection", true, 1,
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 
-	if _, soteErr := sJetStream.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, 1, 2*time.Minute); soteErr.ErrCode != nil {
+	if _, soteErr := sMessage.New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "myConnection", true, 1,
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("New Failed: Expected error code to be nil")
 	}
 }

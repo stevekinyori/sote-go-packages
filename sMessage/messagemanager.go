@@ -36,7 +36,7 @@ type MessageManager struct {
 	New will create a Sote Message Manager and a connection to the NATS network.
 */
 func New(application, environment, credentialFileName, connectionURL, connectionName string, secure bool, maxReconnect int,
-	reconnectWait time.Duration) (MessageManagerPtr *MessageManager, soteErr sError.SoteError) {
+	reconnectWait time.Duration, testMode bool) (MessageManagerPtr *MessageManager, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -88,7 +88,7 @@ func New(application, environment, credentialFileName, connectionURL, connection
 		}
 		// Making connection to server
 		if soteErr.ErrCode == nil {
-			soteErr = MessageManagerPtr.connect()
+			soteErr = MessageManagerPtr.connect(testMode)
 			MessageManagerPtr.Subscriptions = make(map[string]*nats.Subscription)
 			MessageManagerPtr.SyncSubscriptions = make(map[string]*nats.Subscription)
 			MessageManagerPtr.PullSubscriptions = make(map[string]*nats.Subscription)
@@ -191,7 +191,7 @@ func (mmPtr *MessageManager) setURL(connectionURL string, secure bool) (soteErr 
 /*
 	This will connect to the NATS network using the values set in the MessageManager
 */
-func (mmPtr *MessageManager) connect() (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) connect(testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -200,6 +200,7 @@ func (mmPtr *MessageManager) connect() (soteErr sError.SoteError) {
 
 	params := make(map[string]string)
 	params["Connection URL"] = mmPtr.connectionURL
+	params["testMode"] = strconv.FormatBool(testMode)
 	// Connect to NATS
 	mmPtr.NatsConnectionPtr, err = nats.Connect(mmPtr.connectionURL, mmPtr.connectionOptions...)
 	if err != nil {

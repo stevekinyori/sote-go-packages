@@ -37,19 +37,19 @@ func TestCreateLimitsStreamWithFileStorage(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
 	}
 
-	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1); soteErr.ErrCode != nil {
+	if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1,false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 
-	if soteErr := mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil {
+	if soteErr := mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 }
@@ -60,19 +60,19 @@ func TestCreateLimitsStreamWithMemoryStorage(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateLimitsStreamWithMemoryStorage failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
 	}
 
-	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = mmPtr.CreateLimitsStreamWithMemoryStorage(TESTSTREAMNAME, testSubjects, 1); soteErr.ErrCode != nil {
+	if _, soteErr = mmPtr.CreateLimitsStreamWithMemoryStorage(TESTSTREAMNAME, testSubjects, 1, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateLimitsStreamWithMemoryStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 
-	if soteErr := mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil {
+	if soteErr := mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateLimitsStreamWithMemoryStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 }
@@ -83,19 +83,19 @@ func TestCreateWorkQueueStreamWithFileStorage(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateWorkQueueStreamWithFileStorage failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
 	}
 
-	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = mmPtr.CreateWorkQueueStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1); soteErr.ErrCode != nil {
+	if _, soteErr = mmPtr.CreateWorkQueueStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateWorkQueueStreamWithFileStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 
-	if soteErr := mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil {
+	if soteErr := mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateWorkQueueStreamWithFileStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 }
@@ -106,19 +106,19 @@ func TestCreateWorkQueueStreamWithMemoryStorage(tPtr *testing.T) {
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond); soteErr.ErrCode != nil {
+		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateWorkQueueStreamWithMemoryStorage failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
 	}
 
-	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = mmPtr.CreateWorkQueueStreamWithMemoryStorage(TESTSTREAMNAME, testSubjects, 1); soteErr.ErrCode != nil {
+	if _, soteErr = mmPtr.CreateWorkQueueStreamWithMemoryStorage(TESTSTREAMNAME, testSubjects, 1,false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateWorkQueueStreamWithMemoryStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 
-	if soteErr := mmPtr.DeleteStream(TESTSTREAMNAME); soteErr.ErrCode != nil {
+	if soteErr := mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateWorkQueueStreamWithMemoryStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 }

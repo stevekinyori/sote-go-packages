@@ -50,20 +50,22 @@ CreatePullConsumerWithReplayInstant will create a consumer. If the consumer exis
 		ReplayPolicy: instant
 */
 func (mmPtr *MessageManager) CreatePullReplayInstantConsumer(streamName, durableName, subjectFilter string,
-	maxDeliveries int) (soteErr sError.SoteError) {
+	maxDeliveries int, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	_, soteErr = mmPtr.createConsumer(PULLREPLAYINSTANTCONSUMER, streamName, durableName, subjectFilter, maxDeliveries)
+	_, soteErr = mmPtr.createConsumer(PULLREPLAYINSTANTCONSUMER, streamName, durableName, subjectFilter, maxDeliveries, testMode)
 
 	return
 }
 
-func (mmPtr *MessageManager) DeleteConsumer(streamName, durableName string) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) DeleteConsumer(streamName, durableName string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
 	params["Durable Name"] = durableName
+	params["testMode"] = strconv.FormatBool(testMode)
+
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
@@ -77,8 +79,8 @@ func (mmPtr *MessageManager) DeleteConsumer(streamName, durableName string) (sot
 	return
 }
 
-func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableName, subjectFilter string,
-	maxDeliveries int) (sConsumer *nats.ConsumerInfo, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableName, subjectFilter string, maxDeliveries int,
+	testMode bool) (sConsumer *nats.ConsumerInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -112,6 +114,8 @@ func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableNam
 	params["Durable Name"] = durableName
 	params["Filter Subject"] = subjectFilter
 	params["Max Deliveries"] = strconv.Itoa(maxDeliveries)
+	params["testMode"] = strconv.FormatBool(testMode)
+
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
@@ -125,12 +129,13 @@ func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableNam
 	return
 }
 
-func (mmPtr *MessageManager) GetConsumerInfo(streamName, durableName string) (sConsumer *nats.ConsumerInfo, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) GetConsumerInfo(streamName, durableName string, testMode bool) (sConsumer *nats.ConsumerInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
 	params["Durable Name"] = durableName
+	params["testMode"] = strconv.FormatBool(testMode)
 
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
