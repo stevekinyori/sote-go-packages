@@ -182,12 +182,12 @@ var (
 	This will return the formatted message using the supplied code and parameters
 
 	Error Code with requiring parameters:
-		100000	None > : Item already exists
+		100000	Item Name > : %v already exists
 		100100	List of users roles, Requested action > : Your roles %v are not authorized to %v
 		100200	None > : Row has been updated since reading it, re-read the row
 		100500	Thing being changed > : You are making changes to a canceled or completed %v
 		101010	Service Name > : %v timed out
-		109999	Item name > : No %v was/were found
+		109999	Item name > : %v was/were not found
 		199999	Error Details > : An error has occurred that is not expected. See Log! %v
 		200100	None > : Table doesn't exist
 		200200	Parameter name, Data type of parameter > : %v must be of type %v
@@ -211,13 +211,12 @@ var (
 		205000	None > : AWS SES error - see details in retPack
 		205005	None > : AWS STS error - see details in retPack
 		206000	None > : Jetstream is not enabled
+		206050	Subscription Name, Subject > : (%v) is an invalid subscription. Subject: %v
 		206100	Key name > : Upper or lower case %v key is missing
 		206105	Key name > : Upper or lower case %v keys value is missing
 		206200	List of required parameters > : Message doesn't match signature. Sender must provide the following parameter names: %v
 		206300	None > : Stream pointer is nil. Must be a validate pointer to a stream.
 		206400	Stream Name > : Stream creation encountered an error that is not expected. Stream Name: %v
-		206500	Stream Name > : Stream (%v) already exists.
-		206550	Stream Name > : Stream (%v) already exists.
 		206600	Stream Name, Consumer Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Consumer Name: %v
 		206700	Stream Name, Consumer Subject Filter > : The consumer subject filter must be a subset of the stream subject. Stream Name: %v Consumer Subject Filter: %v
 		207000	Field name, Field value > : %v (%v) is not numeric

@@ -201,6 +201,7 @@ func (mmPtr *MessageManager) connect(testMode bool) (soteErr sError.SoteError) {
 	params := make(map[string]string)
 	params["Connection URL"] = mmPtr.connectionURL
 	params["testMode"] = strconv.FormatBool(testMode)
+
 	// Connect to NATS
 	mmPtr.NatsConnectionPtr, err = nats.Connect(mmPtr.connectionURL, mmPtr.connectionOptions...)
 	if err != nil {
