@@ -36,18 +36,20 @@ const (
 	DEMO        = "demo"
 	PRODUCTION  = "production"
 	// System Manager Parameter Keys
-	AWSREGIONIKEY = "AWS_REGION"
-	CLIENTIDKEY   = "COGNITO_CLIENT_ID"
-	CREDENTIALS   = "credentials"
-	DBHOSTKEY     = "DB_HOST"
-	DBNAMEKEY     = "DB_NAME"
-	DBPASSWORDKEY = "DATABASE_PASSWORD"
-	DBPORTKEY     = "DB_PORT"
-	DBSSLMODEKEY  = "DB_SSL_MODE"
-	DBUSERKEY     = "DB_USERNAME"
-	URL           = "url"
-	TLSURLMASK    = "tls-urlmask"
-	USERPOOLIDKEY = "COGNITO_USER_POOL_ID"
+	AWSREGIONIKEY           = "AWS_REGION"
+	CLIENTIDKEY             = "COGNITO_CLIENT_ID"
+	CREDENTIALS             = "credentials"
+	DBHOSTKEY               = "DB_HOST"
+	DBNAMEKEY               = "DB_NAME"
+	DBPASSWORDKEY           = "DATABASE_PASSWORD"
+	DBPORTKEY               = "DB_PORT"
+	DBSSLMODEKEY            = "DB_SSL_MODE"
+	DBUSERKEY               = "DB_USERNAME"
+	URL                     = "url"
+	TLSURLMASK              = "tls-urlmask"
+	UNPROCESSEDDOCUMENTSKEY = "inbound/name"
+	PROCESSEDDOCUMENTSKEY   = "processed/name"
+	USERPOOLIDKEY           = "COGNITO_USER_POOL_ID"
 	// Root Path
 	ROOTPATH = "/sote"
 )
@@ -340,6 +342,26 @@ func GetNATSTLSURLMask(application string) (natsTLSURLMask string, soteErr sErro
 		tNATSTLSURLMask, soteErr = getParameter(application, "", TLSURLMASK)
 		if tNATSTLSURLMask != nil {
 			natsTLSURLMask = tNATSTLSURLMask.(string)
+		}
+	}
+
+	return
+}
+
+/*
+	This will retrieve the AWS S3 server URL found in AWS System Manager service for the ROOTPATH and
+	environment. The URL is needed to access Sote's unprocessed/ processed documents.  Application,
+	environment and key are required.
+*/
+func SGetS3BucketURL(application, environment, key string) (sS3BucketURL string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tS3BucketURL interface{}
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			if tS3BucketURL, soteErr = getParameter(application, strings.ToLower(environment), key); tS3BucketURL != nil {
+				sS3BucketURL = tS3BucketURL.(string)
+			}
 		}
 	}
 
