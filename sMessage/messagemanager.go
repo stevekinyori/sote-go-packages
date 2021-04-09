@@ -229,7 +229,7 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	case "no nkey seed found":
 		soteErr = sError.GetSError(209398, nil, sError.EmptyMap)
 	case "nats: timeout":
-		soteErr = sError.GetSError(101010, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), sError.EmptyMap)
 		panicError = false
 	case "nats: connection closed":
 		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)

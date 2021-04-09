@@ -23,7 +23,7 @@ const (
 	TESTNONEXISTINGFILE = "./file_does_not.exist"
 	TESTMAXRECONNECT    = 5
 	TESTRECONNECTWAIT   = 1 * time.Second
-	TESTSYNADIAURL      = "euwest1.aws.ngs.global"
+	TESTSYNADIAURL      = "west.eu.geo.ngs.global"
 	TESTTIMEOUT         = 1 * time.Second
 	TESTBADURL          = "google.com"
 	//

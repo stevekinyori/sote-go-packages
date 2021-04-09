@@ -9,9 +9,10 @@ import (
 
 const (
 	// Application values
-	API     string = "api"
-	SDCC    string = "sdcc"
-	SYNADIA string = "synadia"
+	API       string = "api"
+	SDCC      string = "sdcc"
+	SYNADIA   string = "synadia"
+	DOCUMENTS string = "documents"
 )
 
 func init() {
@@ -163,7 +164,7 @@ func TestGetEnvironmentVariable(tPtr *testing.T) {
 func TestGetNATSCredentials(tPtr *testing.T) {
 	var (
 		credValues func(string, string) (interface{}, sError.SoteError)
-		soteErr sError.SoteError
+		soteErr    sError.SoteError
 	)
 	if credValues = GetNATSCredentials(); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetNATSCredentials failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
@@ -200,4 +201,19 @@ func TestGetNATSTLSURLMask(tPtr *testing.T) {
 	if _, soteErr := GetNATSTLSURLMask(""); soteErr.ErrCode != 200513 {
 		tPtr.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
+}
+func TestSGetS3BucketURL(t *testing.T) {
+	if _, soteErr := SGetS3BucketURL(DOCUMENTS, STAGING, PROCESSEDDOCUMENTSKEY); soteErr.ErrCode != nil {
+		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := SGetS3BucketURL(DOCUMENTS, STAGING, ""); soteErr.ErrCode != 109999 {
+		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := SGetS3BucketURL("SCOTT", STAGING, UNPROCESSEDDOCUMENTSKEY); soteErr.ErrCode != 109999 {
+		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := SGetS3BucketURL("", STAGING, UNPROCESSEDDOCUMENTSKEY); soteErr.ErrCode != 200513 {
+		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+
 }

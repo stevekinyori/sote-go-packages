@@ -1,6 +1,8 @@
 package sMessage
 
 import (
+	"os"
+	"runtime"
 	"testing"
 	"time"
 
@@ -10,7 +12,7 @@ import (
 
 const (
 	TESTAPPLICATIONSYNADIA = "synadia"
-	TESTSYNADIAURL         = "euwest1.aws.ngs.global"
+	TESTSYNADIAURL         = "west.eu.geo.ngs.global"
 )
 
 func TestNew(tPtr *testing.T) {
@@ -23,14 +25,24 @@ func TestNew(tPtr *testing.T) {
 		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestNew failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
 	}
+	var homedir string
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "/Users/syacko/.nkeys/creds/synadia/sote-staging/staging-soteadmin.creds",
+	if runtime.GOOS == "windows" {
+		homedir = os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if homedir == "" {
+			homedir = os.Getenv("USERPROFILE")
+		}
+	} else {
+		homedir = os.Getenv("HOME")
+	}
+
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, homedir+"/.nkeys/creds/synadia/sote-staging/staging-soteadmin.creds",
 		TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestNew failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
 	}
-
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "/Users/syacko/.nkeys/creds/synadia/sote-staging/staging-soteadmin.creds",
+	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, homedir+"/.nkeys/creds/synadia/sote-staging/staging-soteadmin."+
+		"creds",
 		TESTSYNADIAURL, "test", true, 1,
 		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestNew failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
@@ -63,7 +75,7 @@ func TestNew(tPtr *testing.T) {
 }
 func TestClose(tPtr *testing.T) {
 	var (
-		mmPtr      *MessageManager
+		mmPtr   *MessageManager
 		soteErr sError.SoteError
 	)
 
