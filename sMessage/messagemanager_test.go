@@ -86,5 +86,10 @@ func TestClose(tPtr *testing.T) {
 
 	if mmPtr = mmPtr.Close(); mmPtr != nil {
 		tPtr.Errorf("TestClose Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+	// } else {
+	// 	// This will panic because the mmPtr is nil
+	// 	if soteErr := mmPtr.connect(false); soteErr.ErrCode != nil {
+	// 		tPtr.Fatal("TestClose is not working")
+	// 	}
 	}
 }
