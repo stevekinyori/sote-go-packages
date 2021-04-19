@@ -1,6 +1,7 @@
 package sAuthorize
 
 import (
+	"context"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -25,16 +26,16 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 					var (
 						kid  string
 						ok   bool
-						keys []jwk.Key
+						key jwk.Key
 					)
 					if kid, ok = token.Header["kid"].(string); !ok {
 						holdSoteErr = sError.GetSError(209510, nil, sError.EmptyMap)
 					}
 
 					if holdSoteErr.ErrCode == nil {
-						if keys, holdSoteErr = matchKid(tEnvironment, kid); holdSoteErr.ErrCode == nil {
+						if key, holdSoteErr = matchKid(tEnvironment, kid); holdSoteErr.ErrCode == nil {
 							var raw interface{}
-							return raw, keys[0].Raw(&raw)
+							return raw, key.Raw(&raw)
 						}
 					}
 				}
@@ -74,15 +75,16 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 	return
 }
 
-func matchKid(tEnvironment, kid string) (keys []jwk.Key, soteErr sError.SoteError) {
+func matchKid(tEnvironment, kid string) (key jwk.Key, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
-		keySet *jwk.Set
+		keySet jwk.Set
+		ok bool
 	)
 	keySet, soteErr = getPublicKey(tEnvironment)
-	keys = keySet.LookupKeyID(kid)
-	if len(keys) == 0 {
+	key, ok = keySet.LookupKeyID(kid)
+	if !ok {
 		soteErr = sError.GetSError(209521, sError.BuildParams([]string{kid}), sError.EmptyMap)
 	}
 
@@ -95,7 +97,7 @@ This will return the public key needed to validate the jwt token
 NOTE: If the region or user pool id is not found, getPublicKey will default to the 'eu-west-1' region
 and the userPoolId used by development instance of Cognito
 */
-func getPublicKey(tEnvironment string) (keySet *jwk.Set, soteErr sError.SoteError) {
+func getPublicKey(tEnvironment string) (keySet jwk.Set, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if region, soteErr := sConfigParams.GetRegion(); soteErr.ErrCode == nil {
@@ -113,7 +115,7 @@ func getPublicKey(tEnvironment string) (keySet *jwk.Set, soteErr sError.SoteErro
 /*
 This will pull the public key from the internet. The URL should not be output to logs.
 */
-func fetchPublicKey(region, userPoolId, tEnvironment string) (keySet *jwk.Set, soteErr sError.SoteError) {
+func fetchPublicKey(region, userPoolId, tEnvironment string) (keySet jwk.Set, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -121,7 +123,7 @@ func fetchPublicKey(region, userPoolId, tEnvironment string) (keySet *jwk.Set, s
 		keyPubLocation = "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId + "/.well-known/jwks.json"
 	)
 
-	keySet, err = jwk.Fetch(keyPubLocation)
+	keySet, err = jwk.Fetch(context.Background(), keyPubLocation)
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "remote JWK") {
 			soteErr = sError.GetSError(210030, sError.BuildParams([]string{region, tEnvironment}), sError.EmptyMap)

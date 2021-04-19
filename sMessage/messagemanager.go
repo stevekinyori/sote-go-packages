@@ -240,6 +240,10 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	case "stream not found":
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), sError.EmptyMap)
 		panicError = false
+	// 	TODO This should be removed once the NATS bug is resolved.
+	case "open /srv/js/multileaf/byA/sote_staging/$G/streams: too many open files":
+		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), sError.EmptyMap)
+		panicError = false
 	case "no message found":
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"], params["Message Sequence"]}), sError.EmptyMap)
 		panicError = false

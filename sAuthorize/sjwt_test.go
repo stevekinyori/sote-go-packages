@@ -5,6 +5,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/lestrrat-go/jwx/jwk"
+
+	// "github.com/lestrrat-go/jwx/jwk"
 	"gitlab.com/soteapps/packages/v2021/sConfigParams"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
@@ -70,9 +72,9 @@ func TestInValidToken(tPtr *testing.T) {
 	}
 }
 func TestMatchKid(tPtr *testing.T) {
-	if keys, soteErr := matchKid(sConfigParams.DEVELOPMENT, KIDGOOD); soteErr.ErrCode == nil {
-		if len(keys) == 0 {
-			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keys))
+	if key, soteErr := matchKid(sConfigParams.DEVELOPMENT, KIDGOOD); soteErr.ErrCode == nil {
+		if len(key.KeyID()) == 0 {
+			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(key.KeyID()))
 		}
 	} else {
 		tPtr.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
@@ -80,8 +82,8 @@ func TestMatchKid(tPtr *testing.T) {
 }
 func TestGetPublicKey(tPtr *testing.T) {
 	if keySet, soteErr := getPublicKey(sConfigParams.DEVELOPMENT); soteErr.ErrCode == nil {
-		if len(keySet.Keys) == 0 {
-			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keySet.Keys))
+		if keySet.Len() == 0 {
+			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", keySet.Len())
 		}
 	} else {
 		tPtr.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
@@ -91,7 +93,7 @@ func TestFetchPublicKey(tPtr *testing.T) {
 	var (
 		region, userPoolId string
 		soteErr            sError.SoteError
-		keySet             *jwk.Set
+		keySet             jwk.Set
 	)
 
 	if region, soteErr = sConfigParams.GetRegion(); soteErr.ErrCode != nil {
@@ -103,8 +105,8 @@ func TestFetchPublicKey(tPtr *testing.T) {
 	}
 
 	if keySet, soteErr = fetchPublicKey(region, userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode == nil {
-		if len(keySet.Keys) == 0 {
-			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(keySet.Keys))
+		if keySet.Len() == 0 {
+			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", keySet.Len())
 		}
 	} else {
 		tPtr.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
