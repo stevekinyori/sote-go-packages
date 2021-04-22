@@ -43,7 +43,7 @@ func init() {
 
 func TestDocumentNew(tPtr *testing.T) {
 	if _, soteErr := sDocument.New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode != nil {
-		tPtr.Errorf("TestNew failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("TestNew failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 		tPtr.Fail()
 	}
 
@@ -52,7 +52,7 @@ func TestDocumentNew(tPtr *testing.T) {
 	// }
 
 	if _, soteErr := sDocument.New("", sConfigParams.STAGING, true); soteErr.ErrCode != 200513 {
-		tPtr.Errorf("TestNew failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
+		tPtr.Errorf("TestNew failed: Expected error code of 200513 got %v", soteErr.FmtErrMsg)
 		tPtr.Fail()
 	}
 }
@@ -66,53 +66,98 @@ func TestDownloadDocument(tPtr *testing.T) {
 
 	if dmPtr, soteErr := sDocument.New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode == nil {
 		if _, soteErr = dmPtr.DownloadDocument("inbound/upload_test.jpg", "./sDocument/inbound/", true); soteErr.ErrCode != 109999 {
-			tPtr.Errorf("TestDocumentManager_DownloadDocument failed: Expected error code to be 109999 got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("TestDocumentManager_DownloadDocument failed: Expected error code of 109999 got %v", soteErr.FmtErrMsg)
 			tPtr.Fail()
 		}
 	}
+
+	os.Remove("./sDocument/inbound/upload_test.jpeg")
+
 }
 func TestSConvertImageFormat(tPtr *testing.T) {
 	// Download test file
 	if dmPtr, soteErr := sDocument.New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode == nil {
 		if _, soteErr = dmPtr.DownloadDocument("inbound/upload_test.jpeg", "./sDocument/inbound/", true); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestDocumentManager_DownloadDocument failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("TestSConvertImageFormat failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 			tPtr.Fail()
+		}
+
+		if soteErr.ErrCode == nil {
+
+			if _, soteErr = sDocument.SConvertImageFormat("./sDocument/inbound/upload_test.jpeg",
+				"./sDocument/processed/out.pdf"); soteErr.ErrCode != nil {
+				tPtr.Errorf("TestSConvertImageFormat failed: Expected error code to be nil got %v ", soteErr.FmtErrMsg)
+				tPtr.Fail()
+			}
+
+			if _, soteErr = sDocument.SConvertImageFormat("./inbound/upload_test.jpeg", "./sDocument/processed/out.pdf"); soteErr.ErrCode != 109999 {
+				tPtr.Errorf("TestSConvertImageFormat failed: Expected error code of 109999 got %v ", soteErr.FmtErrMsg)
+				tPtr.Fail()
+			}
 		}
 	}
 
-	if _, soteErr := sDocument.SConvertImageFormat("./sDocument/inbound/upload_test.jpeg", "./sDocument/processed/out.pdf"); soteErr.ErrCode != nil {
-		tPtr.Errorf("SConvertImageFormat failed:Expected soteErr to be nil:%v ", soteErr.FmtErrMsg)
-		tPtr.Fail()
-	}
-
-	if _, soteErr := sDocument.SConvertImageFormat("./inbound/upload_test.jpeg", "./sDocument/processed/out.pdf"); soteErr.ErrCode != 109999 {
-		tPtr.Errorf("SConvertImageFormat failed:Expected error code of 109999:%v ", soteErr.FmtErrMsg)
-		tPtr.Fail()
-	}
-
-	os.Remove( "./sDocument/inbound/upload_test.jpeg")
+	os.Remove("./sDocument/inbound/upload_test.jpeg")
+	os.Remove("./sDocument/processed/out.pdf")
 }
 func TestUploadDocument(tPtr *testing.T) {
 	if dmPtr, soteErr := sDocument.New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode == nil {
-		if _, soteErr = dmPtr.UploadDocument("./sDocument/processed/out.pdf"); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestDocumentManager_UploadDocument failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
-			tPtr.Fail()
+		if _, soteErr = dmPtr.DownloadDocument("inbound/upload_test.jpeg", "./sDocument/inbound/", true); soteErr.ErrCode == nil {
+
+			// Convert downloaded document to PDF
+			if _, soteErr = sDocument.SConvertImageFormat("./sDocument/inbound/upload_test.jpeg",
+				"./sDocument/processed/out.pdf"); soteErr.ErrCode == nil {
+
+				// Upload converted document
+				if _, soteErr = dmPtr.UploadDocument("./sDocument/processed/out.pdf"); soteErr.ErrCode != nil {
+					tPtr.Errorf("TestDocumentManager_UploadDocument failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+					tPtr.Fail()
+				}
+
+				// Delete uploaded document
+				if soteErr.ErrCode == nil {
+					if _, soteErr = dmPtr.DeleteDocument("processed/out.pdf", true); soteErr.ErrCode != nil {
+					tPtr.Errorf("TestDocumentManager_DeleteDocument failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+					tPtr.Fail()
+				}
+				}
+			}
 		}
 	}
+
+	os.Remove("./sDocument/inbound/upload_test.jpeg")
+	os.Remove("./sDocument/processed/out.pdf")
 }
 func TestDeleteDocument(tPtr *testing.T) {
 	if dmPtr, soteErr := sDocument.New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode == nil {
-		if _, soteErr = dmPtr.UploadDocument("./sDocument/processed/out.pdf"); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestDocumentManager_UploadDocument failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
+		if _, soteErr = dmPtr.DownloadDocument("inbound/upload_test.jpeg", "./sDocument/inbound/", true); soteErr.ErrCode != nil {
+			tPtr.Errorf("TestDocumentManager_DeleteDocument failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 			tPtr.Fail()
+		}
+
+		if soteErr.ErrCode == nil {
+			if _, soteErr = sDocument.SConvertImageFormat("./sDocument/inbound/upload_test.jpeg",
+				"./sDocument/processed/out.pdf"); soteErr.ErrCode != nil {
+				tPtr.Errorf("TestDocumentManager_DeleteDocument failed: Expected error code to be nil got %v ", soteErr.FmtErrMsg)
+				tPtr.Fail()
+			}
+		}
+
+		if soteErr.ErrCode == nil {
+			if _, soteErr = dmPtr.UploadDocument("./sDocument/processed/out.pdf"); soteErr.ErrCode != nil {
+				tPtr.Errorf("TestDocumentManager_DeleteDocument failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+				tPtr.Fail()
+			}
+		}
+
+		if soteErr.ErrCode == nil {
+			if _, soteErr = dmPtr.DeleteDocument("processed/out.pdf", true); soteErr.ErrCode != nil {
+				tPtr.Errorf("TestDocumentManager_DeleteDocument failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+				tPtr.Fail()
+			}
 		}
 	}
 
-	if dmPtr, soteErr := sDocument.New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode == nil {
-		if _, soteErr = dmPtr.DeleteDocument("processed/out.pdf", true); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestDocumentManager_DeleteDocument failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
-			tPtr.Fail()
-		}
-	}
-
+	os.Remove("./sDocument/inbound/upload_test.jpeg")
+	os.Remove("./sDocument/processed/out.pdf")
 }

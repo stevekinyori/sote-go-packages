@@ -204,16 +204,16 @@ func TestGetNATSTLSURLMask(tPtr *testing.T) {
 }
 func TestSGetS3BucketURL(t *testing.T) {
 	if _, soteErr := SGetS3BucketURL(DOCUMENTS, STAGING, PROCESSEDDOCUMENTSKEY); soteErr.ErrCode != nil {
-		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := SGetS3BucketURL(DOCUMENTS, STAGING, ""); soteErr.ErrCode != 109999 {
-		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		t.Errorf("SGetS3BucketURL failed: Expected error code of 109999 got %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := SGetS3BucketURL("SCOTT", STAGING, UNPROCESSEDDOCUMENTSKEY); soteErr.ErrCode != 109999 {
-		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		t.Errorf("SGetS3BucketURL failed: Expected error code of 109999 got %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := SGetS3BucketURL("", STAGING, UNPROCESSEDDOCUMENTSKEY); soteErr.ErrCode != 200513 {
-		t.Errorf("SGetS3BucketURL failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+		t.Errorf("SGetS3BucketURL failed: Expected error code of 200513 got %v", soteErr.FmtErrMsg)
 	}
 
 }

@@ -6,6 +6,7 @@ package sDocument
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -24,9 +25,28 @@ import (
 type DocumentManager struct {
 	sInboundS3BucketURL   string
 	sProcessedS3BucketURL string
-	sSession              *session.Session
 
 	sync.Mutex
+}
+
+var (
+	sSession *session.Session
+	tErr      error
+)
+
+/*
+This will establish a session using the default .aws location
+*/
+func init() {
+	sLogger.DebugMethod()
+
+	sSession, tErr = session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	})
+
+	if tErr != nil {
+		log.Fatalln(tErr)
+	}
 }
 
 /*
@@ -37,20 +57,11 @@ func New(application, environment string, testMode bool) (SDocumentManagerPtr *D
 	sLogger.DebugMethod()
 
 	var (
-		sAWSRegion   string
 		tS3BucketURL string
-		tSession     *session.Session
 	)
 
 	// Initialize the values for Document Manager
 	SDocumentManagerPtr = &DocumentManager{sInboundS3BucketURL: "", sProcessedS3BucketURL: ""}
-	sAWSRegion, soteErr = sConfigParams.GetRegion()
-
-	if soteErr.ErrCode == nil {
-		if tSession, soteErr = SDocumentManagerPtr.getAWSSession(sAWSRegion, testMode); soteErr.ErrCode == nil {
-			SDocumentManagerPtr.sSession = tSession
-		}
-	}
 
 	// Get AWS S3 Bucket URL for inbound files
 	if tS3BucketURL, soteErr = sConfigParams.SGetS3BucketURL(application, environment,
@@ -67,7 +78,7 @@ func New(application, environment string, testMode bool) (SDocumentManagerPtr *D
 }
 
 /*
-	ConvertImageFormat writes out the image in the same/different format
+	SConvertImageFormat writes out the image in the same/different format
 
 	EXAMPLE:
 		if dsm, soteErr := New(); soteErr.ErrCode == nil {
@@ -85,6 +96,7 @@ func SConvertImageFormat(sourcePath string, targetPath string) (pdfFilePtr *imag
 	defer imagick.Terminate() // Memory leak cleanup
 
 	if pdfFilePtr, sErr = imagick.ConvertImageCommand([]string{"convert", sourcePath, targetPath}); sErr != nil {
+		fmt.Println(sErr, pdfFilePtr, GetFullDirectoryPath())
 		if strings.Contains(sErr.Error(), "No such file or directory") {
 			soteErr = sError.GetSError(109999, sError.BuildParams([]string{"upload path or filename"}), sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
@@ -94,6 +106,7 @@ func SConvertImageFormat(sourcePath string, targetPath string) (pdfFilePtr *imag
 	return
 }
 
+/* GetFullDirectoryPath will get current working directory */
 func GetFullDirectoryPath() (path string) {
 	sLogger.DebugMethod()
 
@@ -125,7 +138,7 @@ func (dmPtr *DocumentManager) UploadDocument(processedFilePath string) (sPutObje
 		}
 
 		// Add object to Amazon S3 Bucket
-		sPutObjectOutput, sErr = s3.New(dmPtr.sSession).PutObject(&s3.PutObjectInput{
+		sPutObjectOutput, sErr = s3.New(sSession).PutObject(&s3.PutObjectInput{
 			Bucket:               aws.String(strings.Split(dmPtr.sProcessedS3BucketURL, "/")[0]),
 			Key:                  aws.String(strings.Join([]string{"processed", sFileName}, "/")),
 			ACL:                  aws.String("bucket-owner-full-control"),
@@ -161,7 +174,7 @@ func (dmPtr *DocumentManager) DownloadDocument(objectKey, localInboundPath strin
 	params["testMode"] = strconv.FormatBool(testMode)
 
 	// Retrieve object from Amazon S3 Bucket using key
-	if sRawObject, sErr = s3.New(dmPtr.sSession).GetObject(&s3.GetObjectInput{
+	if sRawObject, sErr = s3.New(sSession).GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(strings.Split(dmPtr.sInboundS3BucketURL, "/")[0]),
 		Key:    aws.String(objectKey),
 	}); sErr == nil {
@@ -178,7 +191,7 @@ func (dmPtr *DocumentManager) DownloadDocument(objectKey, localInboundPath strin
 	if sErr != nil {
 		sLogger.Info(fmt.Sprintf("%v", sErr.Error()))
 		if strings.Contains(sErr.Error(), "NoSuchKey: The specified key does not exist") {
-			soteErr = sError.GetSError(109999, sError.BuildParams([]string{fmt.Sprintf("key (%v)",objectKey)}), sError.EmptyMap)
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{fmt.Sprintf("key (%v)", objectKey)}), sError.EmptyMap)
 		} else {
 			panic(fmt.Sprintf("%v", sErr.Error()))
 		}
@@ -187,7 +200,7 @@ func (dmPtr *DocumentManager) DownloadDocument(objectKey, localInboundPath strin
 	return
 }
 
-/* DeleteDocument will delete a document from AWS S3 Bucket. Arguments objectKey and testMode are required .*/
+// DeleteDocument  will delete a document from AWS S3 Bucket. Arguments objectKey and testMode are required .
 func (dmPtr *DocumentManager) DeleteDocument(objectKey string, testMode bool) (sDeleteObjectOutput *s3.DeleteObjectOutput, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -200,32 +213,12 @@ func (dmPtr *DocumentManager) DeleteDocument(objectKey string, testMode bool) (s
 	params["testMode"] = strconv.FormatBool(testMode)
 
 	// Delete object from Amazon S3 Bucket using key
-	if sDeleteObjectOutput, sErr = s3.New(dmPtr.sSession).DeleteObject(&s3.DeleteObjectInput{
+	if sDeleteObjectOutput, sErr = s3.New(sSession).DeleteObject(&s3.DeleteObjectInput{
 		Bucket:    aws.String(strings.Split(dmPtr.sInboundS3BucketURL, "/")[0]),
 		Key:       aws.String(objectKey),
 		VersionId: nil,
 	}); sErr != nil {
 		soteErr = dmPtr.s3BucketErrorHandle(sErr, params)
-	}
-
-	return
-}
-
-/* getAWSSession will create an instance of AWS session */
-func (dmPtr *DocumentManager) getAWSSession(AWSRegion string, testMode bool) (sSession *session.Session, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var (
-		sErr error
-	)
-
-	if sSession, sErr = session.NewSession(&aws.Config{Region: aws.String(AWSRegion)}); sErr != nil {
-		soteErr = sError.GetSError(210399, nil, sError.EmptyMap)
-		sLogger.Info(soteErr.FmtErrMsg)
-
-		if !testMode {
-			panic(soteErr.FmtErrMsg)
-		}
 	}
 
 	return
