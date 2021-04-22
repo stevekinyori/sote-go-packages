@@ -268,7 +268,7 @@ func dumpParams(params map[string]string) (paramString string) {
 	sLogger.DebugMethod()
 
 	for key, value := range params {
-		paramString += fmt.Sprintf("%v: %v", key, value)
+		paramString += fmt.Sprintf("%v: %v ", key, value)
 	}
 
 	return

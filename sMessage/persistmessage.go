@@ -4,6 +4,7 @@
 package sMessage
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/nats-io/nats.go"
@@ -171,7 +172,8 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMod
 	params["Message Count"] = strconv.Itoa(messageCount)
 	params["testMode"] = strconv.FormatBool(testMode)
 
-	messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount)
+	// Good code - messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount, nats.Context(context.Background()))
+	messages, err = mmPtr.PullSubscriptions[durableName].Fetch(2, nats.Context(context.Background()))
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
