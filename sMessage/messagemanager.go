@@ -231,6 +231,9 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	case "nats: timeout":
 		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), sError.EmptyMap)
 		panicError = false
+	case "context deadline exceeded":
+		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), sError.EmptyMap)
+		panicError = false
 	case "nats: connection closed":
 		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
 		panicError = false
@@ -268,7 +271,7 @@ func dumpParams(params map[string]string) (paramString string) {
 	sLogger.DebugMethod()
 
 	for key, value := range params {
-		paramString += fmt.Sprintf("%v: %v ", key, value)
+		paramString += fmt.Sprintf("%v: %v | ", key, value)
 	}
 
 	return

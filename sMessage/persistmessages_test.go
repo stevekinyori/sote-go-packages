@@ -105,7 +105,7 @@ func TestPPullSubscribe(tPtr *testing.T) {
 		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 			tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 		}
-		if _, soteErr = mmPtr.CreateWorkQueueStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1, false); soteErr.ErrCode == nil {
+		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1, false); soteErr.ErrCode == nil {
 			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAME, testSubjects[0], 1, false); soteErr.ErrCode == nil {
 				if soteErr = mmPtr.PullSubscribe(testSubjects[0], TESTCONSUMERNAME, false); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)

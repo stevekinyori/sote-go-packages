@@ -6,6 +6,7 @@ package sMessage
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/nats-io/nats.go"
 	"gitlab.com/soteapps/packages/v2021/sError"
@@ -173,7 +174,9 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMod
 	params["testMode"] = strconv.FormatBool(testMode)
 
 	// Good code - messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount, nats.Context(context.Background()))
-	messages, err = mmPtr.PullSubscriptions[durableName].Fetch(2, nats.Context(context.Background()))
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount, nats.Context(ctx))
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
