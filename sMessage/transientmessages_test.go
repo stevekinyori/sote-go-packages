@@ -22,7 +22,7 @@ func TestPublish(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestSubscribe(tPtr *testing.T) {
@@ -38,7 +38,7 @@ func TestSubscribe(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestPublishRequest(tPtr *testing.T) {
@@ -54,7 +54,7 @@ func TestPublishRequest(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestSubscribeSync(tPtr *testing.T) {
@@ -70,7 +70,7 @@ func TestSubscribeSync(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestNextMsg(tPtr *testing.T) {
@@ -92,7 +92,7 @@ func TestNextMsg(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestRequest(tPtr *testing.T) {
@@ -112,5 +112,5 @@ func TestRequestReply(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }

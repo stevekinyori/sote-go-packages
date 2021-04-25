@@ -161,7 +161,7 @@ func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, test
 /*
 	PFetch creates a subscription that can be used to fetch messages
 */
-func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMode bool) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -171,6 +171,7 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMod
 	params := make(map[string]string)
 	params["Durable Name"] = durableName
 	params["Message Count"] = strconv.Itoa(messageCount)
+	params["autoAck"] = strconv.FormatBool(autoAck)
 	params["testMode"] = strconv.FormatBool(testMode)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -178,6 +179,12 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMod
 	mmPtr.Messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount, nats.Context(ctx))
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
+	}
+	if autoAck {
+		for _, message := range mmPtr.Messages {
+			mmPtr.Ack(message, false)
+		// 	TODO Review if err needs to be handled for failed Acks
+		}
 	}
 
 	return

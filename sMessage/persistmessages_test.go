@@ -31,7 +31,7 @@ func TestPPublish(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
@@ -63,7 +63,7 @@ func TestPSubscribe(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
@@ -90,7 +90,7 @@ func TestPSubscribeSync(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
@@ -117,7 +117,7 @@ func TestPPullSubscribe(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
@@ -144,7 +144,7 @@ func TestPDeleteMsg(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
@@ -171,7 +171,7 @@ func TestPGetMsg(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }
 
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
@@ -194,7 +194,7 @@ func TestPFetch(tPtr *testing.T) {
 				if soteErr = mmPtr.PullSubscribe(testSubjects[0], TESTCONSUMERNAME, false); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
-				if soteErr = mmPtr.Fetch(TESTCONSUMERNAME, 1, false); soteErr.ErrCode != nil && soteErr.ErrCode != 101010 {
+				if soteErr = mmPtr.Fetch(TESTCONSUMERNAME, 1, true, false); soteErr.ErrCode != nil && soteErr.ErrCode != 101010 {
 					tPtr.Errorf("TestPFetch Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
 			}
@@ -204,5 +204,5 @@ func TestPFetch(tPtr *testing.T) {
 		}
 	}
 
-	mmPtr = mmPtr.Close()
+	mmPtr.Close()
 }

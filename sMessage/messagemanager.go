@@ -102,7 +102,7 @@ func New(application, environment, credentialFileName, connectionURL, connection
 /*
 	Close will terminate the connection to the NATS network
 */
-func (mmPtr *MessageManager) Close() (nmOutPtr *MessageManager) {
+func (mmPtr *MessageManager) Close() {
 	sLogger.DebugMethod()
 
 	// Closing connect to NATS

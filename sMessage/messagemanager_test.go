@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"gitlab.com/soteapps/packages/v2021/sConfigParams"
-	"gitlab.com/soteapps/packages/v2021/sError"
 )
 
 const (
@@ -71,25 +70,5 @@ func TestNew(tPtr *testing.T) {
 	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", true, 6,
 		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestNew Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
-	}
-}
-func TestClose(tPtr *testing.T) {
-	var (
-		mmPtr   *MessageManager
-		soteErr sError.SoteError
-	)
-
-	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", true, 1,
-		250*time.Millisecond, false); soteErr.ErrCode != nil {
-		tPtr.Errorf("New Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
-	}
-
-	if mmPtr = mmPtr.Close(); mmPtr != nil {
-		tPtr.Errorf("TestClose Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
-	// } else {
-	// 	// This will panic because the mmPtr is nil
-	// 	if soteErr := mmPtr.connect(false); soteErr.ErrCode != nil {
-	// 		tPtr.Fatal("TestClose is not working")
-	// 	}
 	}
 }
