@@ -90,7 +90,7 @@ func (mmPtr *MessageManager) PSubscribeSync(subject, durableName string, testMod
 }
 
 /*
-	PPullSubscribe creates a subscription that can be used to fetch messages
+	PullSubscribe creates a subscription that can be used to fetch messages
 */
 func (mmPtr *MessageManager) PullSubscribe(subject, durableName string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -113,7 +113,7 @@ func (mmPtr *MessageManager) PullSubscribe(subject, durableName string, testMode
 }
 
 /*
-	PDeleteMsg will remove a message from the stream
+	DeleteMsg will remove a message from the stream
 */
 func (mmPtr *MessageManager) DeleteMsg(streamName string, messageSequence int, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -136,7 +136,7 @@ func (mmPtr *MessageManager) DeleteMsg(streamName string, messageSequence int, t
 }
 
 /*
-	PGetMsg retrieves a message using the sequence number directly from the stream
+	GetMsg retrieves a message using the sequence number directly from the stream
 */
 func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -159,7 +159,7 @@ func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, test
 }
 
 /*
-	PFetch creates a subscription that can be used to fetch messages
+	Fetch creates a subscription that can be used to fetch messages
 */
 func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -191,7 +191,7 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck
 }
 
 /*
-	PAck acknowledges a message
+	Ack acknowledges a message
 */
 func (mmPtr *MessageManager) Ack(message *nats.Msg, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
