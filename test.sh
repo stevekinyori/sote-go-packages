@@ -77,9 +77,9 @@ echo -n 'sDocument ' 1>> /tmp/tmp_$$.out
 rm sDocument/coverage.out 2> /dev/null; go test sDocument/*.go -coverprofile sDocument/coverage.out 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
-read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )"
+read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}' )"
 if [[ "$RC" == "1" ]]; then
-    echo "FAILED: At least one test didn't pass."
+    echo "FAILED: At least one test didn't pass or the code didn't build."
     exit 1
 else
     echo "PASSED: All tests passed"
@@ -115,9 +115,9 @@ echo -n 'sDocument_external_test ' 1>> /tmp/tmp_$$.out
 go test sDocument_external_test.go 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
-read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]./ {print 1}' )"
+read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}' )"
 if [[ "$RC" == "1" ]]; then
-    echo "FAILED: At least one external test didn't pass."
+    echo "FAILED: At least one test didn't pass or the code didn't build."
     exit 1
 else
     echo "PASSED: All external tests passed"

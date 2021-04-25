@@ -161,7 +161,7 @@ func TestPGetMsg(tPtr *testing.T) {
 		}
 		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1, false); soteErr.ErrCode == nil {
 			if _, soteErr = mmPtr.PPublish(testSubjects[0], "Hello world", false); soteErr.ErrCode == nil {
-				if _, soteErr = mmPtr.GetMsg(TESTSTREAMNAME, 1, false); soteErr.ErrCode != nil {
+				if soteErr = mmPtr.GetMsg(TESTSTREAMNAME, 1, false); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
 			}
@@ -194,7 +194,7 @@ func TestPFetch(tPtr *testing.T) {
 				if soteErr = mmPtr.PullSubscribe(testSubjects[0], TESTCONSUMERNAME, false); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
-				if _, soteErr = mmPtr.Fetch(TESTCONSUMERNAME, 1, false); soteErr.ErrCode != nil && soteErr.ErrCode != 101010 {
+				if soteErr = mmPtr.Fetch(TESTCONSUMERNAME, 1, false); soteErr.ErrCode != nil && soteErr.ErrCode != 101010 {
 					tPtr.Errorf("TestPFetch Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
 			}

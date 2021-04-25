@@ -28,6 +28,7 @@ type MessageManager struct {
 	SyncSubscriptions map[string]*nats.Subscription
 	PullSubscriptions map[string]*nats.Subscription
 	Messages          []*nats.Msg
+	RawMessage        *nats.RawStreamMsg
 
 	sync.Mutex // TODO Do we need this?
 }

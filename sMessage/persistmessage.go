@@ -138,7 +138,7 @@ func (mmPtr *MessageManager) DeleteMsg(streamName string, messageSequence int, t
 /*
 	PGetMsg retrieves a message using the sequence number directly from the stream
 */
-func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, testMode bool) (message *nats.RawStreamMsg, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
@@ -150,7 +150,7 @@ func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, test
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
-	message, err = js.GetMsg(streamName, uint64(messageSequence))
+	mmPtr.RawMessage, err = js.GetMsg(streamName, uint64(messageSequence))
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
@@ -161,7 +161,7 @@ func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, test
 /*
 	PFetch creates a subscription that can be used to fetch messages
 */
-func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMode bool) (messages []*nats.Msg, soteErr sError.SoteError) {
+func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -173,10 +173,9 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, testMod
 	params["Message Count"] = strconv.Itoa(messageCount)
 	params["testMode"] = strconv.FormatBool(testMode)
 
-	// Good code - messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount, nats.Context(context.Background()))
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount, nats.Context(ctx))
+	mmPtr.Messages, err = mmPtr.PullSubscriptions[durableName].Fetch(messageCount, nats.Context(ctx))
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
