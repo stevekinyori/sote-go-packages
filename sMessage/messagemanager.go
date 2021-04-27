@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -29,9 +28,10 @@ type MessageManager struct {
 	PullSubscriptions map[string]*nats.Subscription
 	Messages          []*nats.Msg
 	RawMessage        *nats.RawStreamMsg
-
-	sync.Mutex // TODO Do we need this?
 }
+
+type sStreamInfo *nats.StreamInfo
+type sConsumerInfo *nats.ConsumerInfo
 
 /*
 	New will create a Sote Message Manager and a connection to the NATS network.
@@ -51,7 +51,6 @@ func New(application, environment, credentialFileName, connectionURL, connection
 		environment:       "staging",
 		connectionURL:     "localhost",
 		connectionOptions: []nats.Option{nats.Name(connectionName)},
-		Mutex:             sync.Mutex{},
 	}
 
 	if soteErr = sConfigParams.ValidateApplication(application); soteErr.ErrCode == nil {
