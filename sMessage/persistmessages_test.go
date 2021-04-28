@@ -33,7 +33,6 @@ func TestPPublish(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
-
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestPSubscribe(tPtr *testing.T) {
 	var (
@@ -65,7 +64,6 @@ func TestPSubscribe(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
-
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestPSubscribeSync(tPtr *testing.T) {
 	var (
@@ -92,9 +90,8 @@ func TestPSubscribeSync(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
-
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
-func TestPPullSubscribe(tPtr *testing.T) {
+func TestPullSubscribe(tPtr *testing.T) {
 	var (
 		mmPtr   *MessageManager
 		soteErr sError.SoteError
@@ -119,9 +116,8 @@ func TestPPullSubscribe(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
-
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
-func TestPDeleteMsg(tPtr *testing.T) {
+func TestDeleteMsg(tPtr *testing.T) {
 	var (
 		mmPtr   *MessageManager
 		soteErr sError.SoteError
@@ -146,9 +142,8 @@ func TestPDeleteMsg(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
-
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
-func TestPGetMsg(tPtr *testing.T) {
+func TestGetMsg(tPtr *testing.T) {
 	var (
 		mmPtr   *MessageManager
 		soteErr sError.SoteError
@@ -173,9 +168,8 @@ func TestPGetMsg(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
-
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
-func TestPFetch(tPtr *testing.T) {
+func TestFetch(tPtr *testing.T) {
 	var (
 		mmPtr   *MessageManager
 		soteErr sError.SoteError
@@ -195,6 +189,42 @@ func TestPFetch(tPtr *testing.T) {
 					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
 				if soteErr = mmPtr.Fetch(TESTCONSUMERNAME, 1, true, false); soteErr.ErrCode != nil && soteErr.ErrCode != 101010 {
+					tPtr.Errorf("TestPFetch Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+				}
+			}
+		}
+		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+			tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
+		}
+	}
+
+	mmPtr.Close()
+}
+// We are not testing to see if NATS messaging works. We are only testing if the code works.
+func TestAck(tPtr *testing.T) {
+	var (
+		mmPtr   *MessageManager
+		soteErr sError.SoteError
+	)
+
+	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
+		250*time.Millisecond, false); soteErr.ErrCode == nil {
+		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+			tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
+		}
+		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testSubjects, 1, false); soteErr.ErrCode == nil {
+			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAME, testSubjects[0], 1, false); soteErr.ErrCode == nil {
+				if _, soteErr = mmPtr.PPublish(testSubjects[0], "Hello world", false); soteErr.ErrCode != nil {
+					tPtr.Errorf("TestPFetch Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+				}
+				if soteErr = mmPtr.PullSubscribe(testSubjects[0], TESTCONSUMERNAME, false); soteErr.ErrCode != nil {
+					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+				}
+				if soteErr = mmPtr.Fetch(TESTCONSUMERNAME, 1, false, false); soteErr.ErrCode != nil {
+					tPtr.Errorf("TestPFetch Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+				}
+				time.Sleep(5 * time.Second)
+				if soteErr = mmPtr.Ack(mmPtr.Messages[0], true); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPFetch Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
 			}
