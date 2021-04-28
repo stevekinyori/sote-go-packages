@@ -40,7 +40,8 @@ func (mmPtr *MessageManager) PPublish(subject, message string, testMode bool) (a
 */
 
 /*
-	PSubscribe will listen for message from the stream that owns the subject
+	PSubscribe will listen for message from the stream that owns the subject.
+The subscription is saved in the an map of pull subscriptions in the Message Manager structure. The durable name is the index to the subscription.
 */
 func (mmPtr *MessageManager) PSubscribe(subject, durableName string, callback nats.MsgHandler, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -67,7 +68,8 @@ func (mmPtr *MessageManager) PSubscribe(subject, durableName string, callback na
 }
 
 /*
-	PSubscribeSync will listen synchronously for message from the stream that owns the subject
+	PSubscribeSync will listen synchronously for message from the stream that owns the subject.
+The subscription is saved in the an map of pull subscriptions in the Message Manager structure. The durable name is the index to the subscription.
 */
 func (mmPtr *MessageManager) PSubscribeSync(subject, durableName string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -90,7 +92,8 @@ func (mmPtr *MessageManager) PSubscribeSync(subject, durableName string, testMod
 }
 
 /*
-	PullSubscribe creates a subscription that can be used to fetch messages
+	PullSubscribe creates a subscription that can be used to fetch messages.
+The subscription is saved in the an map of pull subscriptions in the Message Manager structure. The durable name is the index to the subscription.
 */
 func (mmPtr *MessageManager) PullSubscribe(subject, durableName string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -159,7 +162,10 @@ func (mmPtr *MessageManager) GetMsg(streamName string, messageSequence int, test
 }
 
 /*
-	Fetch creates a subscription that can be used to fetch messages
+	Fetch creates a pull subscription that can be used to fetch messages.
+With autoAck set to true each message fetched will be acknowledged before the method returns call to the caller.
+Acknowledgement is needed for messages otherwise the consumer will choke with the max acknowledge limit is reached.
+Acknowledgement can be manually done at anything so long as the pointer to the message still exists.
 */
 func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -183,7 +189,7 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck
 	if autoAck {
 		for _, message := range mmPtr.Messages {
 			mmPtr.Ack(message, false)
-		// 	TODO Review if err needs to be handled for failed Acks
+			// 	TODO Review if err needs to be handled for failed Acks
 		}
 	}
 
