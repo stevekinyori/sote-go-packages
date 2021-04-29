@@ -217,6 +217,7 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	var (
 		panicError = true
 		testMode   = false
+		errorDetail = make( map[string]string)
 	)
 
 	switch err.Error() {
@@ -228,23 +229,30 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
 	case "no nkey seed found":
 		soteErr = sError.GetSError(209398, nil, sError.EmptyMap)
+	case "nats: no stream matches subject":
+		soteErr = sError.GetSError(210599, nil, sError.EmptyMap)
 	case "nats: timeout":
-		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), sError.EmptyMap)
+		errorDetail["raw_message"] = "nats: timeout"
+		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), errorDetail)
 		panicError = false
 	case "context deadline exceeded":
-		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), sError.EmptyMap)
+		errorDetail["raw_message"] = "context deadline exceeded"
+		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), errorDetail)
 		panicError = false
 	case "nats: connection closed":
-		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
+		errorDetail["raw_message"] = "nats: connection closed"
+		soteErr = sError.GetSError(209499, nil, errorDetail)
 		panicError = false
 	case "nats: invalid subscription":
-		soteErr = sError.GetSError(206050, sError.BuildParams([]string{params["Subscription Name"], params["Subject"]}), sError.EmptyMap)
+		errorDetail["raw_message"] = "nats: invalid subscription"
+		soteErr = sError.GetSError(206050, sError.BuildParams([]string{params["Subscription Name"], params["Subject"]}), errorDetail)
 		panicError = false
 	case "stream not found":
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), sError.EmptyMap)
+		errorDetail["raw_message"] = "stream not found"
+		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), errorDetail)
 		panicError = false
 	// 	TODO This should be removed once the NATS bug is resolved.
-	case "open /srv/js/multileaf/byA/sote_staging/$G/streams: too many open files":
+	case "too many open files":
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), sError.EmptyMap)
 		panicError = false
 	case "no message found":
