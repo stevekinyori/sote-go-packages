@@ -9,7 +9,7 @@ require (
 	github.com/jackc/pgconn v1.8.1
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/lestrrat-go/jwx v1.1.7
-	github.com/nats-io/nats.go v1.10.1-0.20210412194923-1645e080ca98
+	github.com/nats-io/nats.go v1.10.1-0.20210429054325-be0c4ff1cd6b
 	github.com/nats-io/nkeys v0.3.0
 	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/gographics/imagick.v3 v3.3.0
