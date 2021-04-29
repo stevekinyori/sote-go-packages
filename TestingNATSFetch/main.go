@@ -35,28 +35,28 @@ func main() {
 		panic(errAddStream.Error())
 	}
 
-	sConsumerConfig := &nats.ConsumerConfig{
-		Durable:         "Delete-Me-Durable-Name",
-		DeliverSubject:  "",
-		DeliverPolicy:   nats.DeliverAllPolicy,
-		OptStartSeq:     0,
-		OptStartTime:    nil,
-		AckPolicy:       nats.AckExplicitPolicy,
-		AckWait:         0,
-		MaxDeliver:      1,
-		FilterSubject:   "my-test-subject",
-		ReplayPolicy:    nats.ReplayInstantPolicy,
-		RateLimit:       0,
-		SampleFrequency: "",
-		MaxWaiting:      0,
-		MaxAckPending:   0,
-	}
+	// sConsumerConfig := &nats.ConsumerConfig{
+	// 	Durable:         "Delete-Me-Durable-Name",
+	// 	DeliverSubject:  "",
+	// 	DeliverPolicy:   nats.DeliverAllPolicy,
+	// 	OptStartSeq:     0,
+	// 	OptStartTime:    nil,
+	// 	AckPolicy:       nats.AckExplicitPolicy,
+	// 	AckWait:         0,
+	// 	MaxDeliver:      1,
+	// 	FilterSubject:   "my-test-subject",
+	// 	ReplayPolicy:    nats.ReplayInstantPolicy,
+	// 	RateLimit:       0,
+	// 	SampleFrequency: "",
+	// 	MaxWaiting:      0,
+	// 	MaxAckPending:   0,
+	// }
 
-	_, errConsumer := js.AddConsumer("Delete-Me-Stream", sConsumerConfig)
-	if errConsumer != nil {
-		panic(errConsumer.Error())
-	}
-
+	// _, errConsumer := js.AddConsumer("Delete-Me-Stream", sConsumerConfig)
+	// if errConsumer != nil {
+	// 	panic(errConsumer.Error())
+	// }
+	//
 	_, errPublish := js.Publish("my-test-subject", []byte("Hello world message"))
 	if errPublish != nil {
 		panic(errPublish.Error())
@@ -67,9 +67,11 @@ func main() {
 		panic(errPullSub.Error())
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	start := time.Now()
 	messages, errFetch := myPullSub.Fetch(1, nats.Context(ctx))
+	fmt.Printf("Took %v\n", time.Since(start))
 	if errFetch != nil {
 		panic(errFetch.Error())
 	}
@@ -77,7 +79,7 @@ func main() {
 		fmt.Println(string(message.Data))
 	}
 
-	_ = js.DeleteStream("Delete-Me-Stream")
+	// _ = js.DeleteStream("Delete-Me-Stream")
 
 	mmPtr.NatsConnectionPtr.Close()
 }
