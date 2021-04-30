@@ -40,7 +40,6 @@ func TestPSubscribe(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr             *MessageManager
 		soteErr           sError.SoteError
 	)
 
@@ -66,7 +65,6 @@ func TestPSubscribeSync(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr             *MessageManager
 		soteErr           sError.SoteError
 	)
 
@@ -87,7 +85,6 @@ func TestPullSubscribe(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr             *MessageManager
 		soteErr           sError.SoteError
 	)
 
@@ -106,7 +103,6 @@ func TestDeleteMsg(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr             *MessageManager
 		soteErr           sError.SoteError
 	)
 
@@ -127,7 +123,6 @@ func TestGetMsg(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr             *MessageManager
 		soteErr           sError.SoteError
 	)
 
@@ -148,7 +143,6 @@ func TestFetch(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr             *MessageManager
 		soteErr           sError.SoteError
 	)
 
@@ -171,7 +165,6 @@ func TestFetch(tPtr *testing.T) {
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestAck(tPtr *testing.T) {
 	var (
-		mmPtr             *MessageManager
 		soteErr           sError.SoteError
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()

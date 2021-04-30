@@ -1,10 +1,7 @@
 /.DS_Store
 /sLogger/.DS_Store
 /.idea
-/sError/coverage.out
-/sLogger/coverage.out
-/coverage_review.out
 coverage.out
+coverage_review.out
 /temp.out
 /vendor
-coverage_review.out
