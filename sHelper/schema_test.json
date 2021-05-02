@@ -1,0 +1,39 @@
+{
+    "required": [
+        "field1",
+        "field2"
+    ],
+    "properties": {
+        "json-web-token": {
+            "$id": "#/properties/json-web-token",
+            "type": "string"
+        },
+        "message-id": {
+            "$id": "#/properties/message-id",
+            "type": "string"
+        },
+        "role-list": {
+            "$id": "#/properties/role-list",
+            "type": "array"
+        },
+        "client-company-id": {
+            "$id": "#/properties/client-company-id",
+            "type": "integer",
+            "default": 0
+        },
+        "field1": {
+            "$id": "#/properties/field1",
+            "type": "string"
+        },
+        "field2": {
+            "$id": "#/properties/field2",
+            "type": "string"
+        },
+        "field3": {
+            "$id": "#/properties/field3",
+            "type": "string",
+            "default": "VALUE1",
+            "enum": ["VALUE1", "VALUE2"]
+        }
+    }
+}
