@@ -6,8 +6,9 @@ go run main.go
 or
 go run main.go --targetEnv production
 
-### is like all but adds stack frames for run-time functions and shows goroutines created internally by the run-time.
+### The GOTRACEBACK variable controls the amount of output generated
 GOTRACEBACK=system
+(is like "all" but adds stack frames for run-time functions and shows goroutines created internally by the run-time.)
 
 ### Run tests
 go test -v ./sHelper/...
