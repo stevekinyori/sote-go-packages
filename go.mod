@@ -3,6 +3,7 @@ module gitlab.com/soteapps/packages/v2021
 go 1.16
 
 require (
+	github.com/integrii/flaggy v1.4.4
 	github.com/aws/aws-sdk-go v1.38.21
 	github.com/ddliu/go-httpclient v0.6.9
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
