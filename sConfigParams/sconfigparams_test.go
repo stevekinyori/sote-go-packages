@@ -48,6 +48,17 @@ func TestGetParametersNotFound(tPtr *testing.T) {
 		tPtr.Errorf("GetParameters failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
+func TestGetSmtpUsernameAndPassword(tPtr *testing.T) {
+	if _, _, soteErr := GetSmtpUsernameAndPassword(API, STAGING); soteErr.ErrCode != nil {
+		tPtr.Errorf("GetSmtpUsernameAndPassword failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, _, soteErr := GetSmtpUsernameAndPassword("SCOTT", STAGING); soteErr.ErrCode != 109999 {
+		tPtr.Errorf("GetSmtpUsernameAndPassword failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, _, soteErr := GetSmtpUsernameAndPassword("", STAGING); soteErr.ErrCode != 200513 {
+		tPtr.Errorf("GetSmtpUsernameAndPassword failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+	}
+}
 func TestGetDBPassword(tPtr *testing.T) {
 	if _, soteErr := GetDBPassword(API, STAGING); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetDBPassword failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)

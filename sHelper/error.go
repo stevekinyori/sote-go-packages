@@ -60,6 +60,10 @@ func (err sErrorHelper) InvalidJson(fileName string) sError.SoteError {
 	return err.factory(207110, fileName) //"207110: %v couldn't be parsed - Invalid JSON error"
 }
 
+func (err sErrorHelper) InvalidEmailAddress(fieldName string, value interface{}) sError.SoteError {
+	return err.factory(207050, fieldName, value) //"207050: %v (%v) is not a valid email address"
+}
+
 // NATS_Error's
 func (err sErrorHelper) InvalidParameters(params ...interface{}) sError.SoteError {
 	return err.factory(206200, params...) //"206200: Message doesn't match signature. Sender must provide the following parameter names: %v"

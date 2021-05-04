@@ -50,6 +50,8 @@ const (
 	UNPROCESSEDDOCUMENTSKEY = "inbound/name"
 	PROCESSEDDOCUMENTSKEY   = "processed/name"
 	USERPOOLIDKEY           = "COGNITO_USER_POOL_ID"
+	SMTPUSERNAME            = "SMTP_USERNAME"
+	SMTPPASSWORD            = "SMTP_PASSWORD"
 	// Root Path
 	ROOTPATH = "/sote"
 )
@@ -99,6 +101,33 @@ func GetParameters(application, environment string) (parameters map[string]inter
 		}
 	}
 
+	return
+}
+
+/*
+This will retrieve the SMTP username and password parameters that is in AWS System Manager service for the ROOTPATH,
+application and environment.  Application and environment are required.
+*/
+func GetSmtpUsernameAndPassword(application, environment string) (smtpUsername string, smtpPassword string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		tSmtpUsername interface{}
+		tSmtpPassword interface{}
+	)
+
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			tSmtpUsername, soteErr = getParameter(application, strings.ToLower(environment), SMTPUSERNAME)
+			if tSmtpUsername != nil {
+				tSmtpPassword, soteErr = getParameter(application, strings.ToLower(environment), SMTPPASSWORD)
+				if tSmtpPassword != nil {
+					smtpUsername = tSmtpUsername.(string)
+					smtpPassword = tSmtpPassword.(string)
+				}
+			}
+		}
+	}
 	return
 }
 
