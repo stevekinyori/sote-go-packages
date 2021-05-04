@@ -29,7 +29,7 @@ var (
 	emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
 
-type Mail struct {
+type Email struct {
 	subject     string
 	environment string
 	rcpt        []string
@@ -38,7 +38,6 @@ type Mail struct {
 	cc          []*emailItem
 	bcc         []*emailItem
 	attachments []attachment
-	auth        smtp.Auth
 }
 
 type emailItem struct {
@@ -64,9 +63,9 @@ func (e *emailItem) String() string {
 	return e.address
 }
 
-func NewMail(environment, subject string, from ...string) Mail {
+func NewEmail(environment, subject string, from ...string) Email {
 	sLogger.DebugMethod()
-	soteMail := Mail{
+	soteMail := Email{
 		subject:     subject,
 		environment: environment,
 		from: &emailItem{
@@ -79,19 +78,19 @@ func NewMail(environment, subject string, from ...string) Mail {
 	return soteMail
 }
 
-func (m *Mail) To(address string) *emailItem {
+func (m *Email) To(address string) *emailItem {
 	return m.addAddress(&m.to, address)
 }
 
-func (m *Mail) Cs(address string) *emailItem {
+func (m *Email) Cs(address string) *emailItem {
 	return m.addAddress(&m.cc, address)
 }
 
-func (m *Mail) Bcc(address string) *emailItem {
+func (m *Email) Bcc(address string) *emailItem {
 	return m.addAddress(&m.bcc, address)
 }
 
-func (m *Mail) Attachment(filepath string) (soteErr sError.SoteError) {
+func (m *Email) Attachment(filepath string) (soteErr sError.SoteError) {
 	f, err := os.Open(filepath)
 	if err != nil {
 		soteErr = NewError().FileNotFound(filepath, err.Error())
@@ -114,14 +113,15 @@ func (m *Mail) Attachment(filepath string) (soteErr sError.SoteError) {
 	return
 }
 
-func (m *Mail) Send(text string, htmls ...string) (soteErr sError.SoteError) {
+func (m *Email) Send(text string, htmls ...string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
-	soteErr = m.initAuth()
 	var (
+		auth     smtp.Auth
 		emails   []string
 		buffer   bytes.Buffer
 		boundary = "CONTENT_BOUNDARY"
 	)
+	auth, soteErr = m.initAuth()
 	if soteErr.ErrCode == nil {
 		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "MIME-Version", "1.0"))
 		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Date", time.Now().String()))
@@ -165,7 +165,7 @@ func (m *Mail) Send(text string, htmls ...string) (soteErr sError.SoteError) {
 		if soteErr.ErrCode == nil {
 			err := smtp.SendMail(
 				fmt.Sprintf("%s:%v", SMTPHOST, SMTPPORT),
-				m.auth,
+				auth,
 				m.from.address,
 				m.rcpt,
 				buffer.Bytes(),
@@ -178,22 +178,25 @@ func (m *Mail) Send(text string, htmls ...string) (soteErr sError.SoteError) {
 	return
 }
 
-func (m *Mail) initAuth() (soteErr sError.SoteError) {
+func (m *Email) initAuth() (auth smtp.Auth, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var (
 		username string
 		password string
 	)
 	if soteErr = sConfigParams.ValidateEnvironment(m.environment); soteErr.ErrCode == nil {
-		username, password, soteErr = sConfigParams.GetSmtpUsernameAndPassword("api", m.environment)
+		username, soteErr = sConfigParams.GetSmtpUsername("api", m.environment)
 		if soteErr.ErrCode == nil {
-			m.auth = smtp.PlainAuth("", username, password, SMTPHOST)
+			password, soteErr = sConfigParams.GetSmtpPassword("api", m.environment)
+			if soteErr.ErrCode == nil {
+				auth = smtp.PlainAuth("", username, password, SMTPHOST)
+			}
 		}
 	}
 	return
 }
 
-func (m *Mail) addAttachments(boundary string, buffer *bytes.Buffer) (soteErr sError.SoteError) {
+func (m *Email) addAttachments(boundary string, buffer *bytes.Buffer) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	for _, attach := range m.attachments {
 		path := strings.Split(strings.ReplaceAll(attach.filepath, "\\", "/"), "/")
@@ -208,7 +211,7 @@ func (m *Mail) addAttachments(boundary string, buffer *bytes.Buffer) (soteErr sE
 	return
 }
 
-func (m *Mail) addAddress(emails *[]*emailItem, address string) *emailItem {
+func (m *Email) addAddress(emails *[]*emailItem, address string) *emailItem {
 	item := &emailItem{
 		address: address,
 	}
@@ -216,7 +219,7 @@ func (m *Mail) addAddress(emails *[]*emailItem, address string) *emailItem {
 	return item
 }
 
-func (m *Mail) addRcpt(fieldName string, addresses []*emailItem) (emails []string, soteErr sError.SoteError) {
+func (m *Email) addRcpt(fieldName string, addresses []*emailItem) (emails []string, soteErr sError.SoteError) {
 	for _, item := range addresses {
 		if m.isEmailValid(fieldName, item.address); soteErr.ErrCode != nil {
 			return
@@ -229,7 +232,7 @@ func (m *Mail) addRcpt(fieldName string, addresses []*emailItem) (emails []strin
 	return
 }
 
-func (m *Mail) isEmailValid(fieldName string, e string) sError.SoteError {
+func (m *Email) isEmailValid(fieldName string, e string) sError.SoteError {
 	if len(e) < 3 && len(e) > 254 {
 		return NewError(map[string]string{"EMAIL_LENGTH": "mail: invalid string"}).InvalidEmailAddress(fieldName, e)
 	}

@@ -105,26 +105,43 @@ func GetParameters(application, environment string) (parameters map[string]inter
 }
 
 /*
-This will retrieve the SMTP username and password parameters that is in AWS System Manager service for the ROOTPATH,
+This will retrieve the SMTP username parameter that is in AWS System Manager service for the ROOTPATH,
 application and environment.  Application and environment are required.
 */
-func GetSmtpUsernameAndPassword(application, environment string) (smtpUsername string, smtpPassword string, soteErr sError.SoteError) {
+func GetSmtpUsername(application, environment string) (smtpUsername string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
 		tSmtpUsername interface{}
-		tSmtpPassword interface{}
 	)
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			tSmtpUsername, soteErr = getParameter(application, strings.ToLower(environment), SMTPUSERNAME)
 			if tSmtpUsername != nil {
-				tSmtpPassword, soteErr = getParameter(application, strings.ToLower(environment), SMTPPASSWORD)
-				if tSmtpPassword != nil {
-					smtpUsername = tSmtpUsername.(string)
-					smtpPassword = tSmtpPassword.(string)
-				}
+				smtpUsername = tSmtpUsername.(string)
+			}
+		}
+	}
+	return
+}
+
+/*
+This will retrieve the SMTP password parameter that is in AWS System Manager service for the ROOTPATH,
+application and environment.  Application and environment are required.
+*/
+func GetSmtpPassword(application, environment string) (smtpPassword string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		tSmtpPassword interface{}
+	)
+
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			tSmtpPassword, soteErr = getParameter(application, strings.ToLower(environment), SMTPPASSWORD)
+			if tSmtpPassword != nil {
+				smtpPassword = tSmtpPassword.(string)
 			}
 		}
 	}

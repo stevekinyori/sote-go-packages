@@ -116,8 +116,6 @@ echo -n '.'
 echo -n 'sDocument_external_test ' 1>> /tmp/tmp_$$.out
 go test sDocument_external_test.go 1>> /tmp/tmp_$$.out
 echo -n '.'
-echo -n 'sHelper_external_test ' 1>> /tmp/tmp_$$.out
-go test sHelper_external_test.go 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}' )"
