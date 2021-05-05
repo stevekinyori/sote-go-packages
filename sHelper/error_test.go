@@ -38,6 +38,7 @@ func TestErrorCodes(t *testing.T) {
 	verifyError(t, NewError().MustBePopulated("a, b, c"), 200513, sError.PROCESSERROR, "200513: a, b, c must be populated")
 	verifyError(t, NewError().MustBeType("a, b, c", []int{1, 2, 3}), 200200, sError.PROCESSERROR, "200200: a, b, c must be of type [1 2 3]")
 	verifyError(t, NewError().InvalidJson("./schema.json"), 207110, sError.CONTENTERROR, "207110: ./schema.json couldn't be parsed - Invalid JSON error")
+	verifyError(t, NewError().InvalidEmailAddress("To", "email@sote123.com"), 207050, sError.CONTENTERROR, "207050: email@sote123.com (To) is not a valid email address")
 	verifyError(t, NewError().InvalidParameters("Item"), 206200, sError.NATSERROR,
 		"206200: Message doesn't match signature. Sender must provide the following parameter names: Item")
 	verifyError(t, NewError().NoDbConnection(), 209299, sError.CONFIGURATIONISSUE, "209299: No database connection has been established")
