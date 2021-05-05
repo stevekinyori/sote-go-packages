@@ -61,7 +61,7 @@ func (err sErrorHelper) InvalidJson(fileName string) sError.SoteError {
 }
 
 func (err sErrorHelper) InvalidEmailAddress(fieldName string, value interface{}) sError.SoteError {
-	return err.factory(207050, fieldName, value) //"207050: %v (%v) is not a valid email address"
+	return err.factory(207050, value, fieldName) //"207050: %v (%v) is not a valid email address"
 }
 
 // NATS_Error's

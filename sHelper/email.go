@@ -12,7 +12,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 
 	"gitlab.com/soteapps/packages/v2021/sConfigParams"
 	"gitlab.com/soteapps/packages/v2021/sError"
@@ -38,6 +37,10 @@ type Email struct {
 	cc          []*emailItem
 	bcc         []*emailItem
 	attachments []attachment
+
+	GetSmtpUsername func(application, environment string) (string, sError.SoteError)
+	GetSmtpPassword func(application, environment string) (string, sError.SoteError)
+	sendMail        func(addr string, a smtp.Auth, from string, to []string, msg []byte) error
 }
 
 type emailItem struct {
@@ -49,6 +52,7 @@ type attachment struct {
 	filepath    string
 	contentType string
 	buffer      []byte
+	cid         string
 }
 
 func (e *emailItem) Name(name string) *emailItem {
@@ -65,24 +69,28 @@ func (e *emailItem) String() string {
 
 func NewEmail(environment, subject string, from ...string) Email {
 	sLogger.DebugMethod()
-	soteMail := Email{
+	var email Email
+	email = Email{
 		subject:     subject,
 		environment: environment,
 		from: &emailItem{
 			address: DEFAULTEMAIL,
 		},
+		GetSmtpUsername: email.getSmtpUsername,
+		GetSmtpPassword: email.getSmtpPassword,
+		sendMail:        smtp.SendMail,
 	}
 	if len(from) > 0 {
-		soteMail.from.name = from[0]
+		email.from.name = from[0]
 	}
-	return soteMail
+	return email
 }
 
 func (m *Email) To(address string) *emailItem {
 	return m.addAddress(&m.to, address)
 }
 
-func (m *Email) Cs(address string) *emailItem {
+func (m *Email) Cc(address string) *emailItem {
 	return m.addAddress(&m.cc, address)
 }
 
@@ -99,13 +107,14 @@ func (m *Email) Attachment(filepath string) (soteErr sError.SoteError) {
 		buffer, err := ioutil.ReadAll(reader)
 		defer f.Close()
 		if err != nil {
-			soteErr = NewError().FileNotFound(filepath, err.Error())
+			soteErr = NewError(map[string]string{filepath: err.Error()}).InternalError()
 		} else {
 			contentType := http.DetectContentType(buffer)
 			attach := attachment{
 				filepath:    filepath,
 				contentType: contentType,
 				buffer:      buffer,
+				cid:         UUID(UUIDKind.Short),
 			}
 			m.attachments = append(m.attachments, attach)
 		}
@@ -124,7 +133,6 @@ func (m *Email) Send(text string, htmls ...string) (soteErr sError.SoteError) {
 	auth, soteErr = m.initAuth()
 	if soteErr.ErrCode == nil {
 		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "MIME-Version", "1.0"))
-		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Date", time.Now().String()))
 		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Subject", m.subject))
 		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Content-Type", "multipart/related;boundary="+boundary))
 
@@ -163,7 +171,7 @@ func (m *Email) Send(text string, htmls ...string) (soteErr sError.SoteError) {
 		buffer.WriteString("\r\n\r\n--" + boundary + "--\r\n")
 
 		if soteErr.ErrCode == nil {
-			err := smtp.SendMail(
+			err := m.sendMail(
 				fmt.Sprintf("%s:%v", SMTPHOST, SMTPPORT),
 				auth,
 				m.from.address,
@@ -184,13 +192,11 @@ func (m *Email) initAuth() (auth smtp.Auth, soteErr sError.SoteError) {
 		username string
 		password string
 	)
-	if soteErr = sConfigParams.ValidateEnvironment(m.environment); soteErr.ErrCode == nil {
-		username, soteErr = sConfigParams.GetSmtpUsername("api", m.environment)
+	username, soteErr = m.GetSmtpUsername("api", m.environment)
+	if soteErr.ErrCode == nil {
+		password, soteErr = m.GetSmtpPassword("api", m.environment)
 		if soteErr.ErrCode == nil {
-			password, soteErr = sConfigParams.GetSmtpPassword("api", m.environment)
-			if soteErr.ErrCode == nil {
-				auth = smtp.PlainAuth("", username, password, SMTPHOST)
-			}
+			auth = smtp.PlainAuth("", username, password, SMTPHOST)
 		}
 	}
 	return
@@ -205,7 +211,7 @@ func (m *Email) addAttachments(boundary string, buffer *bytes.Buffer) (soteErr s
 		buffer.WriteString("Content-Type: " + attach.contentType + "; name=\"" + name + "\"\r\n")
 		buffer.WriteString("Content-Disposition: attachment; filename=\"" + name + "\"\r\n")
 		buffer.WriteString("Content-Transfer-Encoding: base64\r\n")
-		buffer.WriteString("Content-ID: <" + UUID(UUIDKind.Short) + "> \r\n")
+		buffer.WriteString("Content-ID: <" + attach.cid + ">\r\n")
 		buffer.WriteString(base64.StdEncoding.EncodeToString(attach.buffer))
 	}
 	return
@@ -221,19 +227,17 @@ func (m *Email) addAddress(emails *[]*emailItem, address string) *emailItem {
 
 func (m *Email) addRcpt(fieldName string, addresses []*emailItem) (emails []string, soteErr sError.SoteError) {
 	for _, item := range addresses {
-		if m.isEmailValid(fieldName, item.address); soteErr.ErrCode != nil {
+		if soteErr = m.isEmailValid(fieldName, item.address); soteErr.ErrCode != nil {
 			return
 		}
 		m.rcpt = append(m.rcpt, item.address)
-		if item.name != "" {
-			emails = append(emails, item.String())
-		}
+		emails = append(emails, item.String())
 	}
 	return
 }
 
 func (m *Email) isEmailValid(fieldName string, e string) sError.SoteError {
-	if len(e) < 3 && len(e) > 254 {
+	if len(e) < 3 || len(e) > 254 {
 		return NewError(map[string]string{"EMAIL_LENGTH": "mail: invalid string"}).InvalidEmailAddress(fieldName, e)
 	}
 	if !emailRegex.MatchString(e) {
@@ -245,4 +249,12 @@ func (m *Email) isEmailValid(fieldName string, e string) sError.SoteError {
 		return NewError(map[string]string{"EMAIL_LOOKUP": "mail: invalid domain in addr-spec"}).InvalidEmailAddress(fieldName, e)
 	}
 	return sError.SoteError{}
+}
+
+func (m *Email) getSmtpUsername(application, environment string) (string, sError.SoteError) {
+	return sConfigParams.GetSmtpPassword(application, environment)
+}
+
+func (m *Email) getSmtpPassword(application, environment string) (string, sError.SoteError) {
+	return sConfigParams.GetSmtpPassword(application, environment)
 }
