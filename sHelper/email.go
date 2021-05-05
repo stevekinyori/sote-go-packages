@@ -252,7 +252,7 @@ func (m *Email) isEmailValid(fieldName string, e string) sError.SoteError {
 }
 
 func (m *Email) getSmtpUsername(application, environment string) (string, sError.SoteError) {
-	return sConfigParams.GetSmtpPassword(application, environment)
+	return sConfigParams.GetSmtpUsername(application, environment)
 }
 
 func (m *Email) getSmtpPassword(application, environment string) (string, sError.SoteError) {
