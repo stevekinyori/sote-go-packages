@@ -42,7 +42,7 @@ func (h *Helper) addSubscriber(consumerName, subject string, listener MessageLis
 		s.Schema = schema
 		soteErr = schema.Validate()
 	}
-	if !intitalized {
+	if soteErr.ErrCode == nil && !intitalized {
 		if soteErr = h.InitApp(); soteErr.ErrCode == nil {
 			soteErr = h.CreateDatabase()
 		}
