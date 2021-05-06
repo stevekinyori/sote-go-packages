@@ -42,6 +42,7 @@ type ConnValues struct {
 	SSLMode  string `json:"sslMode"`
 }
 
+type STransaction pgx.Tx
 type SRows pgx.Rows
 type SRow pgx.Row
 
