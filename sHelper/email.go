@@ -52,7 +52,6 @@ type attachment struct {
 	filepath    string
 	contentType string
 	buffer      []byte
-	cid         string
 }
 
 func (e *emailItem) Name(name string) *emailItem {
@@ -114,7 +113,6 @@ func (m *Email) Attachment(filepath string) (soteErr sError.SoteError) {
 				filepath:    filepath,
 				contentType: contentType,
 				buffer:      buffer,
-				cid:         UUID(UUIDKind.Short),
 			}
 			m.attachments = append(m.attachments, attach)
 		}
@@ -134,7 +132,7 @@ func (m *Email) Send(text string, htmls ...string) (soteErr sError.SoteError) {
 	if soteErr.ErrCode == nil {
 		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "MIME-Version", "1.0"))
 		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Subject", m.subject))
-		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Content-Type", "multipart/related;boundary="+boundary))
+		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Content-Type", "multipart/mixed; boundary=MIX_"+boundary))
 
 		if soteErr = m.isEmailValid("From", m.from.address); soteErr.ErrCode != nil {
 			return
@@ -156,19 +154,26 @@ func (m *Email) Send(text string, htmls ...string) (soteErr sError.SoteError) {
 		}
 		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Bcc", strings.Join(emails, ";")))
 
-		buffer.WriteString("\r\n--" + boundary + "\r\n")
+		buffer.WriteString("\r\n--MIX_" + boundary + "\r\n")
+		buffer.WriteString(fmt.Sprintf("%s: %s\r\n", "Content-Type", "multipart/alternative; boundary=ALT_"+boundary))
+
+		buffer.WriteString("\r\n--ALT_" + boundary + "\r\n")
 		buffer.WriteString("Content-Type: text/plain; charset=\"UTF-8\"\r\n\r\n")
 		buffer.WriteString(text)
 
-		for _, html := range htmls {
-			buffer.WriteString("\r\n\r\n--" + boundary + "\r\n")
-			buffer.WriteString("Content-Type: text/html; charset=\"UTF-8\"\r\n\r\n")
-			buffer.WriteString(html)
+		if len(htmls) > 0 {
+			for _, html := range htmls {
+				buffer.WriteString("\r\n\r\n--ALT_" + boundary + "\r\n")
+				buffer.WriteString("Content-Type: text/html; charset=\"UTF-8\"\r\n\r\n")
+				buffer.WriteString(html)
+			}
 		}
 
 		buffer.WriteString("\r\n")
+		buffer.WriteString("\r\n\r\n--ALT_" + boundary + "--\r\n")
+
 		soteErr = m.addAttachments(boundary, &buffer)
-		buffer.WriteString("\r\n\r\n--" + boundary + "--\r\n")
+		buffer.WriteString("\r\n\r\n--MIX_" + boundary + "--\r\n")
 
 		if soteErr.ErrCode == nil {
 			err := m.sendMail(
@@ -207,11 +212,10 @@ func (m *Email) addAttachments(boundary string, buffer *bytes.Buffer) (soteErr s
 	for _, attach := range m.attachments {
 		path := strings.Split(strings.ReplaceAll(attach.filepath, "\\", "/"), "/")
 		name := path[len(path)-1]
-		buffer.WriteString("\r\n--" + boundary + "\r\n")
+		buffer.WriteString("\r\n--MIX_" + boundary + "\r\n")
 		buffer.WriteString("Content-Type: " + attach.contentType + "; name=\"" + name + "\"\r\n")
 		buffer.WriteString("Content-Disposition: attachment; filename=\"" + name + "\"\r\n")
 		buffer.WriteString("Content-Transfer-Encoding: base64\r\n")
-		buffer.WriteString("Content-ID: <" + attach.cid + ">\r\n")
 		buffer.WriteString(base64.StdEncoding.EncodeToString(attach.buffer))
 	}
 	return

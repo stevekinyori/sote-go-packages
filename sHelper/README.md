@@ -24,9 +24,8 @@ go test ./sHelper/ -coverprofile=coverage.out && go tool cover -func=coverage.ou
 package main
 
 import (
-	"fmt"
-	"notification/packages"
-	"notification/sHelper"
+	"gitlab.com/soteapps/packages/v2021/sHelper"
+	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 func main() {
@@ -47,8 +46,7 @@ func main() {
 package packages
 
 import (
-	"notification/sHelper"
-
+	"gitlab.com/soteapps/packages/v2021/sHelper"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
@@ -73,8 +71,7 @@ func getNotification(s *sHelper.Subscriber, message *sHelper.Msg) (soteErr sErro
 package packages
 
 import (
-	"notification/sHelper"
-
+	"gitlab.com/soteapps/packages/v2021/sHelper"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
@@ -115,8 +112,7 @@ func getNotification(s *sHelper.Subscriber, message *sHelper.Msg) (soteErr sErro
 package packages
 
 import (
-	"notification/sHelper"
-
+	"gitlab.com/soteapps/packages/v2021/sHelper"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
@@ -161,7 +157,7 @@ func getNotification(s *sHelper.Subscriber, msg *sHelper.Msg) (soteErr sError.So
 package packages
 
 import (
-	"notification/sHelper"
+	"gitlab.com/soteapps/packages/v2021/sHelper"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"testing"
 	"bou.ke/monkey"
