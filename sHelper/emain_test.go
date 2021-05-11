@@ -86,7 +86,8 @@ func TestEmailBcc(t *testing.T) {
 func TestEmailAttachment(t *testing.T) {
 	email := NewEmail("staging", "Test Subject")
 	soteErr := email.Attachment("foo.txt")
-	AssertEqual(t, soteErr.FmtErrMsg, "209010: foo.txt file was not found. Message return: open foo.txt: The system cannot find the file specified.")
+	// Multiple operating systems generate different error messages
+	AssertEqual(t, strings.Split(soteErr.FmtErrMsg, ": open foo.txt:")[0], "209010: foo.txt file was not found. Message return")
 	soteErr = email.Attachment("/")
 	AssertEqual(t, soteErr.FmtErrMsg, "210599: Business Service error has occurred that is not expected. ERROR DETAILS: >>Key: / Value: read /: The handle is invalid.")
 	soteErr = email.Attachment("schema_test.json")
@@ -113,17 +114,15 @@ func TestEmailAddAttachments(t *testing.T) {
 		filepath:    "schema_test.json",
 		contentType: "text/plain; charset=utf-8",
 		buffer:      []byte("Hello World"),
-		cid:         "12345",
 	})
 	soteErr := email.addAttachments("CONTENT_BOUNDARY", &buffer)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
 	re := regexp.MustCompile(`\r?\n`)
 	AssertEqual(t, re.ReplaceAllString(buffer.String(), " "), re.ReplaceAllString(`
---CONTENT_BOUNDARY
+--MIX_CONTENT_BOUNDARY
 Content-Type: text/plain; charset=utf-8; name="schema_test.json"
 Content-Disposition: attachment; filename="schema_test.json"
 Content-Transfer-Encoding: base64
-Content-ID: <12345>
 SGVsbG8gV29ybGQ=`, " "))
 }
 
@@ -158,7 +157,6 @@ func TestEmailSendMail(t *testing.T) {
 		filepath:    "schema_test.json",
 		contentType: "text/plain; charset=utf-8",
 		buffer:      []byte("Hello World"),
-		cid:         "12345",
 	})
 	email.sendMail = func(addr string, auth smtp.Auth, from string, to []string, msg []byte) error {
 		AssertEqual(t, addr, "email-smtp.eu-west-1.amazonaws.com:587")
@@ -168,30 +166,35 @@ func TestEmailSendMail(t *testing.T) {
 		re := regexp.MustCompile(`\r?\n`)
 		AssertEqual(t, re.ReplaceAllString(string(msg), " "), re.ReplaceAllString(`MIME-Version: 1.0
 Subject: Test Subject
-Content-Type: multipart/related;boundary=CONTENT_BOUNDARY
+Content-Type: multipart/mixed; boundary=MIX_CONTENT_BOUNDARY
 From: support@getsote.com
 To: toAdmin@getsote.com;To Customer Support <toSales@getsote.com>
 Cc: ccAdmin@getsote.com;CC Customer Support <ccSales@getsote.com>
 Bcc: bccAdmin@getsote.com;BCC Customer Support <bccSales@getsote.com>
 
---CONTENT_BOUNDARY
+--MIX_CONTENT_BOUNDARY
+Content-Type: multipart/alternative; boundary=ALT_CONTENT_BOUNDARY
+
+--ALT_CONTENT_BOUNDARY
 Content-Type: text/plain; charset="UTF-8"
 
 Hello World
 
---CONTENT_BOUNDARY
+--ALT_CONTENT_BOUNDARY
 Content-Type: text/html; charset="UTF-8"
 
 <p>Hello World</p>
 
---CONTENT_BOUNDARY
+
+--ALT_CONTENT_BOUNDARY--
+
+--MIX_CONTENT_BOUNDARY
 Content-Type: text/plain; charset=utf-8; name="schema_test.json"
 Content-Disposition: attachment; filename="schema_test.json"
 Content-Transfer-Encoding: base64
-Content-ID: <12345>
 SGVsbG8gV29ybGQ=
 
---CONTENT_BOUNDARY--
+--MIX_CONTENT_BOUNDARY--
 `, " "))
 		return nil
 	}
@@ -201,7 +204,7 @@ SGVsbG8gV29ybGQ=
 func TestEmailSendMailFailed(t *testing.T) {
 	email := NewEmail("staging", "Test Subject")
 	soteErr := email.Send("Hello World")
-	AssertEqual(t, soteErr.FmtErrMsg, "210599: Business Service error has occurred that is not expected. ERROR DETAILS: >>Key: SMTP_ERROR Value: 535 Authentication Credentials Invalid")
+	AssertEqual(t, soteErr.FmtErrMsg, "210599: Business Service error has occurred that is not expected. ERROR DETAILS: >>Key: SMTP_ERROR Value: 503 Error: need RCPT command")
 }
 
 func TestEmailSendMailInvalidFrom(t *testing.T) {
