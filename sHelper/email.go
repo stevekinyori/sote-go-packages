@@ -40,6 +40,7 @@ type Email struct {
 
 	GetSmtpUsername func(application, environment string) (string, sError.SoteError)
 	GetSmtpPassword func(application, environment string) (string, sError.SoteError)
+	Send            func(text string, htmls ...string) sError.SoteError
 	sendMail        func(addr string, a smtp.Auth, from string, to []string, msg []byte) error
 }
 
@@ -77,6 +78,7 @@ func NewEmail(environment, subject string, from ...string) Email {
 		},
 		GetSmtpUsername: email.getSmtpUsername,
 		GetSmtpPassword: email.getSmtpPassword,
+		Send:            email.send,
 		sendMail:        smtp.SendMail,
 	}
 	if len(from) > 0 {
@@ -120,7 +122,7 @@ func (m *Email) Attachment(filepath string) (soteErr sError.SoteError) {
 	return
 }
 
-func (m *Email) Send(text string, htmls ...string) (soteErr sError.SoteError) {
+func (m *Email) send(text string, htmls ...string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	var (
 		auth     smtp.Auth

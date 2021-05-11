@@ -89,7 +89,7 @@ func TestEmailAttachment(t *testing.T) {
 	// Multiple operating systems generate different error messages
 	AssertEqual(t, strings.Split(soteErr.FmtErrMsg, ": open foo.txt:")[0], "209010: foo.txt file was not found. Message return")
 	soteErr = email.Attachment("/")
-	AssertEqual(t, soteErr.FmtErrMsg, "210599: Business Service error has occurred that is not expected. ERROR DETAILS: >>Key: / Value: read /: The handle is invalid.")
+	AssertEqual(t, strings.Split(soteErr.FmtErrMsg, " >>Key:")[0], "210599: Business Service error has occurred that is not expected. ERROR DETAILS:")
 	soteErr = email.Attachment("schema_test.json")
 	AssertEqual(t, len(email.attachments), 1)
 	AssertEqual(t, len(email.attachments[0].buffer) > 0, true)
@@ -217,20 +217,20 @@ func TestEmailSendMailInvalidFrom(t *testing.T) {
 func TestEmailSendMailInvalidTo(t *testing.T) {
 	email := NewEmail("staging", "Test Subject")
 	email.To("invalid.com")
-	soteErr := email.Send("Hello World")
+	soteErr := email.send("Hello World")
 	AssertEqual(t, soteErr.FmtErrMsg, "207050: invalid.com (To) is not a valid email address ERROR DETAILS: >>Key: EMAIL_PARSE Value: mail: misformatted email address")
 }
 
 func TestEmailSendMailInvalidCc(t *testing.T) {
 	email := NewEmail("staging", "Test Subject")
 	email.Cc("invalid.com")
-	soteErr := email.Send("Hello World")
+	soteErr := email.send("Hello World")
 	AssertEqual(t, soteErr.FmtErrMsg, "207050: invalid.com (Cc) is not a valid email address ERROR DETAILS: >>Key: EMAIL_PARSE Value: mail: misformatted email address")
 }
 
 func TestEmailSendMailInvalidBcc(t *testing.T) {
 	email := NewEmail("staging", "Test Subject")
 	email.Bcc("invalid.com")
-	soteErr := email.Send("Hello World")
+	soteErr := email.send("Hello World")
 	AssertEqual(t, soteErr.FmtErrMsg, "207050: invalid.com (Bcc) is not a valid email address ERROR DETAILS: >>Key: EMAIL_PARSE Value: mail: misformatted email address")
 }
