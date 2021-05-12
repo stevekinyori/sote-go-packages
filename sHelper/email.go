@@ -67,7 +67,7 @@ func (e *emailItem) String() string {
 	return e.address
 }
 
-func NewEmail(environment, subject string, from ...string) Email {
+func NewEmail(environment, subject string, from ...string) *Email {
 	sLogger.DebugMethod()
 	var email Email
 	email = Email{
@@ -84,7 +84,7 @@ func NewEmail(environment, subject string, from ...string) Email {
 	if len(from) > 0 {
 		email.from.name = from[0]
 	}
-	return email
+	return &email
 }
 
 func (m *Email) To(address string) *emailItem {

@@ -217,20 +217,20 @@ func TestEmailSendMailInvalidFrom(t *testing.T) {
 func TestEmailSendMailInvalidTo(t *testing.T) {
 	email := NewEmail("staging", "Test Subject")
 	email.To("invalid.com")
-	soteErr := email.send("Hello World")
+	soteErr := email.Send("Hello World")
 	AssertEqual(t, soteErr.FmtErrMsg, "207050: invalid.com (To) is not a valid email address ERROR DETAILS: >>Key: EMAIL_PARSE Value: mail: misformatted email address")
 }
 
 func TestEmailSendMailInvalidCc(t *testing.T) {
 	email := NewEmail("staging", "Test Subject")
 	email.Cc("invalid.com")
-	soteErr := email.send("Hello World")
+	soteErr := email.Send("Hello World")
 	AssertEqual(t, soteErr.FmtErrMsg, "207050: invalid.com (Cc) is not a valid email address ERROR DETAILS: >>Key: EMAIL_PARSE Value: mail: misformatted email address")
 }
 
 func TestEmailSendMailInvalidBcc(t *testing.T) {
 	email := NewEmail("staging", "Test Subject")
 	email.Bcc("invalid.com")
-	soteErr := email.send("Hello World")
+	soteErr := email.Send("Hello World")
 	AssertEqual(t, soteErr.FmtErrMsg, "207050: invalid.com (Bcc) is not a valid email address ERROR DETAILS: >>Key: EMAIL_PARSE Value: mail: misformatted email address")
 }
