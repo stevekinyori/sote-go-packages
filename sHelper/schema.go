@@ -15,9 +15,11 @@ import (
 
 type BaseSchema struct {
 	JsonWebToken    string   `json:"json-web-token"`
-	RoleList        []string `json:"role-list"`
-	ClientCompanyId int      `json:"client-company-id"`
 	MessageId       string   `json:"message-id"`
+	AwsUserName     string   `json:"aws-user-name"`
+	OrganizationId  int      `json:"organizations-id"`
+	ClientCompanyId int      `json:"client-company-id"` //optional
+	RoleList        []string `json:"role-list"`         //optional
 }
 
 type Schema struct {
