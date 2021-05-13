@@ -94,7 +94,6 @@ func find(s *Schema, val reflect.Value, propLevel string) {
 }
 
 func verifyDefinition(s *Schema, propLevel string, def *jsonProperty) {
-	fmt.Println(def.Required)
 	for _, n := range def.Required {
 		id := propLevel + "/" + n
 		f := s.jsonFields[id]
