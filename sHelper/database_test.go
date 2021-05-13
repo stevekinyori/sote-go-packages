@@ -28,7 +28,7 @@ func createDatabaseHelper(r *Run, result *Result) sError.SoteError {
 	}
 	soteErr := NewDatabase(r)
 	if r.dbHelper != nil {
-		r.dbHelper.query = func(sql string) (sDatabase.SRows, error) {
+		r.dbHelper.query = func(sql string, args ...interface{}) (sDatabase.SRows, error) {
 			return result.rows, result.err
 		}
 	}
@@ -96,6 +96,69 @@ func TestDatabaseExecFullQuery(t *testing.T) {
 	}.Select()
 	query.Exec(run)
 	AssertEqual(t, query.sql.String(), "SELECT COL1, COL2, COL3 FROM sote.TABLE1 INNER JOIN TABLE2 ON TABLE1.ID=TABLE2.CID WHERE ID IS NOT NULL GROUP BY NAME ORDER BY CREATE_DATE")
+}
+
+func TestDatabaseUpdate(t *testing.T) {
+	run := newDbRun()
+	createDatabaseHelper(run, &Result{})
+	query := Query{
+		Table:   "TABLE1",
+		Columns: []string{"COL1", "COL2", "COL3"},
+		Values:  []interface{}{"Hello", true, 123.45},
+	}.Update()
+	_, soteErr := query.Exec(run)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, query.sql.String(), "UPDATE sote.TABLE1 SET COL1 = $1, COL2 = $2, COL3 = $3")
+}
+
+func TestDatabaseDelete(t *testing.T) {
+	run := newDbRun()
+	createDatabaseHelper(run, &Result{})
+	query := Query{
+		Table: "TABLE1",
+		Where: "COL1=123",
+	}.Delete()
+	_, soteErr := query.Exec(run)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, query.sql.String(), "DELETE FROM sote.TABLE1 WHERE COL1=123")
+}
+
+func TestDatabaseInsert(t *testing.T) {
+	run := newDbRun()
+	createDatabaseHelper(run, &Result{})
+	query := Query{
+		Table:   "TABLE1",
+		Schema:  "myschema",
+		Columns: []string{"COL1", "COL2", "COL3"},
+		Values:  []interface{}{"Hello", true, 123.45},
+	}.Insert("COL1, COL2")
+	_, soteErr := query.Exec(run)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, query.sql.String(), "INSERT INTO myschema.TABLE1 (COL1, COL2, COL3) VALUES($1, $2, $3) RETURNING COL1, COL2")
+}
+
+func TestDatabaseInsertByValues(t *testing.T) {
+	run := newDbRun()
+	createDatabaseHelper(run, &Result{})
+	query := Query{
+		Table:  "TABLE1",
+		Values: []interface{}{"Hello", true, 123.45},
+	}.Insert()
+	_, soteErr := query.Exec(run)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, query.sql.String(), "INSERT INTO sote.TABLE1 VALUES($1, $2, $3)")
+}
+
+func TestDatabaseInsertError(t *testing.T) {
+	run := newDbRun()
+	createDatabaseHelper(run, &Result{})
+	query := Query{
+		Table:   "TABLE1",
+		Columns: []string{"COL1", "COL2"},
+		Values:  []interface{}{"Hello", true, 123.45},
+	}.Insert()
+	_, soteErr := query.Exec(run)
+	AssertEqual(t, soteErr.FmtErrMsg, "200999: SQL error - see Details ERROR DETAILS: >>Key: SQL ERROR Value: the number of columns in the query does not match the number of values")
 }
 
 func TestDatabaseQueryPanic(t *testing.T) {
