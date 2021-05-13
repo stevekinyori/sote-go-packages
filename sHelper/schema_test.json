@@ -1,26 +1,14 @@
 {
+	"$schema": "http://json-schema.org/draft-07/schema",
+  	"type": "object",
     "required": [
         "field1",
         "field2"
     ],
     "properties": {
-        "json-web-token": {
-            "$id": "#/properties/json-web-token",
-            "type": "string"
-        },
-        "message-id": {
-            "$id": "#/properties/message-id",
-            "type": "string"
-        },
-        "role-list": {
-            "$id": "#/properties/role-list",
-            "type": "array"
-        },
-        "client-company-id": {
-            "$id": "#/properties/client-company-id",
-            "type": "integer",
-            "default": 0
-        },
+		"request-header": {
+			"$ref": "#/definitions/request-header"
+		},
         "field1": {
             "$id": "#/properties/field1",
             "type": "string"
@@ -35,5 +23,34 @@
             "default": "VALUE1",
             "enum": ["VALUE1", "VALUE2"]
         }
-    }
+    },
+	"definitions": {
+		"request-header": {
+			"type": "object",
+			"required": ["json-web-token", "message-id", "aws-user-name", "organizations-id"],
+			"properties": {
+				"json-web-token": {
+					"type": "string",
+					"title": "The json-web-token schema"
+				},
+				"message-id": {
+					"type": "string",
+					"title": "The message-id schema"
+				},
+				"aws-user-name": {
+					"type": "string",
+					"title": "The aws-user-name schema"
+				},
+				"organizations-id": {
+					"type": "integer",
+					"title": "The organizations-id schema"
+				},
+				"role-list": {
+					"type": "array",
+					"title": "The role-list schema",
+					"enum": ["CLIENT_ADMIN", "EXECUTIVE"]
+				}
+			}
+		}
+	}
 }

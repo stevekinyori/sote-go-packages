@@ -9,10 +9,10 @@ import (
 )
 
 type TestSchema struct {
-	BaseSchema
-	Field1 string `json:"field1"`
-	Field2 string `json:"field2"`
-	Field3 string `json:"field3"`
+	Header RequestHeaderSchema `json:"request-header"`
+	Field1 string              `json:"field1"`
+	Field2 string              `json:"field2"`
+	Field3 string              `json:"field3"`
 	Field4 string
 	Items  []string `json:"items"`
 }
@@ -64,6 +64,17 @@ func TestSchemaReqFields(t *testing.T) {
 	}
 	json.Unmarshal([]byte("{\"required\": [\"field1\", \"field2\"], \"properties\": {\"field1\": {\"$id\": \"#/properties/field1\"}}}"), &schema.jsonSchema)
 	AssertEqual(t, schema.validateSchema().FmtErrMsg, "109999: #/properties/field2 was/were not found")
+}
+
+func TestSchemaReqDefinitionFields(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{"properties": {"request-header": {}},"definitions": {"request-header": { "required": ["field1"], "properties": {"json-web-token": {"type": "boolean"}}}}}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "109999: #/properties/request-header/properties/field1 was/were not found")
 }
 
 func TestSchemaMissingFields(t *testing.T) {

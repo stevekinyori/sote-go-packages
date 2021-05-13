@@ -13,13 +13,12 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-type BaseSchema struct {
-	JsonWebToken    string   `json:"json-web-token"`
-	MessageId       string   `json:"message-id"`
-	AwsUserName     string   `json:"aws-user-name"`
-	OrganizationId  int      `json:"organizations-id"`
-	ClientCompanyId int      `json:"client-company-id"` //optional
-	RoleList        []string `json:"role-list"`         //optional
+type RequestHeaderSchema struct {
+	JsonWebToken   string   `json:"json-web-token"`
+	MessageId      string   `json:"message-id"`
+	AwsUserName    string   `json:"aws-user-name"`
+	OrganizationId int      `json:"organizations-id"`
+	RoleList       []string `json:"role-list"` //optional
 }
 
 type Schema struct {
@@ -34,8 +33,9 @@ type Schema struct {
 }
 
 type jsonSchema struct {
-	Required   []string
-	Properties map[string]*jsonProperty
+	Required    []string
+	Properties  map[string]*jsonProperty
+	Definitions map[string]*jsonProperty
 }
 
 type jsonProperty struct {
@@ -93,6 +93,25 @@ func find(s *Schema, val reflect.Value, propLevel string) {
 	}
 }
 
+func verifyDefinition(s *Schema, propLevel string, def *jsonProperty) {
+	fmt.Println(def.Required)
+	for _, n := range def.Required {
+		id := propLevel + "/" + n
+		f := s.jsonFields[id]
+		if f == nil || def.Properties[n] == nil {
+			requiredFields = append(requiredFields, id)
+		}
+	}
+	for n, prop := range def.Properties {
+		f := s.jsonFields[propLevel+"/"+n] //stuct field type
+		k := jsonKinds[prop.Type]          // kind(s)
+		if f != nil && !isKind(k, f.Type) {
+			invalidFileds = append(invalidFileds, fmt.Sprintf("%s('%s')", f.Name, n))
+			invalidTypes = append(invalidTypes, prop.Type)
+		}
+	}
+}
+
 func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty, required []string) {
 	for _, n := range required {
 		id := propLevel + "/" + n
@@ -107,7 +126,10 @@ func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty,
 		if !(prop.Default == nil || prop.Default == "") {
 			s.defaultFields[propLevel+"/"+id] = prop
 		}
-		if s.jsonFields[prop.Id] == nil {
+		if prop.Id == "" && s.jsonSchema.Definitions[id] != nil {
+			def := s.jsonSchema.Definitions[id]
+			verifyDefinition(s, propLevel+"/"+id+"/properties", def)
+		} else if s.jsonFields[prop.Id] == nil {
 			missingParameters = append(missingParameters, fmt.Sprintf("%v (%v)", id, prop.Id))
 		} else {
 			f := s.jsonFields[prop.Id] //stuct field type
