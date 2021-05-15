@@ -19,11 +19,10 @@ import (
 func (mmPtr *MessageManager) Publish(subject string, message string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	params := make(map[string]string)
-	params["Subject: "] = subject
-	params["testMode"] = strconv.FormatBool(testMode)
-
 	if err := mmPtr.NatsConnectionPtr.Publish(subject, []byte(message)); err != nil {
+		params := make(map[string]string)
+		params["Subject: "] = subject
+		params["testMode"] = strconv.FormatBool(testMode)
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 	return

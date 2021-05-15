@@ -15,4 +15,5 @@ require (
 	github.com/nats-io/nkeys v0.3.0
 	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/gographics/imagick.v3 v3.3.0
+	bou.ke/monkey v1.0.2
 )

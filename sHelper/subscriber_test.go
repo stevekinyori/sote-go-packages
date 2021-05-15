@@ -1,6 +1,7 @@
 package sHelper
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/nats-io/nats.go"
@@ -79,6 +80,47 @@ func TestSubscribeEnd(t *testing.T) {
 		}
 	}()
 	s.End(&Msg{Subject: "Test-subject"}, NewError().InternalError())
+}
+
+func TestSubscribePublishMessage(t *testing.T) {
+	s := newSubscriber()
+	s.Publish = func(message interface{}, subject ...string) sError.SoteError {
+		AssertEqual(t, subject[0], "1000.soteuser")
+		AssertEqual(t, message, `{
+	"message": "Hello World",
+	"message-id": "123"
+}`)
+		return sError.SoteError{}
+	}
+	s.PublishMessage(RequestHeaderSchema{OrganizationId: 1000, AwsUserName: "soteuser", MessageId: "123"}, sError.SoteError{}, "Hello World")
+}
+
+func TestSubscribePublishMessageError(t *testing.T) {
+	s := newSubscriber()
+	s.Publish = func(message interface{}, subject ...string) sError.SoteError {
+		AssertEqual(t, subject[0], "1000.soteuser")
+		AssertEqual(t, message, `{
+	"error": {
+		"ErrCode": 210599,
+		"ErrType": "General_Error",
+		"ParamCount": 0,
+		"ParamDescription": "None",
+		"FmtErrMsg": "210599: Business Service error has occurred that is not expected.",
+		"ErrorDetails": {},
+		"Loc": ""
+	},
+	"message-id": "123"
+}`)
+		return sError.SoteError{}
+	}
+	s.PublishMessage(RequestHeaderSchema{OrganizationId: 1000, AwsUserName: "soteuser", MessageId: "123"}, NewError().InternalError(), "Hello World")
+}
+
+func TestSubscribePublishMessageParseError(t *testing.T) {
+	s := newSubscriber()
+	soteErr := s.PublishMessage(RequestHeaderSchema{}, sError.SoteError{}, TestSubscribePublishMessageParseError)
+	AssertEqual(t, soteErr.ErrCode, 207110)
+	AssertEqual(t, strings.Contains(soteErr.FmtErrMsg, "couldn't be parsed - Invalid JSON error"), true)
 }
 
 func TestSubscribeConsumerError(t *testing.T) {

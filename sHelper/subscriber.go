@@ -1,6 +1,7 @@
 package sHelper
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
@@ -20,7 +21,8 @@ type Subscriber struct {
 	PullSubscribe   func() sError.SoteError
 	GetConsumerInfo func() (*ConsumerInfo, sError.SoteError)
 	Fetch           func() ([]Msg, sError.SoteError)
-	Publish         func(message interface{}) sError.SoteError
+	Publish         func(message interface{}, subject ...string) sError.SoteError
+	PublishMessage  func(header RequestHeaderSchema, soteErr sError.SoteError, message interface{}) sError.SoteError
 
 	DoFetch func(consumerInfo *ConsumerInfo) sError.SoteError
 }
@@ -39,6 +41,7 @@ func NewSubscriber(r *Run, consumerName, subject string, streamName ...string) *
 		GetConsumerInfo: s.getConsumerInfo,
 		Fetch:           s.fetch,
 		Publish:         s.publish,
+		PublishMessage:  s.publishMessage,
 		DoFetch:         s.doFetch,
 	}
 	if len(streamName) == 1 {
@@ -96,7 +99,27 @@ func (s *Subscriber) fetch() (messages []Msg, soteErr sError.SoteError) {
 	return
 }
 
-func (s *Subscriber) publish(message interface{}) sError.SoteError {
+func (s *Subscriber) publish(message interface{}, subject ...string) sError.SoteError {
 	sLogger.DebugMethod()
-	return s.Run.myMMPtr.Publish(s.Subject, fmt.Sprint(message), s.Run.Env.TestMode)
+	if len(subject) == 0 {
+		subject = []string{s.Subject}
+	}
+	return s.Run.myMMPtr.Publish(subject[0], fmt.Sprint(message), s.Run.Env.TestMode)
+}
+
+func (s *Subscriber) publishMessage(header RequestHeaderSchema, soteErr sError.SoteError, message interface{}) sError.SoteError {
+	sLogger.DebugMethod()
+	m := map[string]interface{}{
+		"message-id": header.MessageId,
+	}
+	if soteErr.ErrCode != nil {
+		m["error"] = soteErr
+	} else {
+		m["message"] = message
+	}
+	data, err := json.MarshalIndent(m, "", "\t")
+	if err != nil {
+		return NewError().InvalidJson(fmt.Sprint(message))
+	}
+	return s.Publish(string(data), fmt.Sprintf("%v.%v", header.OrganizationId, header.AwsUserName))
 }
