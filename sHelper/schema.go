@@ -151,17 +151,19 @@ func findField(v reflect.Value, f *reflect.StructField, prop *jsonProperty, leve
 	l := len(levels) - 1 // skip prefix '#'
 	n := levels[level]
 
-	t := v.Type()
-	if l == level {
-		fn := v.FieldByName(f.Name)
-		return &fn
-	} else {
-		if t.Kind() == reflect.Struct {
-			for i := 0; i < v.NumField(); i++ {
-				fv := v.Field(i)
-				ft := v.Type().Field(i)
-				if fv.Kind() == reflect.Struct && (ft.Tag.Get("json") == n) {
-					return findField(fv, f, prop, level+1)
+	if f != nil {
+		t := v.Type()
+		if l == level {
+			fn := v.FieldByName(f.Name)
+			return &fn
+		} else {
+			if t.Kind() == reflect.Struct {
+				for i := 0; i < v.NumField(); i++ {
+					fv := v.Field(i)
+					ft := v.Type().Field(i)
+					if fv.Kind() == reflect.Struct && (ft.Tag.Get("json") == n) {
+						return findField(fv, f, prop, level+1)
+					}
 				}
 			}
 		}
