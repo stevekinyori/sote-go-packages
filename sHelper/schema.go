@@ -243,7 +243,14 @@ func (s *Schema) Parse(data []byte, body interface{}) (soteErr sError.SoteError)
 				nf := findField(elem, f, prop, 1)
 				if nf != nil && nf.IsZero() {
 					v := reflect.ValueOf(prop.Default)
-					nf.Set(v.Convert(nf.Type()))
+					if reflect.Ptr == nf.Type().Kind() {
+						nonPointerElem := reflect.New(nf.Type().Elem()).Elem()
+						nonPointerValue := v.Convert(nonPointerElem.Type())
+						nonPointerElem.Set(nonPointerValue)
+						nf.Set(nonPointerElem.Addr())
+					} else {
+						nf.Set(v.Convert(nf.Type()))
+					}
 				}
 			}
 

@@ -2,6 +2,7 @@ package sHelper
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -13,7 +14,8 @@ type TestSchema struct {
 	Field1 string              `json:"field1"`
 	Field2 string              `json:"field2"`
 	Field3 string              `json:"field3"`
-	Field4 string
+	Field4 *string             `json:"field4"`
+	Field5 string
 	Items  []string `json:"items"`
 }
 
@@ -259,6 +261,51 @@ func TestSchemaParseNestedStruct(t *testing.T) {
 	AssertEqual(t, strings.Join(body.Nested.Items, ", "), strings.Join([]string{"VALUE1", "VALUE2"}, ", "))
 }
 
+func TestSchemaOptionalField(t *testing.T) {
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`
+	{
+		"properties": {
+			"field4": {
+				"$id": "#/properties/field4",
+				"type": "string"
+			}
+		}
+	}
+	`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte("{\"field3\": \"Hello\"}"), &body)
+	AssertEqual(t, body.Field3, "Hello")
+	AssertEqual(t, body.Field4 == nil, true)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+}
+
+func TestSchemaOptionalFieldDefault(t *testing.T) {
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`
+	{
+		"properties": {
+			"field4": {
+				"$id": "#/properties/field4",
+				"type": "string",
+				"default": "World"
+			}
+		}
+	}
+	`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte("{\"field3\": \"Hello\"}"), &body)
+	AssertEqual(t, body.Field3, "Hello")
+	AssertEqual(t, fmt.Sprint(*body.Field4), "World")
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+}
+
 func TestSchemaParseMissingField(t *testing.T) {
 	schema := Schema{
 		StructRef: &TestInvalidSchema{},
@@ -270,8 +317,8 @@ func TestSchemaParseMissingField(t *testing.T) {
 				"$id": "#/properties/parent",
 				"type": "object",
 				"properties": {
-					"field4": {
-						"$id": "#/properties/nested/properties/field4",
+					"field5": {
+						"$id": "#/properties/nested/properties/field5",
 						"type": "string"
 					}
 				}
@@ -279,15 +326,15 @@ func TestSchemaParseMissingField(t *testing.T) {
 		}
 	}
 	`), &schema.jsonSchema)
-	AssertEqual(t, schema.validateSchema().FmtErrMsg, "200513: parent (#/properties/parent), field4 (#/properties/nested/properties/field4) must be populated")
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "200513: parent (#/properties/parent), field5 (#/properties/nested/properties/field5) must be populated")
 	body := TestInvalidSchema{}
-	soteErr := schema.Parse([]byte("{\"parent\": {\"field4\": \"Hello\"}}"), &body)
+	soteErr := schema.Parse([]byte("{\"parent\": {\"field5\": \"Hello\"}}"), &body)
 
 	val := reflect.ValueOf(body)
-	f, _ := val.Type().FieldByName("Field4")
-	v := findField(val, &f, schema.jsonSchema.Properties["parent"].Properties["field4"], 1)
+	f, _ := val.Type().FieldByName("Field5")
+	v := findField(val, &f, schema.jsonSchema.Properties["parent"].Properties["field5"], 1)
 
 	AssertEqual(t, v == nil, true)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
-	AssertEqual(t, body.Parent.Field4, "Hello")
+	AssertEqual(t, body.Parent.Field5, "Hello")
 }
