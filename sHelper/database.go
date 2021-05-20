@@ -11,6 +11,7 @@ import (
 )
 
 type Query struct {
+	Sql           *bytes.Buffer
 	Table         string
 	Schema        string
 	Columns       []string
@@ -21,7 +22,6 @@ type Query struct {
 	GroupBy       string
 	action        string
 	returnColumns []string
-	sql           *bytes.Buffer
 }
 
 type DatabaseHelper struct {
@@ -53,28 +53,28 @@ func NewDatabase(run *Run) (soteErr sError.SoteError) {
 func (q Query) Exec(r *Run) (sDatabase.SRows, sError.SoteError) {
 	sLogger.DebugMethod()
 	if q.action == "SELECT" {
-		q.sql.WriteString(" FROM " + getTable(q))
+		q.Sql.WriteString(" FROM " + getTable(q))
 	} else if q.action == "INSERT" || q.action == "UPDATE" {
 		if len(q.Columns) > 0 && len(q.Columns) != len(q.Values) {
 			return nil, NewError().SqlError("the number of columns in the query does not match the number of values")
 		}
 	}
 	if q.Join != "" {
-		q.sql.WriteString(" " + q.Join)
+		q.Sql.WriteString(" " + q.Join)
 	}
 	if q.Where != "" {
-		q.sql.WriteString(" WHERE " + q.Where)
+		q.Sql.WriteString(" WHERE " + q.Where)
 	}
 	if q.GroupBy != "" {
-		q.sql.WriteString(" GROUP BY " + q.GroupBy)
+		q.Sql.WriteString(" GROUP BY " + q.GroupBy)
 	}
 	if q.OrderBy != "" {
-		q.sql.WriteString(" ORDER BY " + q.OrderBy)
+		q.Sql.WriteString(" ORDER BY " + q.OrderBy)
 	}
 	if len(q.returnColumns) > 0 {
-		q.sql.WriteString(" RETURNING " + strings.Join(q.returnColumns, ", "))
+		q.Sql.WriteString(" RETURNING " + strings.Join(q.returnColumns, ", "))
 	}
-	sql := q.sql.String()
+	sql := q.Sql.String()
 	sLogger.Info("Database::Exec - " + sql)
 	tRows, err := r.dbHelper.query(sql, q.Values...)
 	return tRows, q.GetError(err)
@@ -99,11 +99,11 @@ func values(q Query) []string {
 func (q Query) Select() Query {
 	sLogger.DebugMethod()
 	q.action = "SELECT"
-	q.sql = bytes.NewBufferString("SELECT ")
+	q.Sql = bytes.NewBufferString("SELECT ")
 	if len(q.Columns) == 0 {
-		q.sql.WriteString("*")
+		q.Sql.WriteString("*")
 	} else {
-		q.sql.WriteString(strings.Join(q.Columns, ", "))
+		q.Sql.WriteString(strings.Join(q.Columns, ", "))
 	}
 	return q
 }
@@ -112,14 +112,14 @@ func (q Query) Update(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "UPDATE"
 	q.returnColumns = returnColumns
-	q.sql = bytes.NewBufferString("UPDATE " + getTable(q) + " SET ")
+	q.Sql = bytes.NewBufferString("UPDATE " + getTable(q) + " SET ")
 	total := len(q.Columns)
 	if total == len(q.Values) {
 		values := values(q)
 		for i, name := range q.Columns {
-			q.sql.WriteString(fmt.Sprintf("%v = %v", name, values[i]))
+			q.Sql.WriteString(fmt.Sprintf("%v = %v", name, values[i]))
 			if i+1 < total {
-				q.sql.WriteString(", ")
+				q.Sql.WriteString(", ")
 			}
 		}
 	}
@@ -130,18 +130,18 @@ func (q Query) Insert(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "INSERT"
 	q.returnColumns = returnColumns
-	q.sql = bytes.NewBufferString("INSERT INTO " + getTable(q))
+	q.Sql = bytes.NewBufferString("INSERT INTO " + getTable(q))
 	if len(q.Columns) > 0 {
-		q.sql.WriteString(fmt.Sprintf(" (%v)", strings.Join(q.Columns, ", ")))
+		q.Sql.WriteString(fmt.Sprintf(" (%v)", strings.Join(q.Columns, ", ")))
 	}
-	q.sql.WriteString(fmt.Sprintf(" VALUES(%v)", strings.Join(values(q), ", ")))
+	q.Sql.WriteString(fmt.Sprintf(" VALUES(%v)", strings.Join(values(q), ", ")))
 	return q
 }
 
 func (q Query) Delete() Query {
 	sLogger.DebugMethod()
 	q.action = "DELETE"
-	q.sql = bytes.NewBufferString("DELETE FROM " + getTable(q))
+	q.Sql = bytes.NewBufferString("DELETE FROM " + getTable(q))
 	return q
 }
 

@@ -73,7 +73,7 @@ func TestDatabaseSelectAll(t *testing.T) {
 	query := Query{
 		Table: "TABLE",
 	}.Select()
-	AssertEqual(t, query.sql.String(), "SELECT *")
+	AssertEqual(t, query.Sql.String(), "SELECT *")
 }
 
 func TestDatabaseSelectColumns(t *testing.T) {
@@ -81,7 +81,7 @@ func TestDatabaseSelectColumns(t *testing.T) {
 		Table:   "TABLE",
 		Columns: []string{"COL1", "COL2", "COL3"},
 	}.Select()
-	AssertEqual(t, query.sql.String(), "SELECT COL1, COL2, COL3")
+	AssertEqual(t, query.Sql.String(), "SELECT COL1, COL2, COL3")
 }
 
 func TestDatabaseExec(t *testing.T) {
@@ -107,7 +107,7 @@ func TestDatabaseExecFullQuery(t *testing.T) {
 		OrderBy: "CREATE_DATE",
 	}.Select()
 	query.Exec(run)
-	AssertEqual(t, query.sql.String(), "SELECT COL1, COL2, COL3 FROM sote.TABLE1 INNER JOIN TABLE2 ON TABLE1.ID=TABLE2.CID WHERE ID IS NOT NULL GROUP BY NAME ORDER BY CREATE_DATE")
+	AssertEqual(t, query.Sql.String(), "SELECT COL1, COL2, COL3 FROM sote.TABLE1 INNER JOIN TABLE2 ON TABLE1.ID=TABLE2.CID WHERE ID IS NOT NULL GROUP BY NAME ORDER BY CREATE_DATE")
 }
 
 func TestDatabaseUpdate(t *testing.T) {
@@ -120,7 +120,7 @@ func TestDatabaseUpdate(t *testing.T) {
 	}.Update("COL1")
 	_, soteErr := query.Exec(run)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
-	AssertEqual(t, query.sql.String(), "UPDATE sote.TABLE1 SET COL1 = $1, COL2 = $2, COL3 = $3 RETURNING COL1")
+	AssertEqual(t, query.Sql.String(), "UPDATE sote.TABLE1 SET COL1 = $1, COL2 = $2, COL3 = $3 RETURNING COL1")
 }
 
 func TestDatabaseDelete(t *testing.T) {
@@ -132,7 +132,7 @@ func TestDatabaseDelete(t *testing.T) {
 	}.Delete()
 	_, soteErr := query.Exec(run)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
-	AssertEqual(t, query.sql.String(), "DELETE FROM sote.TABLE1 WHERE COL1=123")
+	AssertEqual(t, query.Sql.String(), "DELETE FROM sote.TABLE1 WHERE COL1=123")
 }
 
 func TestDatabaseInsert(t *testing.T) {
@@ -146,7 +146,7 @@ func TestDatabaseInsert(t *testing.T) {
 	}.Insert("COL1, COL2")
 	_, soteErr := query.Exec(run)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
-	AssertEqual(t, query.sql.String(), "INSERT INTO myschema.TABLE1 (COL1, COL2, COL3) VALUES($1, $2, $3) RETURNING COL1, COL2")
+	AssertEqual(t, query.Sql.String(), "INSERT INTO myschema.TABLE1 (COL1, COL2, COL3) VALUES($1, $2, $3) RETURNING COL1, COL2")
 }
 
 func TestDatabaseInsertByValues(t *testing.T) {
@@ -158,7 +158,7 @@ func TestDatabaseInsertByValues(t *testing.T) {
 	}.Insert()
 	_, soteErr := query.Exec(run)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
-	AssertEqual(t, query.sql.String(), "INSERT INTO sote.TABLE1 VALUES($1, $2, $3)")
+	AssertEqual(t, query.Sql.String(), "INSERT INTO sote.TABLE1 VALUES($1, $2, $3)")
 }
 
 func TestDatabaseInsertError(t *testing.T) {
