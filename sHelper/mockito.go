@@ -9,6 +9,8 @@ import (
 
 var Patch = monkey.Patch
 
+type PatchGuard = monkey.PatchGuard
+
 type iTesting interface {
 	Helper()
 	Fatal(args ...interface{})
