@@ -138,9 +138,10 @@ func (q Query) Insert(returnColumns ...string) Query {
 	return q
 }
 
-func (q Query) Delete() Query {
+func (q Query) Delete(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "DELETE"
+	q.returnColumns = returnColumns
 	q.Sql = bytes.NewBufferString("DELETE FROM " + getTable(q))
 	return q
 }
