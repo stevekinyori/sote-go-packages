@@ -11,16 +11,17 @@ import (
 )
 
 type Query struct {
-	Table   string
-	Schema  string
-	Columns []string
-	Values  []interface{}
-	Join    string
-	Where   string
-	OrderBy string
-	GroupBy string
-	action  string
-	sql     *bytes.Buffer
+	Table         string
+	Schema        string
+	Columns       []string
+	Values        []interface{}
+	Join          string
+	Where         string
+	OrderBy       string
+	GroupBy       string
+	action        string
+	returnColumns []string
+	sql           *bytes.Buffer
 }
 
 type DatabaseHelper struct {
@@ -70,6 +71,9 @@ func (q Query) Exec(r *Run) (sDatabase.SRows, sError.SoteError) {
 	if q.OrderBy != "" {
 		q.sql.WriteString(" ORDER BY " + q.OrderBy)
 	}
+	if len(q.returnColumns) > 0 {
+		q.sql.WriteString(" RETURNING " + strings.Join(q.returnColumns, ", "))
+	}
 	sql := q.sql.String()
 	sLogger.Info("Database::Exec - " + sql)
 	tRows, err := r.dbHelper.query(sql, q.Values...)
@@ -107,6 +111,7 @@ func (q Query) Select() Query {
 func (q Query) Update(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "UPDATE"
+	q.returnColumns = returnColumns
 	q.sql = bytes.NewBufferString("UPDATE " + getTable(q) + " SET ")
 	total := len(q.Columns)
 	if total == len(q.Values) {
@@ -117,9 +122,6 @@ func (q Query) Update(returnColumns ...string) Query {
 				q.sql.WriteString(", ")
 			}
 		}
-		if len(returnColumns) > 0 {
-			q.sql.WriteString(" RETURNING " + strings.Join(returnColumns, ", "))
-		}
 	}
 	return q
 }
@@ -127,14 +129,12 @@ func (q Query) Update(returnColumns ...string) Query {
 func (q Query) Insert(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "INSERT"
+	q.returnColumns = returnColumns
 	q.sql = bytes.NewBufferString("INSERT INTO " + getTable(q))
 	if len(q.Columns) > 0 {
 		q.sql.WriteString(fmt.Sprintf(" (%v)", strings.Join(q.Columns, ", ")))
 	}
 	q.sql.WriteString(fmt.Sprintf(" VALUES(%v)", strings.Join(values(q), ", ")))
-	if len(returnColumns) > 0 {
-		q.sql.WriteString(" RETURNING " + strings.Join(returnColumns, ", "))
-	}
 	return q
 }
 
