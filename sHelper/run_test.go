@@ -1,6 +1,7 @@
 package sHelper
 
 import (
+	"strings"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
@@ -39,7 +40,7 @@ func TestRunInvalidInit(t *testing.T) {
 	run := newRun()
 	run.Nats.CredentialFileName = "/INVALID_PATH"
 	soteErr := run.InitApp()
-	AssertEqual(t, soteErr.FmtErrMsg, "209010: /INVALID_PATH file was not found. Message return: CreateFile /INVALID_PATH: The system cannot find the file specified.")
+	AssertEqual(t, strings.Split(soteErr.FmtErrMsg, " Message return:")[0], "209010: /INVALID_PATH file was not found.")
 	run.Nats.CredentialFileName = ""
 }
 
