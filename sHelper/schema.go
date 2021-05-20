@@ -229,6 +229,7 @@ func (s *Schema) Parse(data []byte, body interface{}) (soteErr sError.SoteError)
 	b := reflect.ValueOf(body)
 	if s.structType != b.Type() {
 		soteErr = NewError().MustBeType(b.Type().String(), s.structType)
+		json.Unmarshal(data, &body) //flush stream
 	} else {
 		err := json.Unmarshal(data, &body)
 		emptyFields := []string{}
