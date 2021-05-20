@@ -11,6 +11,18 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sError"
 )
 
+type NoErrorRow struct {
+	sDatabase.Rows
+}
+
+func (r NoErrorRow) Err() error { return nil }
+
+type ErrorRow struct {
+	sDatabase.Rows
+}
+
+func (r ErrorRow) Err() error { return errors.New("duplicate key value violates unique constraint") }
+
 func newDbRun() *Run {
 	env, _ := NewEnvironment(ENVDEFAULTAPPNAME, ENVDEFAULTTARGET, ENVDEFAULTTARGET)
 	os.Setenv("APP_ENVIRONMENT", env.AppEnvironment)
@@ -105,10 +117,10 @@ func TestDatabaseUpdate(t *testing.T) {
 		Table:   "TABLE1",
 		Columns: []string{"COL1", "COL2", "COL3"},
 		Values:  []interface{}{"Hello", true, 123.45},
-	}.Update()
+	}.Update("COL1")
 	_, soteErr := query.Exec(run)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
-	AssertEqual(t, query.sql.String(), "UPDATE sote.TABLE1 SET COL1 = $1, COL2 = $2, COL3 = $3")
+	AssertEqual(t, query.sql.String(), "UPDATE sote.TABLE1 SET COL1 = $1, COL2 = $2, COL3 = $3 RETURNING COL1")
 }
 
 func TestDatabaseDelete(t *testing.T) {
@@ -159,6 +171,16 @@ func TestDatabaseInsertError(t *testing.T) {
 	}.Insert()
 	_, soteErr := query.Exec(run)
 	AssertEqual(t, soteErr.FmtErrMsg, "200999: SQL error - see Details ERROR DETAILS: >>Key: SQL ERROR Value: the number of columns in the query does not match the number of values")
+}
+
+func TestDatabaseClose(t *testing.T) {
+	soteErr := sError.SoteError{}
+
+	Query{}.Close(NoErrorRow{}, &soteErr)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+
+	Query{}.Close(ErrorRow{}, &soteErr)
+	AssertEqual(t, soteErr.FmtErrMsg, "200999: SQL error - see Details ERROR DETAILS: >>Key: SQL ERROR Value: duplicate key value violates unique constraint")
 }
 
 func TestDatabaseQueryPanic(t *testing.T) {

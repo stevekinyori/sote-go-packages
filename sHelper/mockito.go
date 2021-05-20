@@ -2,7 +2,6 @@ package sHelper
 
 import (
 	"fmt"
-	"testing"
 
 	"bou.ke/monkey"
 	"gitlab.com/soteapps/packages/v2021/sError"
@@ -22,7 +21,7 @@ func AssertEqual(t iTesting, actual, expected interface{}) {
 	}
 }
 
-func MockRunHelper(t *testing.T, verifyConsumerName, verifySubject string) Environment {
+func MockRunHelper(t iTesting, verifyConsumerName string, verifySubject ...string) Environment {
 	Patch(NewHelper, func(env Environment) *Helper {
 		helper := Helper{
 			Env: env,
@@ -30,7 +29,16 @@ func MockRunHelper(t *testing.T, verifyConsumerName, verifySubject string) Envir
 		helper.Run = func(isGoroutine bool) {}
 		helper.AddSubscriber = func(consumerName, subject string, _ MessageListener, _ *Schema) sError.SoteError {
 			AssertEqual(t, consumerName, verifyConsumerName)
-			AssertEqual(t, subject, verifySubject)
+			found := false
+			for _, s := range verifySubject {
+				if s == subject {
+					found = true
+					break
+				}
+			}
+			if !found {
+				AssertEqual(t, subject, verifySubject)
+			}
 			return sError.SoteError{}
 		}
 		return &helper

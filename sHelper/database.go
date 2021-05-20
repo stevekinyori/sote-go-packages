@@ -104,7 +104,7 @@ func (q Query) Select() Query {
 	return q
 }
 
-func (q Query) Update() Query {
+func (q Query) Update(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "UPDATE"
 	q.sql = bytes.NewBufferString("UPDATE " + getTable(q) + " SET ")
@@ -116,6 +116,9 @@ func (q Query) Update() Query {
 			if i+1 < total {
 				q.sql.WriteString(", ")
 			}
+		}
+		if len(returnColumns) > 0 {
+			q.sql.WriteString(" RETURNING " + strings.Join(returnColumns, ", "))
 		}
 	}
 	return q
@@ -147,4 +150,14 @@ func (q Query) GetError(err error) (soteErr sError.SoteError) {
 		soteErr = NewError().SqlError(fmt.Sprint(err))
 	}
 	return
+}
+
+func (q Query) Close(tRows sDatabase.SRows, soteErr *sError.SoteError) {
+	tRows.Close()
+	if soteErr == nil || soteErr.ErrCode == nil {
+		err := tRows.Err()
+		if err != nil {
+			*soteErr = NewError().SqlError(err.Error())
+		}
+	}
 }
