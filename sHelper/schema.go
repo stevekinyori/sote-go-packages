@@ -67,6 +67,8 @@ func isKind(kinds []reflect.Kind, kind reflect.Type) bool {
 	for _, k := range kinds {
 		if k == kind.Kind() {
 			return true
+		} else if reflect.Ptr == kind.Kind() && k == kind.Elem().Kind() {
+			return true
 		}
 	}
 	return false

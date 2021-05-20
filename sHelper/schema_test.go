@@ -89,7 +89,9 @@ func TestSchemaMissingFields(t *testing.T) {
 }
 
 func TestSchemaIsKind(t *testing.T) {
-	AssertEqual(t, isKind(jsonKinds["integer"], reflect.ValueOf(1).Type()), true)
+	val := 1
+	AssertEqual(t, isKind(jsonKinds["integer"], reflect.ValueOf(val).Type()), true)
+	AssertEqual(t, isKind(jsonKinds["integer"], reflect.ValueOf(&val).Type()), true)
 	AssertEqual(t, isKind(jsonKinds["integer"], reflect.ValueOf(true).Type()), false)
 }
 
