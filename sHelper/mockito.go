@@ -24,7 +24,11 @@ func AssertEqual(t iTesting, actual, expected interface{}) {
 }
 
 func MockRunHelper(t iTesting, verifyConsumerName string, verifySubject ...string) Environment {
-	Patch(NewHelper, func(env Environment) *Helper {
+	var (
+		helperPatch *PatchGuard
+	)
+	helperPatch = Patch(NewHelper, func(env Environment) *Helper {
+		helperPatch.Unpatch()
 		helper := Helper{
 			Env: env,
 		}
