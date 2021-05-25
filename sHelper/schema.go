@@ -21,6 +21,18 @@ type RequestHeaderSchema struct {
 	RoleList       []string `json:"role-list"` //optional
 }
 
+type FilterHeaderSchema struct {
+	Items    []string               `json:"items"`
+	Limit    *int64                 `json:"limit"`
+	Offset   *int64                 `json:"offset"`
+	SortAsc  []string               `json:"sort_asc"`
+	SortDesc []string               `json:"sort_desc"`
+	GroupBy  []string               `json:"group"`
+	Equal    map[string]interface{} `json:"eq"`
+	Greater  map[string]interface{} `json:"gt"`
+	Less     map[string]interface{} `json:"lt"`
+}
+
 type Schema struct {
 	FileName       string
 	StructRef      interface{}

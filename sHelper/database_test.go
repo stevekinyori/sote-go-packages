@@ -1,15 +1,21 @@
 package sHelper
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2021/sDatabase"
 	"gitlab.com/soteapps/packages/v2021/sError"
 )
+
+type TestPagination struct {
+	Filter FilterHeaderSchema `json:"filter-header"`
+}
 
 type NoErrorRow struct {
 	sDatabase.Rows
@@ -22,6 +28,23 @@ type ErrorRow struct {
 }
 
 func (r ErrorRow) Err() error { return errors.New("duplicate key value violates unique constraint") }
+
+type ScanValues struct {
+	sDatabase.Rows
+}
+
+func (r ScanValues) Values() ([]interface{}, error) {
+	var total int64 = 1
+	return []interface{}{total, "Hello World", true, 100}, nil
+}
+
+type ScanValuesError struct {
+	sDatabase.Rows
+}
+
+func (r ScanValuesError) Values() ([]interface{}, error) {
+	return nil, errors.New("invalid column name")
+}
 
 func newDbRun() *Run {
 	env, _ := NewEnvironment(ENVDEFAULTAPPNAME, ENVDEFAULTTARGET, ENVDEFAULTTARGET)
@@ -95,6 +118,34 @@ func TestDatabaseExec(t *testing.T) {
 	AssertEqual(t, tRows, nil)
 }
 
+func TestDatabasePaginationExec(t *testing.T) {
+	run := newDbRun()
+	createDatabaseHelper(run, &Result{})
+	var (
+		limit  int64 = 1
+		offset int64 = 2
+	)
+	pagination := TestPagination{
+		Filter: FilterHeaderSchema{
+			Items:    []string{"COL1", "COL2", "COL3"},
+			Limit:    &limit,
+			Offset:   &offset,
+			SortAsc:  []string{"COL1"},
+			SortDesc: []string{"COL2"},
+			GroupBy:  []string{"COL2", "COL3"},
+			Equal:    map[string]interface{}{"COL1": "Hello World"},
+			Greater:  map[string]interface{}{"COL2": 20},
+			Less:     map[string]interface{}{"COL3": 30},
+		},
+	}
+	query := Query{
+		Table:  "TABLE1",
+		Filter: &pagination.Filter,
+	}.Pagination().Select()
+	query.Exec(run)
+	AssertEqual(t, query.Sql.String(), "SELECT count(*) OVER(), COL1, COL2, COL3 FROM sote.TABLE1 WHERE COL1 = 'Hello World' AND COL3 < 30 AND COL2 > 20 GROUP BY COL2, COL3 ORDER BY COL1 ASC, COL2 DESC LIMIT 1 OFFSET 2")
+}
+
 func TestDatabaseExecFullQuery(t *testing.T) {
 	run := newDbRun()
 	createDatabaseHelper(run, &Result{})
@@ -108,6 +159,41 @@ func TestDatabaseExecFullQuery(t *testing.T) {
 	}.Select()
 	query.Exec(run)
 	AssertEqual(t, query.Sql.String(), "SELECT COL1, COL2, COL3 FROM sote.TABLE1 INNER JOIN TABLE2 ON TABLE1.ID=TABLE2.CID WHERE ID IS NOT NULL GROUP BY NAME ORDER BY CREATE_DATE")
+}
+
+func TestDatabaseListScan(t *testing.T) {
+	query := Query{
+		Filter: &FilterHeaderSchema{
+			Items: []string{"_", "COL1", "COL2", "COL3"},
+		},
+	}
+	query.Scan(ScanValues{})
+	data, _ := json.MarshalIndent(query.Result.Items, "", "")
+	re := regexp.MustCompile(`\r?\n`)
+	AssertEqual(t, re.ReplaceAllString(string(data), ""), `[{"COL1": "Hello World","COL2": true,"COL3": 100,"_": 1}]`)
+}
+
+func TestDatabasePaginationScan(t *testing.T) {
+	query := Query{
+		Filter: &FilterHeaderSchema{
+			Items: []string{"COL1", "COL2", "COL3"},
+		},
+		Result: QueryResult{
+			Pagination: &Pagination{},
+		},
+	}
+	query.Scan(ScanValues{})
+	data, _ := json.MarshalIndent(query.Result, "", "")
+	re := regexp.MustCompile(`\r?\n`)
+	AssertEqual(t, re.ReplaceAllString(string(data), ""), `{"items": [{"COL1": "Hello World","COL2": true,"COL3": 100}],"pagination": {"total": 1,"limit": 0,"offset": 0}}`)
+}
+
+func TestDatabaseScanError(t *testing.T) {
+	query := Query{
+		Filter: &FilterHeaderSchema{},
+	}
+	_, soteErr := query.Scan(ScanValuesError{})
+	AssertEqual(t, soteErr.FmtErrMsg, "200999: SQL error - see Details ERROR DETAILS: >>Key: SQL ERROR Value: invalid column name")
 }
 
 func TestDatabaseUpdate(t *testing.T) {
@@ -175,11 +261,11 @@ func TestDatabaseInsertError(t *testing.T) {
 
 func TestDatabaseClose(t *testing.T) {
 	soteErr := sError.SoteError{}
-
-	Query{}.Close(NoErrorRow{}, &soteErr)
+	query := Query{}
+	query.Close(NoErrorRow{}, &soteErr)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
 
-	Query{}.Close(ErrorRow{}, &soteErr)
+	query.Close(ErrorRow{}, &soteErr)
 	AssertEqual(t, soteErr.FmtErrMsg, "200999: SQL error - see Details ERROR DETAILS: >>Key: SQL ERROR Value: duplicate key value violates unique constraint")
 }
 
