@@ -216,7 +216,7 @@ func (q Query) Delete(returnColumns ...string) *Query {
 	return &q
 }
 
-func (q *Query) GetError(err error) (soteErr sError.SoteError) {
+func (q Query) GetError(err error) (soteErr sError.SoteError) {
 	if err != nil {
 		soteErr = NewError().SqlError(fmt.Sprint(err))
 	}
@@ -246,7 +246,7 @@ func (q *Query) Scan(tRows sDatabase.SRows) (tCols []interface{}, soteErr sError
 	return
 }
 
-func (q *Query) Close(tRows sDatabase.SRows, soteErr *sError.SoteError) {
+func (q Query) Close(tRows sDatabase.SRows, soteErr *sError.SoteError) {
 	tRows.Close()
 	if soteErr == nil || soteErr.ErrCode == nil {
 		err := tRows.Err()
