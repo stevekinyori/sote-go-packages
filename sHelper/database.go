@@ -65,9 +65,9 @@ func NewDatabase(run *Run) (soteErr sError.SoteError) {
 	return
 }
 
-func (q Query) Pagination() *Query {
+func (q Query) Pagination() Query {
 	q.Result.Pagination = &Pagination{}
-	return &q
+	return q
 }
 
 func (q Query) Exec(r *Run) (sDatabase.SRows, sError.SoteError) {
@@ -136,7 +136,7 @@ func (q *Query) where(op string, obj map[string]interface{}) {
 	}
 }
 
-func (q Query) Select() *Query {
+func (q Query) Select() Query {
 	sLogger.DebugMethod()
 	q.action = "SELECT"
 	q.Sql = bytes.NewBufferString("SELECT ")
@@ -175,10 +175,10 @@ func (q Query) Select() *Query {
 	} else {
 		q.Sql.WriteString(strings.Join(q.Columns, ", "))
 	}
-	return &q
+	return q
 }
 
-func (q Query) Update(returnColumns ...string) *Query {
+func (q Query) Update(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "UPDATE"
 	q.returnColumns = returnColumns
@@ -193,10 +193,10 @@ func (q Query) Update(returnColumns ...string) *Query {
 			}
 		}
 	}
-	return &q
+	return q
 }
 
-func (q Query) Insert(returnColumns ...string) *Query {
+func (q Query) Insert(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "INSERT"
 	q.returnColumns = returnColumns
@@ -205,15 +205,15 @@ func (q Query) Insert(returnColumns ...string) *Query {
 		q.Sql.WriteString(fmt.Sprintf(" (%v)", strings.Join(q.Columns, ", ")))
 	}
 	q.Sql.WriteString(fmt.Sprintf(" VALUES(%v)", strings.Join(values(&q), ", ")))
-	return &q
+	return q
 }
 
-func (q Query) Delete(returnColumns ...string) *Query {
+func (q Query) Delete(returnColumns ...string) Query {
 	sLogger.DebugMethod()
 	q.action = "DELETE"
 	q.returnColumns = returnColumns
 	q.Sql = bytes.NewBufferString("DELETE FROM " + getTable(&q))
-	return &q
+	return q
 }
 
 func (q Query) GetError(err error) (soteErr sError.SoteError) {
