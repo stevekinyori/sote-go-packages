@@ -235,7 +235,7 @@ func (q *Query) Scan(tRows sDatabase.SRows) (tCols []interface{}, soteErr sError
 			q.Result.Pagination.Total = tCols[0].(int64)
 		}
 		row := make(map[string]interface{})
-		for i := offset; i < len(tCols); i++ { //0 - total
+		for i := offset; i < len(tCols) && i < len(q.Filter.Items)+offset; i++ { //0 - total
 			name := q.Filter.Items[i-offset]
 			row[name] = tCols[i]
 		}
