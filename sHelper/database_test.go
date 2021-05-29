@@ -62,10 +62,11 @@ func createDatabaseHelper(r *Run, result *Result) sError.SoteError {
 		return
 	}
 	soteErr := NewDatabase(r)
-	if r.dbHelper != nil {
-		r.dbHelper.query = func(sql string, args ...interface{}) (sDatabase.SRows, error) {
-			return result.rows, result.err
-		}
+	if r.dbHelper == nil {
+		r.dbHelper = &DatabaseHelper{}
+	}
+	r.dbHelper.query = func(sql string, args ...interface{}) (sDatabase.SRows, error) {
+		return result.rows, result.err
 	}
 	return soteErr
 }
