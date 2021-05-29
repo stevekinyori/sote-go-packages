@@ -103,11 +103,22 @@ func TestHelperCreateSubscriber(t *testing.T) {
 func TestHelperCreateDatabase(t *testing.T) {
 	helper := testNewHelper(t)
 	soteErr := helper.createDatabase()
-	AssertEqual(t, soteErr.FmtErrMsg == "" || soteErr.FmtErrMsg == "209299: No database connection has been established", true)
+	if soteErr.FmtErrMsg != "" &&
+		soteErr.FmtErrMsg != "209299: No database connection has been established" &&
+		soteErr.FmtErrMsg != "109999: /sote/api/staging/DB_NAME was/were not found" {
+		AssertEqual(t, soteErr.FmtErrMsg, "")
+	}
 }
 
 func TestHelperInitApp(t *testing.T) {
 	helper := testNewHelper(t)
+	helper.r.GetNATSURL = func(application, environment string) (string, sError.SoteError) {
+		AssertEqual(t, application, ENVDEFAULTAPPNAME)
+		AssertEqual(t, environment, ENVDEFAULTTARGET)
+		return "west.eu.geo.ngs.global", sError.SoteError{}
+	}
 	soteErr := helper.initApp()
-	AssertEqual(t, soteErr.FmtErrMsg, "")
+	if soteErr.FmtErrMsg != "" && soteErr.FmtErrMsg != "109999: /sote/synadia/tls-urlmask was/were not found" {
+		AssertEqual(t, soteErr.FmtErrMsg, "")
+	}
 }

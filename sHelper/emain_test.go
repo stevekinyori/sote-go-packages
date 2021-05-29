@@ -209,7 +209,7 @@ SGVsbG8gV29ybGQ=
 func TestEmailSendMailFailed(t *testing.T) {
 	email := newTestEmail("staging", "Test Subject")
 	soteErr := email.Send("Hello World")
-	AssertEqual(t, soteErr.FmtErrMsg, "210599: Business Service error has occurred that is not expected. ERROR DETAILS: >>Key: SMTP_ERROR Value: 503 Error: need RCPT command")
+	AssertEqual(t, soteErr.FmtErrMsg, "210599: Business Service error has occurred that is not expected. ERROR DETAILS: >>Key: SMTP_ERROR Value: 535 Authentication Credentials Invalid")
 }
 
 func TestEmailSendMailInvalidFrom(t *testing.T) {
@@ -238,4 +238,16 @@ func TestEmailSendMailInvalidBcc(t *testing.T) {
 	email.Bcc("invalid.com")
 	soteErr := email.Send("Hello World")
 	AssertEqual(t, soteErr.FmtErrMsg, "207050: invalid.com (Bcc) is not a valid email address ERROR DETAILS: >>Key: EMAIL_PARSE Value: mail: misformatted email address")
+}
+
+func TestEmailGetSmtpUsername(t *testing.T) {
+	email := NewEmail("staging", "Test Subject")
+	_, soteErr := email.getSmtpUsername("application", "environment")
+	AssertEqual(t, soteErr.FmtErrMsg, "209110: environment value (environment) is invalid")
+}
+
+func TestEmailGetSmtpPassword(t *testing.T) {
+	email := NewEmail("staging", "Test Subject")
+	_, soteErr := email.GetSmtpPassword("application", "environment")
+	AssertEqual(t, soteErr.FmtErrMsg, "209110: environment value (environment) is invalid")
 }
