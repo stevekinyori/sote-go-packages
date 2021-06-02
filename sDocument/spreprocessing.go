@@ -42,11 +42,11 @@ func CheckIfPathExists(sFilePath string) (sExistingFilePath os.FileInfo, soteErr
 	var sErr error
 
 	if sExistingFilePath, sErr = os.Stat(sFilePath); os.IsNotExist(sErr) {
-		//TODO Add sError support for incorrect file path
-		soteErr = sError.GetSError(210400, nil, sError.EmptyMap)
+		// TODO Add sError support for incorrect file path
+		soteErr = sError.GetSError(199999, sError.BuildParams([]string{"File path (" + sFilePath + ") doesn't exist"}), sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
-		//TODO Determine whether program should panic if upload path is invalid
-		//panic("sDocument.checkIfPathExists failed")
+		// TODO Determine whether program should panic if upload path is invalid
+		// panic("sDocument.checkIfPathExists failed")
 	}
 
 	return
@@ -68,9 +68,9 @@ func (pm *PreprocessManager) CorrectSkew() (sGrayScaleImage gocv.Mat, soteErr sE
 	pm.sThreshold = tThreshold
 	pm.sThresholdedImage = tThresholdedImage
 
-	//window := gocv.NewWindow("Hello")
-	//window.IMShow(sBitwiseImage)
-	//window.WaitKey(0)
+	// window := gocv.NewWindow("Hello")
+	// window.IMShow(sBitwiseImage)
+	// window.WaitKey(0)
 
 	return
 }
@@ -113,4 +113,3 @@ func (pm *PreprocessManager) thresholdImage(sBitwiseImage gocv.Mat) (sThreshold 
 
 	return
 }
-

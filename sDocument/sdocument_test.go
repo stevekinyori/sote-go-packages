@@ -14,7 +14,7 @@ const (
 )
 
 func init() {
-	sLogger.SetLogMessagePrefix("sdocument_test.go")
+	sLogger.SetLogMessagePrefix(LOGMESSAGEPREFIX)
 }
 
 func TestNew(tPtr *testing.T) {

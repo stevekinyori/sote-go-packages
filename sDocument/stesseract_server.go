@@ -4,6 +4,7 @@ This will create an tesseract instance that is used for Optical Character Recogn
 package sDocument
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -55,6 +56,7 @@ func (tsm *TesseractServerManager) GetTextFromFile(sfilename string) (stext stri
 			// set the image to the tesseract instance
 			tsm.Manager.SetImagePix(ppix)
 			stext = tsm.Manager.Text()
+			fmt.Println(stext)
 		}
 
 	} else {

@@ -22,6 +22,10 @@ import (
 	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
+const (
+	LOGMESSAGEPREFIX = "sDocument"
+)
+
 type DocumentManager struct {
 	sInboundS3BucketURL   string
 	sProcessedS3BucketURL string
@@ -31,7 +35,7 @@ type DocumentManager struct {
 
 var (
 	sSession *session.Session
-	tErr      error
+	tErr     error
 )
 
 /*

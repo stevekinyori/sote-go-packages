@@ -9,17 +9,17 @@ func TestNewPreprocessor(t *testing.T) {
 		t.Errorf("NewPreprocessor failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := NewPreprocessor("img/testing_materials/Container Guarantee Form back.jpg"); soteErr.ErrCode != 210400 {
-		t.Errorf("NewPreprocessor failed: Expected error code of 210400: %v", soteErr.FmtErrMsg)
+	if _, soteErr := NewPreprocessor("img/testing_materials/Container Guarantee Form back.jpg"); soteErr.ErrCode != 199999 {
+		t.Errorf("NewPreprocessor failed: Expected error code of %v got  %v", "199999", soteErr.FmtErrMsg)
 	}
 }
 func TestCheckIfPathExists(t *testing.T) {
 	if _, soteErr := CheckIfPathExists("../img/testing_materials/Container Guarantee Form back.jpg"); soteErr.ErrCode != nil {
-		t.Errorf("CheckIfFilePathExists failed: Expected soteErr to be nil:%v", soteErr.FmtErrMsg)
+		t.Errorf("CheckIfFilePathExists failed: Expected soteErr to be nil:%v",     soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := CheckIfPathExists("img/testing_materials/Container Guarantee Form back.jpg"); soteErr.ErrCode != 210400 {
-		t.Errorf("CheckIfFilePathExists failed: Expected error code of 210400: %v", soteErr.FmtErrMsg)
+	if _, soteErr := CheckIfPathExists("img/testing_materials/Container Guarantee Form back.jpg"); soteErr.ErrCode != 199999 {
+		t.Errorf("CheckIfFilePathExists failed: Expected error code of %v got  %v", "199999", soteErr.FmtErrMsg)
 	}
 }
 func TestPreprocessManager_CorrectSkew(t *testing.T) {
