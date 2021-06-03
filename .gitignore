@@ -5,3 +5,4 @@ coverage.out
 coverage_review.out
 /temp.out
 /vendor
+**/.DS_Store
