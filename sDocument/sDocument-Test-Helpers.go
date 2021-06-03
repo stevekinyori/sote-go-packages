@@ -1,18 +1,19 @@
 package sDocument
 
 import (
-	"gitlab.com/soteapps/packages/v2021/sLogger"
 	"os"
 	"runtime"
+
+	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 /*  This will return prefix location of tesseracts training data */
-func SGetTessdataPrefix()  (tessdataPrefix string){
+func SGetTessdataPrefix() (tessdataPrefix string) {
 	sLogger.DebugMethod()
 
-	if tessdataPrefix = os.Getenv("TESSDATA_PREFIX"); tessdataPrefix == ""{
+	if tessdataPrefix = os.Getenv("TESSDATA_PREFIX"); tessdataPrefix == "" {
 		sgoOs := runtime.GOOS
-		//TODO automate this for different operating systems
+		// TODO automate this for different operating systems, download if not available and set it manually
 		switch sgoOs {
 		case "darwin":
 			tessdataPrefix = "/opt/homebrew/Cellar/tesseract/4.1.1/share"

@@ -1,30 +1,29 @@
 package sDocument
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestNewTesseractServer(t *testing.T) {
 	if _, soteError := NewTesseractServer(SGetTessdataPrefix()); soteError.ErrCode != nil {
-		t.Errorf("New failed: Expected error code to be nil")
-	}
-
-	if _, soteError := NewTesseractServer(""); soteError.ErrCode != 209100 {
-		t.Errorf("New failed: Expected error code to be 209100")
+		t.Errorf("New failed: Expected error code to be %v got %v", "nil", soteError.FmtErrMsg)
 	}
 }
 func TestTesseractServerManager_GetTextFromFile(t *testing.T) {
-	sfilename := "../img/testing_materials/Container Guarantee Form back.jpg"
+	sfilename := "../img/testing_materials/ContainerGuaranteeFormback.jpg"
+	var text string
 
 	if tsm, soteErr := NewTesseractServer(SGetTessdataPrefix()); soteErr.ErrCode == nil {
-		if _, soteErr = tsm.GetTextFromFile(sfilename); soteErr.ErrCode != nil {
-
-		}
-	}
-	if tsm, soteErr := NewTesseractServer(""); soteErr.ErrCode == nil {
-		if _, soteErr = tsm.GetTextFromFile(sfilename); soteErr.ErrCode != 209100 {
-			t.Errorf("New failed: Expected error code to be 209100 %v", soteErr.ErrCode)
+		if text, soteErr = tsm.GetTextFromFile(sfilename); soteErr.ErrCode != nil {
+		} else {
+			fmt.Println(text)
 		}
 	}
 
+	if tsm, soteErr := NewTesseractServer(SGetTessdataPrefix()); soteErr.ErrCode == nil {
+		if _, soteErr = tsm.GetTextFromFile(""); soteErr.ErrCode != 209110 {
+			t.Errorf("New failed: Expected error code to be %v got  %v", "209110", soteErr.ErrCode)
+		}
+	}
 }

@@ -4,8 +4,6 @@ This will create an tesseract instance that is used for Optical Character Recogn
 package sDocument
 
 import (
-	"fmt"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -13,7 +11,6 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 	leptonica "gopkg.in/GeertJohan/go.leptonica.v1"
 	tesseract "gopkg.in/GeertJohan/go.tesseract.v1"
-
 )
 
 const (
@@ -47,7 +44,7 @@ func (tsm *TesseractServerManager) GetTextFromFile(sfilename string) (stext stri
 	sLogger.DebugMethod()
 
 	// open a new Pix from file with leptonica
-	if ppix, serr := leptonica.NewPixFromFile(sfilename); serr == nil {
+	if ppix, err := leptonica.NewPixFromFile(sfilename); err == nil {
 		// set the page seg mode to autodetect
 		tsm.Manager.SetPageSegMode(tesseract.PSM_AUTO_OSD)
 
@@ -56,13 +53,10 @@ func (tsm *TesseractServerManager) GetTextFromFile(sfilename string) (stext stri
 			// set the image to the tesseract instance
 			tsm.Manager.SetImagePix(ppix)
 			stext = tsm.Manager.Text()
-			fmt.Println(stext)
 		}
-
 	} else {
-		soteError = sError.GetSError(209110, sError.BuildParams([]string{serr.Error()}), sError.EmptyMap)
+		soteError = sError.GetSError(209110, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 		sLogger.Info(soteError.FmtErrMsg)
-
 	}
 
 	return
@@ -71,19 +65,21 @@ func (tsm *TesseractServerManager) GetTextFromFile(sfilename string) (stext stri
 /*
 	This will connect to a new tesseract instance and point it to tessdata location.
 */
-func (tsm *TesseractServerManager) connect() (pti *tesseract.Tess, soteError sError.SoteError) {
+func (tsm *TesseractServerManager) connect() (tesseractInstancePtr *tesseract.Tess, soteError sError.SoteError) {
 	sLogger.DebugMethod()
-	var serr error
+
+	var (
+		err        error
+		errDetails = make(map[string]string)
+	)
 
 	// Create a new tesseract instance
-	pti, serr = tesseract.NewTess(filepath.Join(tsm.tessdataPrefix, "tessdata"), "eng")
-	if serr != nil {
-		if strings.Contains(serr.Error(), "could not initiate new Tess instance") {
+	if tesseractInstancePtr, err = tesseract.NewTess(tsm.tessdataPrefix, "eng"); err != nil {
+		if strings.Contains(err.Error(), "could not initiate new Tess instance") {
 			soteError = sError.GetSError(209100, sError.BuildParams([]string{"TESSDATA_PREFIX"}), sError.EmptyMap)
 			sLogger.Info(soteError.FmtErrMsg)
 		} else {
-			var errDetails = make(map[string]string)
-			errDetails, soteError = sError.ConvertErr(serr)
+			errDetails, soteError = sError.ConvertErr(err)
 			if soteError.ErrCode != nil {
 				sLogger.Info(soteError.FmtErrMsg)
 				panic("sError.ConvertErr Failed")
@@ -91,7 +87,6 @@ func (tsm *TesseractServerManager) connect() (pti *tesseract.Tess, soteError sEr
 			sLogger.Info(sError.GetSError(210400, nil, errDetails).FmtErrMsg)
 			panic("sDocument.connect Failed")
 		}
-
 	}
 
 	return
@@ -101,7 +96,7 @@ func (tsm *TesseractServerManager) connect() (pti *tesseract.Tess, soteError sEr
 func (tsm *TesseractServerManager) setWhitelist() (soteError sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if serr := tsm.Manager.SetVariable("tessedit_char_whitelist", WHITELIST); serr != nil {
+	if err := tsm.Manager.SetVariable("tessedit_char_whitelist", WHITELIST); err != nil {
 		soteError = sError.GetSError(209110, sError.BuildParams([]string{"tessedit_char_whitelist"}), sError.EmptyMap)
 		sLogger.Info(soteError.FmtErrMsg)
 	}
