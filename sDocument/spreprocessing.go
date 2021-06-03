@@ -67,9 +67,9 @@ func (pm *PreprocessManager) CorrectSkew() (sGrayScaleImage gocv.Mat, soteErr sE
 	tThreshold, tThresholdedImage = pm.thresholdImage(sBitwiseImage)
 	pm.sThreshold = tThreshold
 	pm.sThresholdedImage = tThresholdedImage
-
+	// gocv.IMWrite("gray.png", sBitwiseImage)
 	// window := gocv.NewWindow("Hello")
-	// window.IMShow(sBitwiseImage)
+	// window.IMShow(sGrayScaleImage)
 	// window.WaitKey(0)
 
 	return

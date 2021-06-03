@@ -75,8 +75,8 @@ rm sHTTPClient/coverage.out 2> /dev/null; go test sHTTPClient/*.go -coverprofile
 echo -n '.'
 echo -n 'sDocument ' 1>> /tmp/tmp_$$.out
 rm sDocument/coverage.out 2> /dev/null; go test sDocument/*.go -coverprofile sDocument/coverage.out 1>> /tmp/tmp_$$.out
-#echo -n 'sHelper ' 1>> /tmp/tmp_$$.out
-#rm sHelper/coverage.out 2> /dev/null; go test sHelper/*.go -coverprofile sHelper/coverage.out 1>> /tmp/tmp_$$.out
+echo -n 'sHelper ' 1>> /tmp/tmp_$$.out
+rm sHelper/coverage.out 2> /dev/null; go test sHelper/*.go -coverprofile sHelper/coverage.out 1>> /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<< "$( grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}' )"
@@ -137,7 +137,7 @@ go tool cover -func=sConfigParams/coverage.out >> coverage_review.out
 go tool cover -func=sAuthorize/coverage.out >> coverage_review.out
 go tool cover -func=sHTTPClient/coverage.out >> coverage_review.out
 go tool cover -func=sDocument/coverage.out >> coverage_review.out
-#go tool cover -func=sHelper/coverage.out >> coverage_review.out
+go tool cover -func=sHelper/coverage.out >> coverage_review.out
 echo "Done"
 #
 # # Review the coverage totals for 70%+ compliance
