@@ -1,29 +1,51 @@
 package sDocument
 
 import (
-	"fmt"
 	"testing"
+
+	"gitlab.com/soteapps/packages/v2021/sError"
 )
 
 func TestNewTesseractServer(t *testing.T) {
-	if _, soteError := NewTesseractServer(SGetTessdataPrefix()); soteError.ErrCode != nil {
-		t.Errorf("New failed: Expected error code to be %v got %v", "nil", soteError.FmtErrMsg)
+	var (
+		soteErr        sError.SoteError
+		tessdataPrefix string
+	)
+
+	if tessdataPrefix, soteErr = GetTessdataPrefix(); soteErr.ErrCode != nil {
+		t.Errorf("NewTesseractServer failed: Expected error code to be %v got %v", "nil", soteErr.FmtErrMsg)
+	}
+
+	if soteErr.ErrCode == nil {
+		if _, soteErr = NewTesseractServer(tessdataPrefix); soteErr.ErrCode != nil {
+			t.Errorf("NewTesseractServer failed: Expected error code to be %v got %v", "nil", soteErr.FmtErrMsg)
+		}
 	}
 }
 func TestTesseractServerManager_GetTextFromFile(t *testing.T) {
-	filename := "../img/testing_materials/ContainerGuaranteeFormback.jpg"
-	var text string
 
-	if tsm, soteErr := NewTesseractServer(SGetTessdataPrefix()); soteErr.ErrCode == nil {
-		if text, soteErr = tsm.GetTextFromFile(filename); soteErr.ErrCode != nil {
-		} else {
-			fmt.Println(text)
+	var (
+		soteErr        sError.SoteError
+		tessdataPrefix string
+		tsm            *TesseractServerManager
+	)
+	// filename := "../img/testing_materials/ContainerGuaranteeFormback.jpg"
+	filename := "/Users/fionamurie/Desktop/sote/golang/src/packages/img/testing_materials/Invoice.jpeg"
+
+	if tessdataPrefix, soteErr = GetTessdataPrefix(); soteErr.ErrCode != nil {
+		t.Errorf("GetTextFromFile failed: Expected error code to be %v got %v", "nil", soteErr.FmtErrMsg)
+	}
+
+	if tsm, soteErr = NewTesseractServer(tessdataPrefix); soteErr.ErrCode == nil {
+		if _, soteErr = tsm.GetTextFromFile(filename); soteErr.ErrCode != nil {
+			t.Errorf("GetTextFromFile failed: Expected error code to be %v got %v", "nil", soteErr.FmtErrMsg)
 		}
 	}
 
-	if tsm, soteErr := NewTesseractServer(SGetTessdataPrefix()); soteErr.ErrCode == nil {
+	if tsm, soteErr = NewTesseractServer(tessdataPrefix); soteErr.ErrCode == nil {
 		if _, soteErr = tsm.GetTextFromFile(""); soteErr.ErrCode != 209110 {
-			t.Errorf("New failed: Expected error code to be %v got  %v", "209110", soteErr.ErrCode)
+			t.Errorf("GetTextFromFile failed: Expected error code to %v got  %v", "209110", soteErr.FmtErrMsg)
 		}
 	}
+
 }

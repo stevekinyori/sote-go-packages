@@ -27,8 +27,9 @@ const (
 )
 
 type DocumentManager struct {
-	sInboundS3BucketURL   string
-	sProcessedS3BucketURL string
+	sInboundS3BucketURL    string
+	sProcessedS3BucketURL  string
+	tesseractServerManager *TesseractServerManager
 
 	sync.Mutex
 }
