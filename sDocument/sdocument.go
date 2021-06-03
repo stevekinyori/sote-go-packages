@@ -22,16 +22,22 @@ import (
 	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
+const (
+	LOGMESSAGEPREFIX = "sDocument"
+)
+
 type DocumentManager struct {
-	sInboundS3BucketURL   string
-	sProcessedS3BucketURL string
+	sInboundS3BucketURL    string
+	sProcessedS3BucketURL  string
+	TesseractServerManager *TesseractServerManager
 
 	sync.Mutex
 }
 
 var (
 	sSession *session.Session
-	tErr      error
+	tErr     error
+	testMode bool
 )
 
 /*
@@ -53,12 +59,14 @@ func init() {
 	New will create a Sote Document Manager and a connection to AWS S3 Bucket URL. The connection is established to
 	processed/unprocessed URL.
 */
-func New(application, environment string, testMode bool) (SDocumentManagerPtr *DocumentManager, soteErr sError.SoteError) {
+func New(application, environment string, tTestMode bool) (SDocumentManagerPtr *DocumentManager, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
-		tS3BucketURL string
+		tS3BucketURL   string
+		tessdataPrefix string
 	)
+	testMode = tTestMode
 
 	// Initialize the values for Document Manager
 	SDocumentManagerPtr = &DocumentManager{sInboundS3BucketURL: "", sProcessedS3BucketURL: ""}
@@ -72,6 +80,11 @@ func New(application, environment string, testMode bool) (SDocumentManagerPtr *D
 	// Get AWS S3 Bucket URL for processed files
 	if tS3BucketURL, soteErr = sConfigParams.SGetS3BucketURL(application, environment, sConfigParams.PROCESSEDDOCUMENTSKEY); soteErr.ErrCode == nil {
 		SDocumentManagerPtr.sProcessedS3BucketURL = tS3BucketURL
+	}
+
+	// Initialize Tesseract Instance
+	if tessdataPrefix, soteErr = GetTessdataPrefix(); soteErr.ErrCode == nil {
+		SDocumentManagerPtr.TesseractServerManager, soteErr = NewTesseractServer(tessdataPrefix)
 	}
 
 	return
@@ -96,7 +109,6 @@ func SConvertImageFormat(sourcePath string, targetPath string) (pdfFilePtr *imag
 	defer imagick.Terminate() // Memory leak cleanup
 
 	if pdfFilePtr, sErr = imagick.ConvertImageCommand([]string{"convert", sourcePath, targetPath}); sErr != nil {
-		fmt.Println(sErr, pdfFilePtr, GetFullDirectoryPath())
 		if strings.Contains(sErr.Error(), "No such file or directory") {
 			soteErr = sError.GetSError(109999, sError.BuildParams([]string{"upload path or filename"}), sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
