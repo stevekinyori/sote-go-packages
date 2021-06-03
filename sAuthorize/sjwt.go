@@ -24,8 +24,8 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 
 				if holdSoteErr.ErrCode == nil {
 					var (
-						kid string
-						ok  bool
+						kid  string
+						ok   bool
 						key jwk.Key
 					)
 					if kid, ok = token.Header["kid"].(string); !ok {
@@ -80,7 +80,7 @@ func matchKid(tEnvironment, kid string) (key jwk.Key, soteErr sError.SoteError) 
 
 	var (
 		keySet jwk.Set
-		ok     bool
+		ok bool
 	)
 	keySet, soteErr = getPublicKey(tEnvironment)
 	key, ok = keySet.LookupKeyID(kid)
