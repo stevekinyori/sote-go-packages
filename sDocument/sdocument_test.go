@@ -26,11 +26,6 @@ func TestNew(tPtr *testing.T) {
 	// if _, soteErr := New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode != 109999 {
 	// 	tPtr.Errorf("TestNew failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
 	// }
-
-	if _, soteErr := New("", sConfigParams.STAGING, true); soteErr.ErrCode != 200513 {
-		tPtr.Errorf("TestNew failed: Expected error code of 200513 got %v", soteErr.FmtErrMsg)
-		tPtr.Fail()
-	}
 }
 func TestDocumentManager_DownloadDocument(tPtr *testing.T) {
 	if dmPtr, soteErr := New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode == nil {
