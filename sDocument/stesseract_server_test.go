@@ -11,11 +11,11 @@ func TestNewTesseractServer(t *testing.T) {
 	}
 }
 func TestTesseractServerManager_GetTextFromFile(t *testing.T) {
-	sfilename := "../img/testing_materials/ContainerGuaranteeFormback.jpg"
+	filename := "../img/testing_materials/ContainerGuaranteeFormback.jpg"
 	var text string
 
 	if tsm, soteErr := NewTesseractServer(SGetTessdataPrefix()); soteErr.ErrCode == nil {
-		if text, soteErr = tsm.GetTextFromFile(sfilename); soteErr.ErrCode != nil {
+		if text, soteErr = tsm.GetTextFromFile(filename); soteErr.ErrCode != nil {
 		} else {
 			fmt.Println(text)
 		}

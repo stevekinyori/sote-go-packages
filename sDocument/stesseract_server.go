@@ -20,7 +20,7 @@ const (
 
 type TesseractServerManager struct {
 	Manager        *tesseract.Tess
-	tessdataPrefix string
+	TessdataPrefix string
 
 	sync.Mutex
 }
@@ -28,31 +28,39 @@ type TesseractServerManager struct {
 /* Creates a new tesseract instance for OCR. */
 func NewTesseractServer(tessdataPrefix string) (tesseractServerManagerPtr *TesseractServerManager, soteError sError.SoteError) {
 	sLogger.DebugMethod()
-	var sinstance *tesseract.Tess
 
-	tesseractServerManagerPtr = &TesseractServerManager{tessdataPrefix: tessdataPrefix}
+	var (
+		tesseractInstancePtr *tesseract.Tess
+	)
 
-	if sinstance, soteError = tesseractServerManagerPtr.connect(); soteError.ErrCode == nil {
-		tesseractServerManagerPtr = &TesseractServerManager{Manager: sinstance}
+	tesseractServerManagerPtr = &TesseractServerManager{TessdataPrefix: tessdataPrefix}
+
+	if tesseractInstancePtr, soteError = tesseractServerManagerPtr.connect(); soteError.ErrCode == nil {
+		tesseractServerManagerPtr = &TesseractServerManager{Manager: tesseractInstancePtr}
 	}
 
 	return
 }
 
 /* GetTextFromFile performs Optical Character Recognition on a file/image. It returns resulting text and a SoteError */
-func (tsm *TesseractServerManager) GetTextFromFile(sfilename string) (stext string, soteError sError.SoteError) {
+func (tsm *TesseractServerManager) GetTextFromFile(filename string) (text string, soteError sError.SoteError) {
 	sLogger.DebugMethod()
 
+	var (
+		err    error
+		pixPtr *leptonica.Pix
+	)
+
 	// open a new Pix from file with leptonica
-	if ppix, err := leptonica.NewPixFromFile(sfilename); err == nil {
+	if pixPtr, err = leptonica.NewPixFromFile(filename); err == nil {
 		// set the page seg mode to autodetect
 		tsm.Manager.SetPageSegMode(tesseract.PSM_AUTO_OSD)
 
 		// setup a whitelist of all basic ascii
 		if soteError = tsm.setWhitelist(); soteError.ErrCode == nil {
 			// set the image to the tesseract instance
-			tsm.Manager.SetImagePix(ppix)
-			stext = tsm.Manager.Text()
+			tsm.Manager.SetImagePix(pixPtr)
+			text = tsm.Manager.Text()
 		}
 	} else {
 		soteError = sError.GetSError(209110, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
@@ -74,7 +82,7 @@ func (tsm *TesseractServerManager) connect() (tesseractInstancePtr *tesseract.Te
 	)
 
 	// Create a new tesseract instance
-	if tesseractInstancePtr, err = tesseract.NewTess(tsm.tessdataPrefix, "eng"); err != nil {
+	if tesseractInstancePtr, err = tesseract.NewTess(tsm.TessdataPrefix, "eng"); err != nil {
 		if strings.Contains(err.Error(), "could not initiate new Tess instance") {
 			soteError = sError.GetSError(209100, sError.BuildParams([]string{"TESSDATA_PREFIX"}), sError.EmptyMap)
 			sLogger.Info(soteError.FmtErrMsg)
