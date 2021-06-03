@@ -7,8 +7,8 @@ RESTRICTIONS:
     * This will only access system parameters that start with '/sote' (ROOTPATH).
     * {Enter other restrictions here for AWS
 
-    {Other catagories of restrictions}
-    * {List of restrictions for the catagory
+    {Other categories of restrictions}
+    * {List of restrictions for the category
 
 NOTES:
     {Enter any additional notes that you believe will help the next developer.}
@@ -44,15 +44,6 @@ func init() {
 func TestDocumentNew(tPtr *testing.T) {
 	if _, soteErr := sDocument.New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestNew failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
-		tPtr.Fail()
-	}
-
-	// if _, soteErr := sDocument.New(DOCUMENTS, sConfigParams.STAGING, true); soteErr.ErrCode != 109999 {
-	// 	tPtr.Errorf("TestNew failed: Expected soteErr to be nil got %v", soteErr.FmtErrMsg)
-	// }
-
-	if _, soteErr := sDocument.New("", sConfigParams.STAGING, true); soteErr.ErrCode != 200513 {
-		tPtr.Errorf("TestNew failed: Expected error code of 200513 got %v", soteErr.FmtErrMsg)
 		tPtr.Fail()
 	}
 }
@@ -117,9 +108,9 @@ func TestUploadDocument(tPtr *testing.T) {
 				// Delete uploaded document
 				if soteErr.ErrCode == nil {
 					if _, soteErr = dmPtr.DeleteDocument("processed/out.pdf", true); soteErr.ErrCode != nil {
-					tPtr.Errorf("TestDocumentManager_DeleteDocument failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
-					tPtr.Fail()
-				}
+						tPtr.Errorf("TestDocumentManager_DeleteDocument failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+						tPtr.Fail()
+					}
 				}
 			}
 		}
