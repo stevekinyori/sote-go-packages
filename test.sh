@@ -82,7 +82,7 @@ go test sHTTPClient/*.go -coverprofile sHTTPClient/coverage.out 1>>/tmp/tmp_$$.o
 echo -n '.'
 echo -n 'sHelper ' 1>>/tmp/tmp_$$.out
 rm sHelper/coverage.out 2>/dev/null
-go test sHelper/*.go -coverprofile sHelper/coverage.out 1>>/tmp/tmp_$$.out
+GOARCH=amd64 go test sHelper/*.go -coverprofile sHelper/coverage.out 1>>/tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<<"$(grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}')"
