@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.0.6
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/lestrrat-go/jwx v1.1.7
-	github.com/nats-io/nats.go v1.11.0
+	github.com/nats-io/nats.go v1.11.1-0.20210604020028-ba098b996036
 	github.com/nats-io/nkeys v0.3.0
 	google.golang.org/protobuf v1.26.0 // indirect
 )
