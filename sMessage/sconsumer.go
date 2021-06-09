@@ -3,7 +3,7 @@ General information about the consumers. (Gathered from https://github.com/nats-
 CONSUMERS:
 	Consumers come in two flavors, push and pull.  Push is expecting that the service is available at all times.  Pull holds the
 	messages until the process is active. There are many setting for these two types,which effect the behavior of the
-	consumer.  Only a limited set of push and pull consumers will are supported below. Consumers can either be push based where
+	consumer.  Only a limited set of push and pull consumers are supported below. Consumers can either be push based where
 	JetStream will deliver the messages as fast as possible to a subject of your choice or pull based for typical work queue like
 	behavior.
 
@@ -30,11 +30,12 @@ import (
 
 const (
 	PULLREPLAYINSTANTCONSUMER = "pull-replay-instant"
+	PUSHREPLAYINSTANTCONSUMER = "push-replay-instant"
 )
 
 /*
 CreatePullConsumerWithReplayInstant will create a consumer. If the consumer exists, it will load.
-	This will all read all the message in the stream without concern of the order.  This is go when transaction
+	This will read all the message in the stream without concern of the order.  This is should be used when transaction
 	order doesn't matter.
 	Required parameters:
 		streamName
@@ -53,7 +54,34 @@ func (mmPtr *MessageManager) CreatePullReplayInstantConsumer(streamName, durable
 	maxDeliveries int, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	_, soteErr = mmPtr.createConsumer(PULLREPLAYINSTANTCONSUMER, streamName, durableName, subjectFilter, maxDeliveries, testMode)
+	_, soteErr = mmPtr.createConsumer(PULLREPLAYINSTANTCONSUMER, streamName, durableName, "", subjectFilter, maxDeliveries, testMode)
+
+	return
+}
+
+/*
+CreatePushReplayInstantConsumer will create a consumer. If the consumer exists, it will load.
+	This will read all the message in the stream without concern of the order.  CreatePushReplayInstantConsumer should be used when transaction
+	order doesn't matter.
+	Required parameters:
+		streamName
+		durableName
+		deliversubject
+		subjectFilter
+		maxDeliver
+			Sote defaults value: 1 (Sote Max value is 10, if great it is set to 3)
+
+	Set values:
+		AckPolicy: explicit (explicit is required for a pull consumer)
+		DeliverPolicy: all
+		DeliverySubject: "" (nil string is required for a pull consumer)
+		ReplayPolicy: instant
+*/
+func (mmPtr *MessageManager) CreatePushReplayInstantConsumer(streamName, durableName, deliverySubject, subjectFilter string,
+	maxDeliveries int, testMode bool) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	_, soteErr = mmPtr.createConsumer(PUSHREPLAYINSTANTCONSUMER, streamName, durableName, deliverySubject, subjectFilter, maxDeliveries, testMode)
 
 	return
 }
@@ -79,7 +107,7 @@ func (mmPtr *MessageManager) DeleteConsumer(streamName, durableName string, test
 	return
 }
 
-func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableName, subjectFilter string, maxDeliveries int,
+func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableName, deliverySubject, subjectFilter string, maxDeliveries int,
 	testMode bool) (sConsumer *nats.ConsumerInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -106,12 +134,31 @@ func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableNam
 			MaxWaiting:      0,
 			MaxAckPending:   0,
 		}
+	case PUSHREPLAYINSTANTCONSUMER:
+		// SAMPLE: nats con add ORDERS MONITOR --filter '' --ack none --target monitor.ORDERS --deliver last --replay instant
+		sConsumerConfig = &nats.ConsumerConfig{
+			Durable:         durableName,
+			DeliverSubject:  deliverySubject,
+			DeliverPolicy:   nats.DeliverAllPolicy,
+			OptStartSeq:     0,
+			OptStartTime:    nil,
+			AckPolicy:       nats.AckExplicitPolicy,
+			AckWait:         0,
+			MaxDeliver:      setMaxDeliver(maxDeliveries),
+			FilterSubject:   subjectFilter,
+			ReplayPolicy:    nats.ReplayInstantPolicy,
+			RateLimit:       0,
+			SampleFrequency: "",
+			MaxWaiting:      0,
+			MaxAckPending:   0,
+		}
 	}
 
 	params := make(map[string]string)
 	params["Stream Name"] = streamName
 	params["Consumer Type"] = consumerType
 	params["Durable Name"] = durableName
+	params["Delivery Subject"] = deliverySubject
 	params["Filter Subject"] = subjectFilter
 	params["Max Deliveries"] = strconv.Itoa(maxDeliveries)
 	params["testMode"] = strconv.FormatBool(testMode)
