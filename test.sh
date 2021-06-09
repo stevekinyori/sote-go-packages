@@ -50,7 +50,7 @@ fi
 #
 # Remove all coverage.out and coverage_review.out files
 echo "removing coverage files"
-find . -name \coverage*.out -type f -delete
+find . -name \coverage*.out -type f -delete 2>>/dev/null
 #
 # Display processing message
 echo -n 'processing internal tests .'
