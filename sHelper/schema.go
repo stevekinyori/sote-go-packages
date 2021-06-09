@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -52,6 +53,7 @@ type jsonSchema struct {
 
 type jsonProperty struct {
 	Id         string `json:"$id"`
+	Ref        string `json:"$ref"`
 	Default    interface{}
 	Enum       []interface{}
 	Type       string
@@ -129,7 +131,44 @@ func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty,
 	for _, n := range required {
 		id := propLevel + "/" + n
 		f := s.jsonFields[id]
-		if f == nil || props[n] == nil {
+
+		if props[n] != nil && props[n].Ref != "" {
+			d := s.jsonSchema.Definitions[n]
+			if d != nil {
+				s.requiredFields[id] = props[n]
+			} else {
+				u, err := url.Parse(props[n].Ref)
+				if err != nil {
+					panic(err)
+				}
+				if u.Scheme == "file" {
+					absPath, _ := filepath.Abs(u.Host + u.Path)
+					if _, err := os.Stat(absPath); err != nil {
+						panic(NewError().FileNotFound(u.Path, absPath))
+					}
+					plan, _ := ioutil.ReadFile(absPath)
+					schema := jsonSchema{}
+					err = json.Unmarshal(plan, &schema)
+					if err != nil {
+						panic(NewError().InvalidJson(props[n].Ref))
+					}
+					if s.jsonSchema.Definitions == nil {
+						s.jsonSchema.Definitions = map[string]*jsonProperty{}
+					}
+					def := schema.Definitions[n]
+					def.Id = id
+					s.jsonSchema.Definitions[n] = def
+					s.requiredFields[id] = def
+				}
+
+				/*resp, err := http.Get(absPath)
+				if err != nil {
+					panic(err)
+				}
+				defer resp.Body.Close()*/
+
+			}
+		} else if f == nil || props[n] == nil {
 			requiredFields = append(requiredFields, id)
 		} else {
 			s.requiredFields[id] = props[n]
@@ -161,7 +200,14 @@ func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty,
 }
 
 func findField(v reflect.Value, f *reflect.StructField, prop *jsonProperty, level int) *reflect.Value {
-	levels := strings.Split(prop.Id, "/properties/")
+	var levels []string
+	if prop.Id != "" {
+		levels = strings.Split(prop.Id, "/properties/")
+	} else if prop.Ref != "" {
+		levels = strings.Split(prop.Ref, "/definitions/")
+	} else {
+		return nil
+	}
 	l := len(levels) - 1 // skip prefix '#'
 	n := levels[level]
 
@@ -239,7 +285,9 @@ func (s *Schema) validateSchema() (soteErr sError.SoteError) {
 func (s *Schema) Parse(data []byte, body interface{}) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	b := reflect.ValueOf(body)
-	if s.structType != b.Type() {
+	if s.structType == nil {
+		soteErr = NewError(map[string]string{"ERROR": "You need to validate the schema first"}).InternalError()
+	} else if s.structType != b.Type() {
 		soteErr = NewError().MustBeType(b.Type().String(), s.structType)
 		json.Unmarshal(data, &body) //flush stream
 	} else {

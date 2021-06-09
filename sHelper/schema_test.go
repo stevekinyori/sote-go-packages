@@ -68,17 +68,6 @@ func TestSchemaReqFields(t *testing.T) {
 	AssertEqual(t, schema.validateSchema().FmtErrMsg, "109999: #/properties/field2 was/were not found")
 }
 
-func TestSchemaReqDefinitionFields(t *testing.T) {
-	type TestSchema struct {
-		Header RequestHeaderSchema `json:"request-header"`
-	}
-	schema := Schema{
-		StructRef: &TestSchema{},
-	}
-	json.Unmarshal([]byte(`{"properties": {"request-header": {}},"definitions": {"request-header": { "required": ["field1"], "properties": {"json-web-token": {"type": "boolean"}}}}}`), &schema.jsonSchema)
-	AssertEqual(t, schema.validateSchema().FmtErrMsg, "109999: #/properties/request-header/properties/field1 was/were not found")
-}
-
 func TestSchemaMissingFields(t *testing.T) {
 	type TestSchema struct {
 		Field1 string `json:"field1"`
@@ -337,4 +326,224 @@ func TestSchemaParseMissingField(t *testing.T) {
 	AssertEqual(t, v == nil, true)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
 	AssertEqual(t, body.Parent.Field5, "Hello")
+}
+
+func TestSchemaDefinitionFields(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{"properties": {"request-header": {}},"definitions": {"request-header": { "required": ["field1"], "properties": {"json-web-token": {"type": "boolean"}}}}}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "109999: #/properties/request-header/properties/field1 was/were not found")
+}
+
+func TestSchemaDefinitionType(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{"properties": {"request-header": {}},"definitions": {"request-header": { "required": ["json-web-token"], "properties": {"json-web-token": {"type": "boolean"}}}}}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "200200: [JsonWebToken('json-web-token')] must be of type [boolean]")
+}
+
+func TestSchemaDefinitionValid(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{"properties": {"request-header": {}},"definitions": {"request-header": { "required": ["json-web-token"], "properties": {"json-web-token": {"type": "string"}}}}}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+}
+
+func TestSchemaDefinitionMissingSchemaValidation(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{"properties": {"request-header": {}},"definitions": {"request-header": { "required": ["json-web-token"], "properties": {"json-web-token": {"type": "string"}}}}}`), &schema.jsonSchema)
+	body := TestInvalidSchema{}
+	soteErr := schema.Parse([]byte("{}"), &body)
+	AssertEqual(t, soteErr.FmtErrMsg, "210599: Business Service error has occurred that is not expected. ERROR DETAILS: >>Key: ERROR Value: You need to validate the schema first")
+}
+
+func TestSchemaDefinitionJsonRequired(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{
+		"required": ["request-header"],
+		"properties": {
+			"request-header": {
+				"$ref": "#/definitions/request-header"
+			}
+		},
+		"definitions": {
+			"request-header": {
+				"required": ["json-web-token"],
+				"properties": {
+					"json-web-token": {
+						"type": "string"
+					}
+				}
+			}
+		}
+	}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte("{}"), &body)
+	AssertEqual(t, soteErr.FmtErrMsg, "206200: Message doesn't match signature. Sender must provide the following parameter names: #/properties/request-header")
+}
+
+func TestSchemaReqUrlDefinitionJsonRequired(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{
+		"required": ["request-header"],
+		"properties": {
+			"request-header": {
+				"$ref": "file://./schema-definitions-v1.json#/definitions/request-header"
+			}
+		}
+	}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte("{}"), &body)
+	AssertEqual(t, soteErr.FmtErrMsg, "206200: Message doesn't match signature. Sender must provide the following parameter names: #/properties/request-header")
+}
+
+func TestSchemaDefinitionInvalidJson(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{
+		"required": ["request-header"],
+		"properties": {
+			"request-header": {
+				"$ref": "#/definitions/request-header"
+			}
+		},
+		"definitions": {
+			"request-header": {
+				"required": ["json-web-token"],
+				"properties": {
+					"json-web-token": {
+						"type": "string"
+					}
+				}
+			}
+		}
+	}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte("{\"request-header\": {\"json-web-token\": 123} }"), &body)
+	AssertEqual(t, soteErr.FmtErrMsg, "207110: Body couldn't be parsed - Invalid JSON error")
+}
+
+func TestSchemaDefinitionJson(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{
+		"required": ["request-header"],
+		"properties": {
+			"request-header": {
+				"$ref": "#/definitions/request-header"
+			}
+		},
+		"definitions": {
+			"request-header": {
+				"required": ["json-web-token"],
+				"properties": {
+					"json-web-token": {
+						"type": "string"
+					}
+				}
+			}
+		}
+	}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte("{\"request-header\": {\"json-web-token\": \"123\"} }"), &body)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, body.Header.JsonWebToken, "123")
+}
+
+func TestSchemaDefinitionReqHeader(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+		FileName:  "schema-request-header-v1.json",
+	}
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte(`{
+		"request-header": {
+			"json-web-token": "eyJraWQiOvxxx",
+			"message-id": "1a8eb33e-9db2-11eb-a8b3-0242ac130003",
+			"aws-user-name": "soteuser",
+			"organizations-id": 10003,
+			"role-list": [
+				"CLIENT_ADMIN",
+				"EXECUTIVE"
+			]
+		}
+	}`), &body)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, body.Header.JsonWebToken, "eyJraWQiOvxxx")
+	AssertEqual(t, body.Header.MessageId, "1a8eb33e-9db2-11eb-a8b3-0242ac130003")
+	AssertEqual(t, body.Header.AwsUserName, "soteuser")
+	AssertEqual(t, body.Header.OrganizationId, 10003)
+	AssertEqual(t, strings.Join(body.Header.RoleList, ", "), "CLIENT_ADMIN, EXECUTIVE")
+}
+
+func TestSchemaDefinitionReqHeader001(t *testing.T) {
+	type TestSchema struct {
+		RequestHeaderSchema
+		Field1 string `json:"field1"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+		FileName:  "schema-request-header-v1.json",
+	}
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte(`{
+		"json-web-token": "eyJraWQiOvxxx",
+		"message-id": "1a8eb33e-9db2-11eb-a8b3-0242ac130003",
+		"aws-user-name": "soteuser",
+		"organizations-id": 10003,
+		"role-list": [
+			"CLIENT_ADMIN",
+			"EXECUTIVE"
+		]
+	}`), &body)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, body.JsonWebToken, "eyJraWQiOvxxx")
+	AssertEqual(t, body.MessageId, "1a8eb33e-9db2-11eb-a8b3-0242ac130003")
+	AssertEqual(t, body.AwsUserName, "soteuser")
+	AssertEqual(t, body.OrganizationId, 10003)
+	AssertEqual(t, strings.Join(body.RoleList, ", "), "CLIENT_ADMIN, EXECUTIVE")
 }
