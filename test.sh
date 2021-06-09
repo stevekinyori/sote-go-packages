@@ -48,16 +48,18 @@ else
   exit 1
 fi
 #
+# Remove all coverage.out and coverage_review.out files
+echo "removing coverage files"
+find . -name \coverage*.out -type f -delete
+#
 # Display processing message
 echo -n 'processing internal tests .'
 #
 # The following will generate coverage.out files and new packages should be added.
 echo -n 'sLogger ' 1>/tmp/tmp_$$.out
-rm sLogger/coverage.out 2>/dev/null
 go test sLogger/*.go -coverprofile sLogger/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sError ' 1>>/tmp/tmp_$$.out
-rm sError/coverage.out 2>/dev/null
 go test sError/*.go -coverprofile sError/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sDatabase ' 1>>/tmp/tmp_$$.out
@@ -65,7 +67,6 @@ rm sDatabase/coverage.out 2>/dev/null
 go test sDatabase/*.go -coverprofile sDatabase/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sConfigParams ' 1>>/tmp/tmp_$$.out
-rm sConfigParams/coverage.out 2>/dev/null
 go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sAuthorize ' 1>>/tmp/tmp_$$.out
@@ -73,15 +74,12 @@ rm sAuthorize/coverage.out 2>/dev/null
 go test sAuthorize/*.go -coverprofile sAuthorize/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sMessage ' 1>>/tmp/tmp_$$.out
-rm sMessage/coverage.out 2>/dev/null
 go test sMessage/*.go -coverprofile sMessage/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sHTTPClient ' 1>>/tmp/tmp_$$.out
-rm sHTTPClient/coverage.out 2>/dev/null
 go test sHTTPClient/*.go -coverprofile sHTTPClient/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sHelper ' 1>>/tmp/tmp_$$.out
-rm sHelper/coverage.out 2>/dev/null
 GOARCH=amd64 go test sHelper/*.go -coverprofile sHelper/coverage.out 1>>/tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
@@ -138,6 +136,7 @@ go tool cover -func=sError/coverage.out >>coverage_review.out
 go tool cover -func=sDatabase/coverage.out >>coverage_review.out
 go tool cover -func=sConfigParams/coverage.out >>coverage_review.out
 go tool cover -func=sAuthorize/coverage.out >>coverage_review.out
+go tool cover -func=sMessage/coverage.out >>coverage_review.out
 go tool cover -func=sHTTPClient/coverage.out >>coverage_review.out
 go tool cover -func=sHelper/coverage.out >>coverage_review.out
 echo "Done"

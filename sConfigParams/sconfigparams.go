@@ -80,10 +80,9 @@ func init() {
 }
 
 /*
-This will retrieve the parameters that are in the AWS System Manager service for the ROOTPATH and the supplied
+GetParameters will retrieve the parameters that are in the AWS System Manager service for the ROOTPATH and the supplied
 application and environment.  AWS limits the maximum number of parameters to 10 in a single query.  sconfigparams
 doesn't support pulling more than the first 10 parameters based on the path.
-
 */
 func GetParameters(application, environment string) (parameters map[string]interface{}, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -105,7 +104,7 @@ func GetParameters(application, environment string) (parameters map[string]inter
 }
 
 /*
-This will retrieve the SMTP username parameter that is in AWS System Manager service for the ROOTPATH,
+GetSmtpUsername will retrieve the SMTP username parameter that is in AWS System Manager service for the ROOTPATH,
 application and environment.  Application and environment are required.
 */
 func GetSmtpUsername(application, environment string) (smtpUsername string, soteErr sError.SoteError) {
@@ -127,7 +126,7 @@ func GetSmtpUsername(application, environment string) (smtpUsername string, sote
 }
 
 /*
-This will retrieve the SMTP password parameter that is in AWS System Manager service for the ROOTPATH,
+GetSmtpPassword will retrieve the SMTP password parameter that is in AWS System Manager service for the ROOTPATH,
 application and environment.  Application and environment are required.
 */
 func GetSmtpPassword(application, environment string) (smtpPassword string, soteErr sError.SoteError) {
@@ -149,7 +148,7 @@ func GetSmtpPassword(application, environment string) (smtpPassword string, sote
 }
 
 /*
-This will retrieve the database password parameter that is in AWS System Manager service for the ROOTPATH,
+GetDBPassword will retrieve the database password parameter that is in AWS System Manager service for the ROOTPATH,
 application and environment.  Application and environment are required.
 */
 func GetDBPassword(application, environment string) (dbPassword string, soteErr sError.SoteError) {
@@ -170,7 +169,7 @@ func GetDBPassword(application, environment string) (dbPassword string, soteErr 
 }
 
 /*
-This will retrieve the database host parameter that is in AWS System Manager service for the ROOTPATH and
+GetDBHost will retrieve the database host parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
 func GetDBHost(application, environment string) (dbHost string, soteErr sError.SoteError) {
@@ -191,7 +190,7 @@ func GetDBHost(application, environment string) (dbHost string, soteErr sError.S
 }
 
 /*
-This will retrieve the database user parameter that is in AWS System Manager service for the ROOTPATH and
+GetDBUser will retrieve the database user parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
 func GetDBUser(application, environment string) (dbUser string, soteErr sError.SoteError) {
@@ -212,7 +211,7 @@ func GetDBUser(application, environment string) (dbUser string, soteErr sError.S
 }
 
 /*
-This will retrieve the database port parameter that is in AWS System Manager service for the ROOTPATH and
+GetDBPort will retrieve the database port parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
 func GetDBPort(application, environment string) (dbPort int, soteErr sError.SoteError) {
@@ -235,7 +234,7 @@ func GetDBPort(application, environment string) (dbPort int, soteErr sError.Sote
 }
 
 /*
-This will retrieve the database name parameter that is in AWS System Manager service for the ROOTPATH and
+GetDBName will retrieve the database name parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
 func GetDBName(application, environment string) (dbName string, soteErr sError.SoteError) {
@@ -256,7 +255,7 @@ func GetDBName(application, environment string) (dbName string, soteErr sError.S
 }
 
 /*
-This will retrieve the database SSL mode parameter that is in AWS System Manager service for the ROOTPATH and
+GetDBSSLMode will retrieve the database SSL mode parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
 func GetDBSSLMode(application, environment string) (dbSSLMode string, soteErr sError.SoteError) {
@@ -277,7 +276,7 @@ func GetDBSSLMode(application, environment string) (dbSSLMode string, soteErr sE
 }
 
 /*
-This will retrieve the AWS Region parameter that is in AWS System Manager service for the ROOTPATH
+GetRegion will retrieve the AWS Region parameter that is in AWS System Manager service for the ROOTPATH
 */
 func GetRegion() (region string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -293,7 +292,7 @@ func GetRegion() (region string, soteErr sError.SoteError) {
 }
 
 /*
-This will retrieve the cognito user pool id parameter that is in AWS System Manager service for the ROOTPATH and
+GetUserPoolId will retrieve the cognito user pool id parameter that is in AWS System Manager service for the ROOTPATH and
 environment.  Environment are required.
 */
 func GetUserPoolId(environment string) (userPoolId string, soteErr sError.SoteError) {
@@ -312,7 +311,7 @@ func GetUserPoolId(environment string) (userPoolId string, soteErr sError.SoteEr
 }
 
 /*
-This will retrieve the cognito client id for the allocation that is in AWS System Manager service for the ROOTPATH and
+GetClientId will retrieve the cognito client id for the allocation that is in AWS System Manager service for the ROOTPATH and
 environment.  Application and environment are required.
 */
 func GetClientId(application, environment string) (clientId string, soteErr sError.SoteError) {
@@ -333,7 +332,7 @@ func GetClientId(application, environment string) (clientId string, soteErr sErr
 }
 
 /*
-This will retrieve the messaging credentials needed to authenticate that is in AWS System Manager service for the ROOTPATH and
+GetNATSCredentials will retrieve the messaging credentials needed to authenticate that is in AWS System Manager service for the ROOTPATH and
 environment.
 */
 func GetNATSCredentials() (natsCredentials func(string, string) (interface{}, sError.SoteError)) {
@@ -356,7 +355,7 @@ func getCreds() func(string, string) (interface{}, sError.SoteError) {
 }
 
 /*
-This will retrieve the messaging server URL needed to connect that is in AWS System Manager service for the ROOTPATH and
+GetNATSURL will retrieve the messaging server URL needed to connect that is in AWS System Manager service for the ROOTPATH and
 environment.  Application and environment are required.
 */
 func GetNATSURL(application, environment string) (natsURL string, soteErr sError.SoteError) {
@@ -377,7 +376,7 @@ func GetNATSURL(application, environment string) (natsURL string, soteErr sError
 }
 
 /*
-   This will retrieve the messaging server TLS URL mask needed. Application is required.
+GetNATSTLSURLMask will retrieve the messaging server TLS URL mask needed. Application is required.
 */
 func GetNATSTLSURLMask(application string) (natsTLSURLMask string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -395,7 +394,7 @@ func GetNATSTLSURLMask(application string) (natsTLSURLMask string, soteErr sErro
 }
 
 /*
-	This will retrieve the AWS S3 server URL found in AWS System Manager service for the ROOTPATH and
+	SGetS3BucketURL will retrieve the AWS S3 server URL found in AWS System Manager service for the ROOTPATH and
 	environment. The URL is needed to access Sote's unprocessed/ processed documents.  Application,
 	environment and key are required.
 */
@@ -415,7 +414,7 @@ func SGetS3BucketURL(application, environment, key string) (sS3BucketURL string,
 }
 
 /*
-The Application is validated against empty string.  Application is required.
+ValidateApplication is validated against empty string.  Application is required.
 */
 func ValidateApplication(application string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -428,7 +427,7 @@ func ValidateApplication(application string) (soteErr sError.SoteError) {
 }
 
 /*
-The Environment is validated against 'development', 'staging', 'demo' and 'production'. The value supplied
+ValidateEnvironment is validated against 'development', 'staging', 'demo' and 'production'. The value supplied
 will be forced to lower case.  Environment are required.
 */
 func ValidateEnvironment(environment string) (soteErr sError.SoteError) {
@@ -447,7 +446,7 @@ func ValidateEnvironment(environment string) (soteErr sError.SoteError) {
 }
 
 /*
-This will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
+GetEnvironmentAppEnvironment will get the AWS Region that is set in the environment variables. If the environment variable is not found or the value is empty,
 the function will return an error code for not found.
 */
 func GetEnvironmentAppEnvironment() (envValue string, soteErr sError.SoteError) {
@@ -459,7 +458,7 @@ func GetEnvironmentAppEnvironment() (envValue string, soteErr sError.SoteError) 
 }
 
 /*
-Get the requested environment variable. If the environment variable is not found or the value is empty,
+GetEnvironmentVariable the requested environment variable. If the environment variable is not found or the value is empty,
 the function will return an error code for not found.
 */
 func GetEnvironmentVariable(key string) (envValue string, soteErr sError.SoteError) {
@@ -474,7 +473,7 @@ func GetEnvironmentVariable(key string) (envValue string, soteErr sError.SoteErr
 }
 
 /*
-This will build the query path based on the ROOTPATH, Application and Environment.
+setPath will build the query path based on the ROOTPATH, Application and Environment.
 */
 func setPath(application, environment string) (path string) {
 	sLogger.DebugMethod()
@@ -497,7 +496,7 @@ func setPath(application, environment string) (path string) {
 }
 
 /*
-This will query up to the first 10 parameters for the ROOTPATH with some combination of application
+listParameters will query up to the first 10 parameters for the ROOTPATH with some combination of application
 and environment variable values.  Application and environment can be empty.
 */
 func listParameters(application, environment string) (pSSMPathOutput *ssm.GetParametersByPathOutput, soteErr sError.SoteError) {
@@ -528,7 +527,7 @@ func listParameters(application, environment string) (pSSMPathOutput *ssm.GetPar
 }
 
 /*
-This will query the first 10 parameters for the ROOTPATH with some combination of application
+getParameter will query the first 10 parameters for the ROOTPATH with some combination of application
 and environment variable values.  Application and environment can be empty.
 */
 func getParameter(application, environment, key string) (returnValue interface{}, soteErr sError.SoteError) {
