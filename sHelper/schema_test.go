@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"gitlab.com/soteapps/packages/v2021/sError"
 )
 
 type TestSchema struct {
@@ -57,7 +59,7 @@ func TestSchemaInvalidPath(t *testing.T) {
 	AssertEqual(t, soteErr.FmtErrMsg, "209010: foo.json file was not found. Message return: "+absPath)
 }
 
-func TestSchemaReqFields(t *testing.T) {
+func TestSchemaFields(t *testing.T) {
 	type TestSchema struct {
 		Field1 string `json:"field1"`
 	}
@@ -405,7 +407,7 @@ func TestSchemaDefinitionJsonRequired(t *testing.T) {
 	AssertEqual(t, soteErr.FmtErrMsg, "206200: Message doesn't match signature. Sender must provide the following parameter names: #/properties/request-header")
 }
 
-func TestSchemaReqUrlDefinitionJsonRequired(t *testing.T) {
+func TestSchemaFileUrlDefinitionJsonRequired(t *testing.T) {
 	type TestSchema struct {
 		Header RequestHeaderSchema `json:"request-header"`
 	}
@@ -417,6 +419,27 @@ func TestSchemaReqUrlDefinitionJsonRequired(t *testing.T) {
 		"properties": {
 			"request-header": {
 				"$ref": "file://./schema-definitions-v1.json#/definitions/request-header"
+			}
+		}
+	}`), &schema.jsonSchema)
+	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
+	body := TestSchema{}
+	soteErr := schema.Parse([]byte("{}"), &body)
+	AssertEqual(t, soteErr.FmtErrMsg, "206200: Message doesn't match signature. Sender must provide the following parameter names: #/properties/request-header")
+}
+
+func TestSchemaHttpUrlDefinitionJsonRequired(t *testing.T) {
+	type TestSchema struct {
+		Header RequestHeaderSchema `json:"request-header"`
+	}
+	schema := Schema{
+		StructRef: &TestSchema{},
+	}
+	json.Unmarshal([]byte(`{
+		"required": ["request-header"],
+		"properties": {
+			"request-header": {
+				"$ref": "https://gitlab.com/soteapps/packages/-/raw/v2021/sHelper/schema-definitions-v1.json#/definitions/request-header"
 			}
 		}
 	}`), &schema.jsonSchema)
@@ -546,4 +569,38 @@ func TestSchemaDefinitionReqHeader001(t *testing.T) {
 	AssertEqual(t, body.AwsUserName, "soteuser")
 	AssertEqual(t, body.OrganizationId, 10003)
 	AssertEqual(t, strings.Join(body.RoleList, ", "), "CLIENT_ADMIN, EXECUTIVE")
+}
+
+func TestSchemaFunctional(t *testing.T) {
+	AssertEqual(t, findField(reflect.ValueOf(nil), nil, &jsonProperty{}, 0) == nil, true)
+
+	defer func() {
+		r := recover()
+		AssertEqual(t, strings.Split(r.(sError.SoteError).FmtErrMsg, ".")[0], "209010: /INVALID_FILE")
+	}()
+	loadDefinition(&Schema{}, "", "", "file://./INVALID_FILE.log")
+}
+
+func TestSchemaFunctionalInvalidURL(t *testing.T) {
+	defer func() {
+		r := recover()
+		AssertEqual(t, strings.Split(r.(sError.SoteError).FmtErrMsg, ".")[0], "209010:  file was not found")
+	}()
+	loadDefinition(&Schema{}, "", "", "")
+}
+
+func TestSchemaFunctionalInvalidJson(t *testing.T) {
+	defer func() {
+		r := recover()
+		AssertEqual(t, r.(sError.SoteError).FmtErrMsg, "207110: file://schema_test.go couldn't be parsed - Invalid JSON error")
+	}()
+	loadDefinition(&Schema{}, "", "", "file://schema_test.go")
+}
+
+func TestSchemaFunctionalInvalidFile(t *testing.T) {
+	defer func() {
+		r := recover()
+		AssertEqual(t, r != nil, true)
+	}()
+	loadDefinition(&Schema{}, "", "", "file:///")
 }

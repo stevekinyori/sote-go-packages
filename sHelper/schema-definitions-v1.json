@@ -1,71 +1,85 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
     "title": "Schema Definitions",
-    "examples": [{
-        "request-header": {
-            "json-web-token": "eyJraWQiOvxxxxxxxxxxxxxxxx9OZDNDZGNxOVRvU3FPKzdZYldcL1wvSUxCYVJyTElNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJkNzI2NmM4Zi0wNmQ0LTQxYjYtODE0ZC0zZWU4NTAzMzhlYTciLCJkZXZpY2Vfa2V5IjoiZXUtd2VzdC0xX2VmMTAyYjExLTI0ZWQtNDllMS04ZTIzLTFjY2ViMGQ2NzY3ZiIsImNvZ25pdG86Z3JvdXBzIjpbIjEwMDM2Il0sInRva2VuX3VzZSI6ImFjvxxxxxxxxxxxxxxxxzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE2MTA2MDMwNzQsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWvxxxxxxxxxxxxxxxxdzLmNvbVwvZXUtd2VzdC0xX2ZwWkN5cWxRTiIsImV4cCI6MTYxMTE1ODg5NSwiaWF0IjoxNjExMTU1Mvxxxxxxxxxxxxxxxx02MjZhLTQ0ZWQtOTlmZS1lYWZhZTYwYWRlOGUiLCJjbGllbnRfaWQiOiI0OWc1MDhoMGpyMnMydG5iaTNraGd0ZHNwMiIsInVzZXJuYW1lIjoiZDcyNjZjOGYtMDZkNC00MWI2LTgxNGQtM2VlODUwMzM4ZWE3In0.QbuzaBlVNK20OjeCyzbBkU_fLrCnTca__8ggynHFwajeN-tFzjLDJIAtHYoXUG-3k0L-bBXn265uJmqzXV0ktOfX-b9ifIWWJn0_eTNgLUh6Euv4MkMxfPQnV0aXyK81XysKxX6fRB5N1HhxzcYoYHolmo0C6LXtQlRbvPFq8BDLPk2sU35QEL4ONANSt1eDZxMpPrBEP-fvSF2ZMee7sJx7tFnQA6tI0_4WnvxxxxxxxxxxxxxxxxFYSYF77i0zhxGZ3oVcV90qRLekLYuXdfy06lMA4DlNdWJu9N0BYbPsvxpvo51JErYX8Qkqs2TbYACw2_4g",
-            "message-id": "1a8eb33e-9db2-11eb-a8b3-0242ac130003",
-            "aws-user-name": "soteuser",
-            "organizations-id": 10003,
-            "role-list": [
-                "CLIENT_ADMIN",
-                "EXECUTIVE"
-            ]
-        },
-        "filter-header": {
-            "items": ["organizations_id", "row_version", "organization_name", "organization_is_active", 
-                "estimated_total_users", "estimated_total_vehicles", "estimated_paid_seats_month", "desired_payment_threshold"],
-            "limit": 3,
-            "offset": 0,
-            "sort_asc": ["row_version"],
-            "sort_desc": ["organizations_id"],
-            "eq": {
-                "organization_is_active": true
+    "examples": [
+        {
+            "request-header": {
+                "json-web-token": "eyJraWQiOvxxxxxxxxxxxxxxxx9OZDNDZGNxOVRvU3FPKzdZYldcL1wvSUxCYVJyTElNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJkNzI2NmM4Zi0wNmQ0LTQxYjYtODE0ZC0zZWU4NTAzMzhlYTciLCJkZXZpY2Vfa2V5IjoiZXUtd2VzdC0xX2VmMTAyYjExLTI0ZWQtNDllMS04ZTIzLTFjY2ViMGQ2NzY3ZiIsImNvZ25pdG86Z3JvdXBzIjpbIjEwMDM2Il0sInRva2VuX3VzZSI6ImFjvxxxxxxxxxxxxxxxxzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE2MTA2MDMwNzQsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWvxxxxxxxxxxxxxxxxdzLmNvbVwvZXUtd2VzdC0xX2ZwWkN5cWxRTiIsImV4cCI6MTYxMTE1ODg5NSwiaWF0IjoxNjExMTU1Mvxxxxxxxxxxxxxxxx02MjZhLTQ0ZWQtOTlmZS1lYWZhZTYwYWRlOGUiLCJjbGllbnRfaWQiOiI0OWc1MDhoMGpyMnMydG5iaTNraGd0ZHNwMiIsInVzZXJuYW1lIjoiZDcyNjZjOGYtMDZkNC00MWI2LTgxNGQtM2VlODUwMzM4ZWE3In0.QbuzaBlVNK20OjeCyzbBkU_fLrCnTca__8ggynHFwajeN-tFzjLDJIAtHYoXUG-3k0L-bBXn265uJmqzXV0ktOfX-b9ifIWWJn0_eTNgLUh6Euv4MkMxfPQnV0aXyK81XysKxX6fRB5N1HhxzcYoYHolmo0C6LXtQlRbvPFq8BDLPk2sU35QEL4ONANSt1eDZxMpPrBEP-fvSF2ZMee7sJx7tFnQA6tI0_4WnvxxxxxxxxxxxxxxxxFYSYF77i0zhxGZ3oVcV90qRLekLYuXdfy06lMA4DlNdWJu9N0BYbPsvxpvo51JErYX8Qkqs2TbYACw2_4g",
+                "message-id": "1a8eb33e-9db2-11eb-a8b3-0242ac130003",
+                "aws-user-name": "soteuser",
+                "organizations-id": 10003,
+                "role-list": [
+                    "CLIENT_ADMIN",
+                    "EXECUTIVE"
+                ]
             },
-            "gt": {
-                "estimated_total_users": 1
-            },
-            "lt": {
-                "created_by_date": "2020-12-01"
+            "filter-header": {
+                "items": [
+                    "organizations_id",
+                    "row_version",
+                    "organization_name",
+                    "organization_is_active",
+                    "estimated_total_users",
+                    "estimated_total_vehicles",
+                    "estimated_paid_seats_month",
+                    "desired_payment_threshold"
+                ],
+                "limit": 3,
+                "offset": 0,
+                "sort_asc": [
+                    "row_version"
+                ],
+                "sort_desc": [
+                    "organizations_id"
+                ],
+                "eq": {
+                    "organization_is_active": true
+                },
+                "gt": {
+                    "estimated_total_users": 1
+                },
+                "lt": {
+                    "created_by_date": "2020-12-01"
+                }
             }
         }
-    }],
+    ],
     "definitions": {
         "request-header": {
-			"type": "object",
-			"properties": {
-				"json-web-token": {
-					"type": "string",
-					"title": "The json-web-token schema"
-				},
-				"message-id": {
-					"type": "string",
-					"title": "The message-id schema"
-				},
-				"aws-user-name": {
-					"type": "string",
-					"title": "The aws-user-name schema"
-				},
-				"organizations-id": {
-					"type": "integer",
-					"title": "The organizations-id schema"
-				},
-				"role-list": {
-					"type": "array",
-					"title": "The role-list schema",
-					"enum": [
-						"CLIENT_ADMIN",
-						"EXECUTIVE"
-					]
-				}
-			},
-			"required": [
-				"json-web-token",
-				"message-id",
-				"aws-user-name",
-				"organizations-id"
-			]
-		},
+            "type": "object",
+            "properties": {
+                "json-web-token": {
+                    "type": "string",
+                    "title": "The json-web-token schema"
+                },
+                "message-id": {
+                    "type": "string",
+                    "title": "The message-id schema"
+                },
+                "aws-user-name": {
+                    "type": "string",
+                    "title": "The aws-user-name schema"
+                },
+                "organizations-id": {
+                    "type": "integer",
+                    "title": "The organizations-id schema"
+                },
+                "role-list": {
+                    "type": "array",
+                    "title": "The role-list schema",
+                    "enum": [
+                        "CLIENT_ADMIN",
+                        "EXECUTIVE"
+                    ]
+                }
+            },
+            "required": [
+                "json-web-token",
+                "message-id",
+                "aws-user-name",
+                "organizations-id"
+            ]
+        },
         "filter-header": {
             "type": "object",
             "properties": {

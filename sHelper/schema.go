@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -127,6 +128,45 @@ func verifyDefinition(s *Schema, propLevel string, def *jsonProperty) {
 	}
 }
 
+func loadDefinition(s *Schema, id, name, ref string) {
+	var (
+		err  error
+		data []byte
+		u    *url.URL
+		resp *http.Response
+	)
+	u, _ = url.Parse(ref)
+	if u.Scheme == "file" {
+		absPath, _ := filepath.Abs(u.Host + u.Path)
+		if _, err = os.Stat(absPath); err != nil {
+			panic(NewError().FileNotFound(u.Path, absPath))
+		}
+		data, err = ioutil.ReadFile(absPath)
+	} else {
+		resp, err = http.Get(ref)
+		if err != nil {
+			panic(NewError().FileNotFound(ref, err.Error()))
+		}
+		defer resp.Body.Close()
+		data, err = ioutil.ReadAll(resp.Body)
+	}
+	if err != nil {
+		panic(err)
+	}
+	schema := jsonSchema{}
+	err = json.Unmarshal(data, &schema)
+	if err != nil {
+		panic(NewError().InvalidJson(ref))
+	}
+	if s.jsonSchema.Definitions == nil {
+		s.jsonSchema.Definitions = map[string]*jsonProperty{}
+	}
+	def := schema.Definitions[name]
+	def.Id = id
+	s.jsonSchema.Definitions[name] = def
+	s.requiredFields[id] = def
+}
+
 func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty, required []string) {
 	for _, n := range required {
 		id := propLevel + "/" + n
@@ -137,36 +177,7 @@ func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty,
 			if d != nil {
 				s.requiredFields[id] = props[n]
 			} else {
-				u, err := url.Parse(props[n].Ref)
-				if err != nil {
-					panic(err)
-				}
-				if u.Scheme == "file" {
-					absPath, _ := filepath.Abs(u.Host + u.Path)
-					if _, err := os.Stat(absPath); err != nil {
-						panic(NewError().FileNotFound(u.Path, absPath))
-					}
-					plan, _ := ioutil.ReadFile(absPath)
-					schema := jsonSchema{}
-					err = json.Unmarshal(plan, &schema)
-					if err != nil {
-						panic(NewError().InvalidJson(props[n].Ref))
-					}
-					if s.jsonSchema.Definitions == nil {
-						s.jsonSchema.Definitions = map[string]*jsonProperty{}
-					}
-					def := schema.Definitions[n]
-					def.Id = id
-					s.jsonSchema.Definitions[n] = def
-					s.requiredFields[id] = def
-				}
-
-				/*resp, err := http.Get(absPath)
-				if err != nil {
-					panic(err)
-				}
-				defer resp.Body.Close()*/
-
+				loadDefinition(s, id, n, props[n].Ref)
 			}
 		} else if f == nil || props[n] == nil {
 			requiredFields = append(requiredFields, id)
