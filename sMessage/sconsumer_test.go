@@ -12,6 +12,7 @@ import (
 const (
 	TESTCONSUMERNAMEPULL = "test-consumer-delete-me-pull"
 	TESTCONSUMERNAMEPUSH = "test-consumer-delete-me-push"
+	TESTDELIVERYSUBJECT = "TEST-ME"
 )
 
 func TestSetMaxDeliver(tPtr *testing.T) {
@@ -71,7 +72,7 @@ func TestPushReplayInstantConsumer(tPtr *testing.T) {
 			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 		}
 		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPushSubjects, 1, false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.CreatePushReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPUSH, "TEST-ME", testPushSubjects[0], 1,
+			if soteErr = mmPtr.CreatePushReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPUSH, TESTDELIVERYSUBJECT, testPushSubjects[0], 1,
 				false); soteErr.ErrCode != nil {
 				tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 			}
