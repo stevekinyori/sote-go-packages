@@ -235,8 +235,12 @@ func (q *Query) Scan(tRows sDatabase.SRows) (tCols []interface{}, soteErr sError
 			q.Result.Pagination.Total = tCols[0].(int64)
 		}
 		row := make(map[string]interface{})
-		for i := offset; i < len(tCols) && i < len(q.Filter.Items)+offset; i++ { //0 - total
-			name := q.Filter.Items[i-offset]
+		names := q.Columns
+		if q.Filter != nil {
+			names = q.Filter.Items
+		}
+		for i := offset; i < len(tCols) && i < len(names)+offset; i++ { //0 - total
+			name := names[i-offset]
 			row[name] = tCols[i]
 		}
 		q.Result.Items = append(q.Result.Items, row)
