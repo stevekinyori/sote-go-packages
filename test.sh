@@ -50,7 +50,7 @@ fi
 #
 # Remove all coverage.out and coverage_review.out files
 echo "removing coverage files"
-find . -name \coverage*.out -type f -delete
+find . -name "coverage*.out" -type f -delete 1>> /dev/null
 #
 # Display processing message
 echo -n 'processing internal tests .'
@@ -142,7 +142,7 @@ go tool cover -func=sHelper/coverage.out >>coverage_review.out
 echo "Done"
 #
 # # Review the coverage totals for 70%+ compliance
-read RC <<<"$(grep '^total' coverage_review.out | awk '/[0-6][0-9]./ {print 1}')"
+read RC <<<"$(grep '^total' coverage_review.out | awk '/[0-6][0-9].&&![100]./ {print 1}')"
 if [[ "$RC" == "1" ]]; then
   echo "FAILED: At least one components coverage is less than 70%"
   exit 1

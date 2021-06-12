@@ -1,6 +1,7 @@
 package sMessage
 
 import (
+	"runtime"
 	"testing"
 	"time"
 
@@ -11,6 +12,8 @@ import (
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestPublish(tPtr *testing.T) {
 	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
 		mmPtr *MessageManager
 		soteErr sError.SoteError
 	)
@@ -18,7 +21,7 @@ func TestPublish(tPtr *testing.T) {
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
 		if soteErr = mmPtr.Publish("greeting", "Hello world", false); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestPublish Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
 
@@ -27,6 +30,8 @@ func TestPublish(tPtr *testing.T) {
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestSubscribe(tPtr *testing.T) {
 	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
 		mmPtr *MessageManager
 		soteErr sError.SoteError
 	)
@@ -34,7 +39,7 @@ func TestSubscribe(tPtr *testing.T) {
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
 		if _, soteErr = mmPtr.Subscribe("greeting", false); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestSubscribe Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
 
@@ -43,6 +48,8 @@ func TestSubscribe(tPtr *testing.T) {
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestPublishRequest(tPtr *testing.T) {
 	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
 		mmPtr *MessageManager
 		soteErr sError.SoteError
 	)
@@ -50,7 +57,7 @@ func TestPublishRequest(tPtr *testing.T) {
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
 		if soteErr = mmPtr.PublishRequest("greeting", "greeting-reply", "Back At You!", false); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestPublishRequest Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
 
@@ -59,6 +66,8 @@ func TestPublishRequest(tPtr *testing.T) {
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestSubscribeSync(tPtr *testing.T) {
 	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
 		mmPtr *MessageManager
 		soteErr sError.SoteError
 	)
@@ -66,7 +75,7 @@ func TestSubscribeSync(tPtr *testing.T) {
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
 		if soteErr = mmPtr.SubscribeSync("greeting", "greeting-reply", false); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
 
@@ -75,6 +84,8 @@ func TestSubscribeSync(tPtr *testing.T) {
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestNextMsg(tPtr *testing.T) {
 	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
 		mmPtr *MessageManager
 		soteErr sError.SoteError
 	)
@@ -82,13 +93,13 @@ func TestNextMsg(tPtr *testing.T) {
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
 		if soteErr = mmPtr.SubscribeSync("greeting", "greeting-reply", false); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 		if soteErr = mmPtr.Publish("greeting-reply", "Hello world", false); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestPublish Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 		if _, soteErr = mmPtr.NextMsg("greeting", false); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestNextMsg Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
 
@@ -101,6 +112,8 @@ func TestRequest(tPtr *testing.T) {
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestRequestReply(tPtr *testing.T) {
 	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
 		mmPtr *MessageManager
 		soteErr sError.SoteError
 	)
@@ -108,7 +121,7 @@ func TestRequestReply(tPtr *testing.T) {
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
 		if _, soteErr = mmPtr.RequestReply("greeting", "Hello World", false); soteErr.ErrCode != nil {
-			tPtr.Errorf("TestRequestReply Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
 
