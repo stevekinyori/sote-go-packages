@@ -128,7 +128,7 @@ func verifyDefinition(s *Schema, propLevel string, def *jsonProperty) {
 	}
 }
 
-func loadDefinition(s *Schema, id, name, ref string) {
+func loadDefinition(s *Schema, id, name, ref string) *jsonProperty {
 	var (
 		err  error
 		data []byte
@@ -164,7 +164,7 @@ func loadDefinition(s *Schema, id, name, ref string) {
 	def := schema.Definitions[name]
 	def.Id = id
 	s.jsonSchema.Definitions[name] = def
-	s.requiredFields[id] = def
+	return def
 }
 
 func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty, required []string) {
@@ -177,7 +177,8 @@ func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty,
 			if d != nil {
 				s.requiredFields[id] = props[n]
 			} else {
-				loadDefinition(s, id, n, props[n].Ref)
+				def := loadDefinition(s, id, n, props[n].Ref)
+				s.requiredFields[id] = def
 			}
 		} else if f == nil || props[n] == nil {
 			requiredFields = append(requiredFields, id)
@@ -188,6 +189,9 @@ func propValidation(s *Schema, propLevel string, props map[string]*jsonProperty,
 	for id, prop := range props {
 		if !(prop.Default == nil || prop.Default == "") {
 			s.defaultFields[propLevel+"/"+id] = prop
+		}
+		if prop.Id == "" && s.jsonSchema.Definitions[id] == nil && prop.Ref != "" {
+			loadDefinition(s, propLevel+"/"+id, id, prop.Ref)
 		}
 		if prop.Id == "" && s.jsonSchema.Definitions[id] != nil {
 			def := s.jsonSchema.Definitions[id]
