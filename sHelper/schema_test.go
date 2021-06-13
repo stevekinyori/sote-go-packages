@@ -440,7 +440,10 @@ func TestSchemaHttpUrlDefinitionJsonRequired(t *testing.T) {
 		"properties": {
 			"request-header": {
 				"$ref": "https://gitlab.com/soteapps/packages/-/raw/v2021/sHelper/schema-definitions-v1.json#/definitions/request-header"
-			}
+			},
+			"filter-header": {
+            	"$ref": "https://gitlab.com/soteapps/packages/-/raw/v2021/sHelper/schema-definitions-v1.json#/definitions/filter-header"
+        	}
 		}
 	}`), &schema.jsonSchema)
 	AssertEqual(t, schema.validateSchema().FmtErrMsg, "")
