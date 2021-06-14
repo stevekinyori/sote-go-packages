@@ -15,6 +15,8 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
+const SHEMA_VERSION = 1 //temporary released request header inline
+
 type RequestHeaderSchema struct {
 	JsonWebToken   string   `json:"json-web-token"`
 	MessageId      string   `json:"message-id"`
@@ -312,6 +314,20 @@ func (s *Schema) Parse(data []byte, body interface{}) (soteErr sError.SoteError)
 			soteErr = NewError().InvalidJson("Body")
 		} else {
 			elem := b.Elem()
+
+			// Request Body version 0.1
+			if SHEMA_VERSION == 1 && s.jsonFields["#/properties/request-header"] != nil {
+				e := reflect.ValueOf(body).Elem()
+				h := e.FieldByName("Header")
+				v := h.Interface()
+				if v != nil {
+					header := v.(RequestHeaderSchema)
+					if header.JsonWebToken == "" {
+						json.Unmarshal(data, &header)
+						h.Set(reflect.ValueOf(header))
+					}
+				}
+			}
 
 			//assign default values
 			for id, prop := range s.defaultFields {
