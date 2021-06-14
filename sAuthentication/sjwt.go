@@ -1,4 +1,4 @@
-package sAuthorize
+package sAuthentication
 
 import (
 	"context"

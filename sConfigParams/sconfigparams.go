@@ -122,6 +122,7 @@ func GetSmtpUsername(application, environment string) (smtpUsername string, sote
 			}
 		}
 	}
+
 	return
 }
 
@@ -144,6 +145,7 @@ func GetSmtpPassword(application, environment string) (smtpPassword string, sote
 			}
 		}
 	}
+
 	return
 }
 
