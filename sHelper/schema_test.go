@@ -76,7 +76,7 @@ func TestSchemaCannotReadFile(t *testing.T) {
 
 func TestSchemaValidationHttpUrl(t *testing.T) {
 	schema := Schema{
-		FileName:  "https://gitlab.com/soteapps/packages/-/raw/v2021/sHelper/schema-definitions-v1.json#/definitions/request-header",
+		FileName:  "https://gitlab.com/soteapps/messages/-/raw/master/schema-definitions-v1.json#/definitions/request-header",
 		StructRef: &TestSchema{},
 	}
 	soteErr := schema.Validate()
@@ -454,7 +454,7 @@ func TestSchemaFileUrlDefinitionJsonRequired(t *testing.T) {
 		"required": ["request-header"],
 		"properties": {
 			"request-header": {
-				"$ref": "file://./schema-definitions-v1.json#/definitions/request-header"
+				"$ref": "file://./schema_test.json#/definitions/request-header"
 			}
 		}
 	}`), &schema.jsonSchema)
@@ -475,10 +475,10 @@ func TestSchemaHttpUrlDefinitionJsonRequired(t *testing.T) {
 		"required": ["request-header"],
 		"properties": {
 			"request-header": {
-				"$ref": "https://gitlab.com/soteapps/packages/-/raw/v2021/sHelper/schema-definitions-v1.json#/definitions/request-header"
+				"$ref": "https://gitlab.com/soteapps/messages/-/raw/master/schema-definitions-v1.json#/definitions/request-header"
 			},
 			"filter-header": {
-            	"$ref": "https://gitlab.com/soteapps/packages/-/raw/v2021/sHelper/schema-definitions-v1.json#/definitions/filter-header"
+            	"$ref": "https://gitlab.com/soteapps/messages/-/raw/master/schema-definitions-v1.json#/definitions/filter-header"
         	}
 		}
 	}`), &schema.jsonSchema)
