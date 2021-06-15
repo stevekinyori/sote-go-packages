@@ -141,13 +141,13 @@ func loadDefinition(s *Schema, id, name, ref string) *jsonProperty {
 	if u.Scheme == "file" {
 		absPath, _ := filepath.Abs(u.Host + u.Path)
 		if _, err = os.Stat(absPath); err != nil {
-			panic(NewError().FileNotFound(u.Path, absPath))
+			panic(NewError().FileNotFound(u.Path, absPath).FmtErrMsg)
 		}
 		data, err = ioutil.ReadFile(absPath)
 	} else {
 		resp, err = http.Get(ref)
 		if err != nil {
-			panic(NewError().FileNotFound(ref, err.Error()))
+			panic(NewError().FileNotFound(ref, err.Error()).FmtErrMsg)
 		}
 		defer resp.Body.Close()
 		data, err = ioutil.ReadAll(resp.Body)
@@ -250,18 +250,35 @@ func findField(v reflect.Value, f *reflect.StructField, prop *jsonProperty, leve
 
 func (s *Schema) Validate() (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
-	absPath, _ := filepath.Abs(s.FileName)
-	//Parse file (find required fields)
-	if _, err := os.Stat(absPath); err != nil {
-		soteErr = NewError().FileNotFound(s.FileName, absPath)
-	} else {
-		plan, _ := ioutil.ReadFile(s.FileName)
-		err := json.Unmarshal(plan, &s.jsonSchema)
-		if err != nil {
-			soteErr = NewError().InvalidJson(s.FileName)
-		} else {
-			soteErr = s.validateSchema()
+	var (
+		err  error
+		data []byte
+		u    *url.URL
+		resp *http.Response
+	)
+	u, _ = url.Parse(s.FileName)
+	if u.Scheme == "" || u.Scheme == "file" {
+		absPath, _ := filepath.Abs(s.FileName)
+		if _, err = os.Stat(absPath); err != nil {
+			panic(NewError().FileNotFound(s.FileName, absPath).FmtErrMsg)
 		}
+		data, err = ioutil.ReadFile(absPath)
+	} else {
+		resp, err = http.Get(s.FileName)
+		if err != nil {
+			panic(NewError().FileNotFound(s.FileName, err.Error()).FmtErrMsg)
+		}
+		defer resp.Body.Close()
+		data, err = ioutil.ReadAll(resp.Body)
+	}
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(data, &s.jsonSchema)
+	if err != nil {
+		soteErr = NewError().InvalidJson(s.FileName)
+	} else {
+		soteErr = s.validateSchema()
 	}
 	return
 }

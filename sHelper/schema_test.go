@@ -55,8 +55,44 @@ func TestSchemaInvalidPath(t *testing.T) {
 		FileName:  "foo.json",
 		StructRef: &TestSchema{},
 	}
+	defer func() {
+		r := recover()
+		AssertEqual(t, r, "209010: foo.json file was not found. Message return: "+absPath)
+	}()
+	schema.Validate()
+}
+
+func TestSchemaCannotReadFile(t *testing.T) {
+	schema := Schema{
+		FileName:  "/",
+		StructRef: &TestSchema{},
+	}
+	defer func() {
+		r := recover()
+		AssertEqual(t, r != "", true)
+	}()
+	schema.Validate()
+}
+
+func TestSchemaValidationHttpUrl(t *testing.T) {
+	schema := Schema{
+		FileName:  "https://gitlab.com/soteapps/packages/-/raw/v2021/sHelper/schema-definitions-v1.json#/definitions/request-header",
+		StructRef: &TestSchema{},
+	}
 	soteErr := schema.Validate()
-	AssertEqual(t, soteErr.FmtErrMsg, "209010: foo.json file was not found. Message return: "+absPath)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+}
+
+func TestSchemaValidationHttpUrlInvalidPath(t *testing.T) {
+	schema := Schema{
+		FileName:  "https://INVALID-DOMAIN",
+		StructRef: &TestSchema{},
+	}
+	defer func() {
+		r := recover()
+		AssertEqual(t, strings.Split(r.(string), ".")[0], "209010: https://INVALID-DOMAIN file was not found")
+	}()
+	schema.Validate()
 }
 
 func TestSchemaFields(t *testing.T) {
@@ -579,7 +615,7 @@ func TestSchemaFunctional(t *testing.T) {
 
 	defer func() {
 		r := recover()
-		AssertEqual(t, strings.Split(r.(sError.SoteError).FmtErrMsg, ".")[0], "209010: /INVALID_FILE")
+		AssertEqual(t, strings.Split(r.(string), ".")[0], "209010: /INVALID_FILE")
 	}()
 	loadDefinition(&Schema{}, "", "", "file://./INVALID_FILE.log")
 }
@@ -587,7 +623,7 @@ func TestSchemaFunctional(t *testing.T) {
 func TestSchemaFunctionalInvalidURL(t *testing.T) {
 	defer func() {
 		r := recover()
-		AssertEqual(t, strings.Split(r.(sError.SoteError).FmtErrMsg, ".")[0], "209010:  file was not found")
+		AssertEqual(t, strings.Split(r.(string), ".")[0], "209010:  file was not found")
 	}()
 	loadDefinition(&Schema{}, "", "", "")
 }
