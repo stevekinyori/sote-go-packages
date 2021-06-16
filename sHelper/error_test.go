@@ -43,6 +43,8 @@ func TestErrorCodes(t *testing.T) {
 		"206200: Message doesn't match signature. Sender must provide the following parameter names: Item")
 	verifyError(t, NewError().NoDbConnection(), 209299, sError.CONFIGURATIONISSUE, "209299: No database connection has been established")
 	verifyError(t, NewError().FileNotFound("foo.json", "/foo.json"), 209010, sError.CONFIGURATIONISSUE, "209010: foo.json file was not found. Message return: /foo.json")
+	verifyError(t, NewError().InvalidToken(), 208355, sError.PERMISSIONERROR, "208355: Token is invalid")
+	verifyError(t, NewError().ExpiredToken(), 208350, sError.PERMISSIONERROR, "208350: Token is expired")
 }
 
 func verifyError(t *testing.T, error sError.SoteError, code int, categoty string, message string) {

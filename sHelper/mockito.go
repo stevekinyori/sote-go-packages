@@ -7,7 +7,10 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sError"
 )
 
-var Patch = monkey.Patch
+var (
+	Patch       = monkey.Patch
+	PatchMethod = monkey.PatchInstanceMethod
+)
 
 type PatchGuard = monkey.PatchGuard
 

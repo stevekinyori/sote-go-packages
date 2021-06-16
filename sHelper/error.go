@@ -73,3 +73,12 @@ func (err sErrorHelper) InvalidParameters(params ...interface{}) sError.SoteErro
 func (err sErrorHelper) InternalError() sError.SoteError {
 	return err.factory(210599) //"210599: Business Service error has occurred that is not expected."
 }
+
+// Permission_Error's
+func (err sErrorHelper) InvalidToken() sError.SoteError {
+	return err.factory(208355) //"208355: Token is invalid"
+}
+
+func (err sErrorHelper) ExpiredToken() sError.SoteError {
+	return err.factory(208350) //"208350: Token is expired"
+}
