@@ -16,6 +16,23 @@ func validateBodyTest(data []byte) sError.SoteError {
 	return ValidateBody(data, "internal-clearance", sConfigParams.STAGING, true)
 }
 
+func validateBodyPath(data []byte, tApplication, tEnvironment string) sError.SoteError {
+	var (
+		validPatch  *sHelper.PatchGuard
+		verifyPatch *sHelper.PatchGuard
+		rsa         *jwt.SigningMethodRSA
+	)
+	validPatch = sHelper.Patch(jwt.MapClaims.Valid, func(jwt.MapClaims) error {
+		validPatch.Unpatch()
+		return nil
+	})
+	verifyPatch = sHelper.PatchMethod(reflect.TypeOf(rsa), "Verify", func(*jwt.SigningMethodRSA, string, string, interface{}) error {
+		verifyPatch.Unpatch()
+		return nil
+	})
+	return ValidateBody(data, tApplication, tEnvironment, true)
+}
+
 func TestRequestMissingAwsUserName(t *testing.T) {
 	defer func() {
 		r := recover()
@@ -44,11 +61,9 @@ func TestRequestMissingJsonWebToken(t *testing.T) {
 
 func TestRequestInvalidJsonWebToken(t *testing.T) {
 	soteErr := validateBodyTest([]byte(`{
-		"request-header": {
-			"json-web-token": "eyJraWQiOvxxx",
-			"aws-user-name": "soteuser",
-			"organizations-id": 10003
-		}
+		"json-web-token": "eyJraWQiOvxxx",
+		"aws-user-name": "soteuser",
+		"organizations-id": 10003
 	}`))
 	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "208356: Token contains an invalid number of segments")
 }
@@ -72,67 +87,39 @@ func TestRequestInvalidEnvironment(t *testing.T) {
 }
 
 func TestRequestInvalidKid(t *testing.T) {
-	var (
-		validPatch  *sHelper.PatchGuard
-		verifyPatch *sHelper.PatchGuard
-		rsa         *jwt.SigningMethodRSA
-	)
-	validPatch = sHelper.Patch(jwt.MapClaims.Valid, func(jwt.MapClaims) error {
-		validPatch.Unpatch()
-		return nil
-	})
-	verifyPatch = sHelper.PatchMethod(reflect.TypeOf(rsa), "Verify", func(*jwt.SigningMethodRSA, string, string, interface{}) error {
-		verifyPatch.Unpatch()
-		return nil
-	})
-	soteErr := ValidateBody([]byte(`{
+	soteErr := validateBodyPath([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
-	}`), SDCC, sConfigParams.DEVELOPMENT, true)
+	}`), SDCC, sConfigParams.DEVELOPMENT)
 	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "209521: Kid (e8+xMn+8f+fiH/Nd3Cdcq9ToSqO+7YbW//ILBaRrLIM=) was not found in public key set")
 }
 
 func TestRequestInvalidAppName(t *testing.T) {
-	var (
-		validPatch  *sHelper.PatchGuard
-		verifyPatch *sHelper.PatchGuard
-		rsa         *jwt.SigningMethodRSA
-	)
-	validPatch = sHelper.Patch(jwt.MapClaims.Valid, func(jwt.MapClaims) error {
-		validPatch.Unpatch()
-		return nil
-	})
-	verifyPatch = sHelper.PatchMethod(reflect.TypeOf(rsa), "Verify", func(*jwt.SigningMethodRSA, string, string, interface{}) error {
-		verifyPatch.Unpatch()
-		return nil
-	})
-	soteErr := ValidateBody([]byte(`{
+	soteErr := validateBodyPath([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
-	}`), SDCC, sConfigParams.STAGING, true)
+	}`), SDCC, sConfigParams.STAGING)
 	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "208340: client id is not valid for this application")
 }
 
-func TestRequestSuccess(t *testing.T) {
-	var (
-		validPatch  *sHelper.PatchGuard
-		verifyPatch *sHelper.PatchGuard
-		rsa         *jwt.SigningMethodRSA
-	)
-	validPatch = sHelper.Patch(jwt.MapClaims.Valid, func(jwt.MapClaims) error {
-		validPatch.Unpatch()
-		return nil
-	})
-	verifyPatch = sHelper.PatchMethod(reflect.TypeOf(rsa), "Verify", func(*jwt.SigningMethodRSA, string, string, interface{}) error {
-		verifyPatch.Unpatch()
-		return nil
-	})
-	soteErr := ValidateBody([]byte(`{
+func TestRequestRequesrHeaderReleaseOne(t *testing.T) {
+	soteErr := validateBodyPath([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
-	}`), "internal-clearance", sConfigParams.STAGING, true)
+	}`), "internal-clearance", sConfigParams.STAGING)
+	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "")
+}
+
+func TestRequestRequesrHeaderFutureReleases(t *testing.T) {
+	soteErr := validateBodyPath([]byte(`{
+		"request-header": {
+			"json-web-token": "`+stagingExpToken+`",
+			"aws-user-name": "soteuser",
+			"organizations-id": 10003
+		}
+	}`), "internal-clearance", sConfigParams.STAGING)
 	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "")
 }
