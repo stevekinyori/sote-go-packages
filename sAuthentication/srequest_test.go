@@ -16,7 +16,7 @@ func validateBodyTest(data []byte) sError.SoteError {
 	return ValidateBody(data, "internal-clearance", sConfigParams.STAGING, true)
 }
 
-func validateBodyPath(data []byte, tApplication, tEnvironment string) sError.SoteError {
+func validateBodyMock(data []byte, tApplication, tEnvironment string) sError.SoteError {
 	var (
 		validPatch  *sHelper.PatchGuard
 		verifyPatch *sHelper.PatchGuard
@@ -87,7 +87,7 @@ func TestRequestInvalidEnvironment(t *testing.T) {
 }
 
 func TestRequestInvalidKid(t *testing.T) {
-	soteErr := validateBodyPath([]byte(`{
+	soteErr := validateBodyMock([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
@@ -96,7 +96,7 @@ func TestRequestInvalidKid(t *testing.T) {
 }
 
 func TestRequestInvalidAppName(t *testing.T) {
-	soteErr := validateBodyPath([]byte(`{
+	soteErr := validateBodyMock([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
@@ -105,7 +105,7 @@ func TestRequestInvalidAppName(t *testing.T) {
 }
 
 func TestRequestRequesrHeaderReleaseOne(t *testing.T) {
-	soteErr := validateBodyPath([]byte(`{
+	soteErr := validateBodyMock([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
@@ -114,7 +114,7 @@ func TestRequestRequesrHeaderReleaseOne(t *testing.T) {
 }
 
 func TestRequestRequesrHeaderFutureReleases(t *testing.T) {
-	soteErr := validateBodyPath([]byte(`{
+	soteErr := validateBodyMock([]byte(`{
 		"request-header": {
 			"json-web-token": "`+stagingExpToken+`",
 			"aws-user-name": "soteuser",
