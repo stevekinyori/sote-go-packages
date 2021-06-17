@@ -23,6 +23,7 @@ type RequestHeaderSchema struct {
 	AwsUserName    string   `json:"aws-user-name"`
 	OrganizationId int      `json:"organizations-id"`
 	RoleList       []string `json:"role-list"` //optional
+	DeviceId       int64    `json:"device-id"` //optional
 }
 
 type FilterHeaderSchema struct {

@@ -2,8 +2,12 @@ package sAuthentication
 
 import (
 	"flag"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"gitlab.com/soteapps/packages/v2021/sConfigParams"
@@ -35,9 +39,59 @@ func validateBodyMock(data []byte, tApplication, tEnvironment string) sError.Sot
 }
 
 func TestInit(t *testing.T) {
-	soteErr := validateBodyTest([]byte(`{}`))
+	soteErr := validateBodyTest([]byte(`{
+		"aws-user-name": "soteuser",
+		"organizations-id": 10003
+	}`))
 	sHelper.AssertEqual(t, soteErr.ErrCode, nil)           //ignored by default
 	flag.Lookup("test.count").Value.(flag.Getter).Set("0") //enable unittest validations
+}
+
+func TestScriptAcessMissingFile(t *testing.T) {
+	os.Remove(DEVICE_FILE)
+	soteErr := validateBodyTest([]byte(`{
+		"aws-user-name": "soteuser",
+		"organizations-id": 10003,
+		"device-id": 123456789
+	}`))
+	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "208355: Token is invalid")
+}
+
+func TestScriptAcessInvalidEntry(t *testing.T) {
+	os.Remove(DEVICE_FILE)
+	ioutil.WriteFile(DEVICE_FILE, []byte("HELLO WORLD"), 0)
+	soteErr := validateBodyTest([]byte(`{
+		"aws-user-name": "soteuser",
+		"organizations-id": 10003,
+		"device-id": 123456789
+	}`))
+	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "208355: Token is invalid")
+}
+
+func TestScriptAcessTimeoutToken(t *testing.T) {
+	now := fmt.Sprint(time.Now().Unix() - DEVICE_TIMEOUT)
+	os.Remove(DEVICE_FILE)
+	ioutil.WriteFile(DEVICE_FILE, []byte(now), 0)
+	soteErr := validateBodyTest([]byte(`{
+		"request-header": {
+			"aws-user-name": "soteuser",
+			"organizations-id": 10003,
+			"device-id": ` + now + `
+		}
+	}`))
+	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "208350: Token is expired")
+}
+
+func TestScriptAcess(t *testing.T) {
+	now := fmt.Sprint(time.Now().Unix())
+	os.Remove(DEVICE_FILE)
+	ioutil.WriteFile(DEVICE_FILE, []byte(now), 0)
+	soteErr := validateBodyTest([]byte(`{
+		"aws-user-name": "soteuser",
+		"organizations-id": 10003,
+		"device-id": ` + now + `
+	}`))
+	sHelper.AssertEqual(t, soteErr.FmtErrMsg, "")
 }
 
 func TestRequestMissingAwsUserName(t *testing.T) {
