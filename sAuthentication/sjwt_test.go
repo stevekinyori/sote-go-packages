@@ -112,7 +112,7 @@ func TestFetchPublicKey(tPtr *testing.T) {
 		tPtr.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 
-	if keySet, soteErr = fetchPublicKey("SCOTT_LAND", userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 210030 {
+	if _, soteErr = fetchPublicKey("SCOTT_LAND", userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 210030 {
 		tPtr.Errorf("matchKid failed: Expected soteErr to be 210030: %v", soteErr.FmtErrMsg)
 	}
 }

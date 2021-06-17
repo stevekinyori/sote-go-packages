@@ -11,29 +11,27 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-var holdSoteErr sError.SoteError
-
 func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	if tApplication != "" && tEnvironment != "" && rawToken != "" {
 		if len(strings.Split(rawToken, ".")) == 3 {
 			token, err := jwt.Parse(rawToken, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-					holdSoteErr = sError.GetSError(209500, nil, sError.EmptyMap)
+					soteErr = sError.GetSError(209500, nil, sError.EmptyMap)
 				}
 
-				if holdSoteErr.ErrCode == nil {
+				if soteErr.ErrCode == nil {
 					var (
-						kid  string
-						ok   bool
+						kid string
+						ok  bool
 						key jwk.Key
 					)
 					if kid, ok = token.Header["kid"].(string); !ok {
-						holdSoteErr = sError.GetSError(209510, nil, sError.EmptyMap)
+						soteErr = sError.GetSError(209510, nil, sError.EmptyMap)
 					}
 
-					if holdSoteErr.ErrCode == nil {
-						if key, holdSoteErr = matchKid(tEnvironment, kid); holdSoteErr.ErrCode == nil {
+					if soteErr.ErrCode == nil {
+						if key, soteErr = matchKid(tEnvironment, kid); soteErr.ErrCode == nil {
 							var raw interface{}
 							return raw, key.Raw(&raw)
 						}
@@ -45,24 +43,23 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 
 			if err != nil {
 				if strings.Contains(err.Error(), "expired") {
-					holdSoteErr = sError.GetSError(208350, nil, sError.EmptyMap)
+					soteErr = sError.GetSError(208350, nil, sError.EmptyMap)
 				}
 				if strings.Contains(err.Error(), "invalid type") || strings.Contains(err.Error(), "invalid character") {
-					holdSoteErr = sError.GetSError(208355, nil, sError.EmptyMap)
+					soteErr = sError.GetSError(208355, nil, sError.EmptyMap)
 				}
 				if strings.Contains(err.Error(), "invalid number of segments") {
-					holdSoteErr = sError.GetSError(208356, nil, sError.EmptyMap)
+					soteErr = sError.GetSError(208356, nil, sError.EmptyMap)
 				}
 			}
 
-			if holdSoteErr.ErrCode == nil {
+			if soteErr.ErrCode == nil {
 				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-					holdSoteErr = validateClaims(claims, tApplication, tEnvironment)
+					soteErr = validateClaims(claims, tApplication, tEnvironment)
 				} else {
-					holdSoteErr = sError.GetSError(208355, nil, sError.EmptyMap)
+					soteErr = sError.GetSError(208355, nil, sError.EmptyMap)
 				}
 			}
-			soteErr = holdSoteErr
 		} else {
 			soteErr = sError.GetSError(208356, nil, sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
@@ -80,7 +77,7 @@ func matchKid(tEnvironment, kid string) (key jwk.Key, soteErr sError.SoteError) 
 
 	var (
 		keySet jwk.Set
-		ok bool
+		ok     bool
 	)
 	keySet, soteErr = getPublicKey(tEnvironment)
 	key, ok = keySet.LookupKeyID(kid)
