@@ -69,9 +69,9 @@ echo -n '.'
 echo -n 'sConfigParams ' 1>>/tmp/tmp_$$.out
 go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
-echo -n 'sAuthorize ' 1>>/tmp/tmp_$$.out
-rm sAuthorize/coverage.out 2>/dev/null
-go test sAuthorize/*.go -coverprofile sAuthorize/coverage.out 1>>/tmp/tmp_$$.out
+echo -n 'sAuthentication ' 1>>/tmp/tmp_$$.out
+rm sAuthentication/coverage.out 2>/dev/null
+go test sAuthentication/*.go -coverprofile sAuthentication/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sMessage ' 1>>/tmp/tmp_$$.out
 go test sMessage/*.go -coverprofile sMessage/coverage.out 1>>/tmp/tmp_$$.out
@@ -108,8 +108,8 @@ echo -n '.'
 echo -n 'sConfigParams_external_test ' 1>>/tmp/tmp_$$.out
 go test sConfigParams_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
-echo -n 'sAuthorize_external_test ' 1>>/tmp/tmp_$$.out
-go test sAuthorize_external_test.go 1>>/tmp/tmp_$$.out
+echo -n 'sAuthentication ' 1>>/tmp/tmp_$$.out
+go test sAuthentication_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sMessage_external_test ' 1>>/tmp/tmp_$$.out
 go test sMessages_external_test.go 1>>/tmp/tmp_$$.out
