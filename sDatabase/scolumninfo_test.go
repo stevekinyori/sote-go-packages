@@ -23,6 +23,7 @@ func TestGetColumnInfo(tPtr *testing.T) {
 		soteErr           sError.SoteError
 		tConnInfo         ConnInfo
 		columnInfo        []SColumnInfo
+		columnInfoJSON    []byte
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
 	)
@@ -54,7 +55,17 @@ func TestGetColumnInfo(tPtr *testing.T) {
 				tPtr.Fail()
 			}
 		}
+		if columnInfoJSON, soteErr = GetColumnInfoJSONFormat(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be nil [%v]", testName, strconv.Itoa(soteErr.ErrCode.(int)))
+			tPtr.Fail()
+		}
+		if string(columnInfoJSON) == "" {
+			tPtr.Errorf("%v Failed: Expected at least one column's info to be returned", testName)
+			tPtr.Fail()
+		}
 	}
+
+	tConnInfo.DBPoolPtr.Close()
 }
 func getMyDBConn(tPtr *testing.T) (myDBConn ConnInfo, soteErr sError.SoteError) {
 	var (

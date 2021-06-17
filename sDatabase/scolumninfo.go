@@ -3,6 +3,7 @@ package sDatabase
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
 	"github.com/jackc/pgx/v4"
@@ -28,6 +29,26 @@ const (
 	SINTEGER          = "integer"
 	STEXT             = "text"
 )
+
+// This function gets column information for the supplied schema and table and returns the data as JSON.
+func GetColumnInfoJSONFormat(schemaName, tableName string, tConnInfo ConnInfo) (tableColumnInfoJSON []byte, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		tableColumnInfo []SColumnInfo
+		err             error
+	)
+
+	if tableColumnInfo, soteErr = GetColumnInfo(schemaName, tableName, tConnInfo); soteErr.ErrCode == nil {
+		if tableColumnInfoJSON, err = json.MarshalIndent(tableColumnInfo, sError.PREFIX, sError.INDENT); err != nil {
+			sLogger.Info(err.Error())
+			soteErr := sError.GetSError(207110, sError.BuildParams([]string{"Sote Error"}), sError.EmptyMap)
+			sError.PanicService(soteErr)
+		}
+	}
+
+	return
+}
 
 // This function gets column information for the supplied schema and table.
 func GetColumnInfo(schemaName, tableName string, tConnInfo ConnInfo) (tableColumnInfo []SColumnInfo, soteErr sError.SoteError) {
