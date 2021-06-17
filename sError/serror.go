@@ -393,10 +393,17 @@ func OutputErrorJSON(inSoteErr SoteError) (outSoteErr []byte) {
 	if outSoteErr, err = json.MarshalIndent(inSoteErr, PREFIX, INDENT+INDENT); err != nil {
 		sLogger.Info(err.Error())
 		soteErr := GetSError(207110, BuildParams([]string{"Sote Error"}), EmptyMap)
-		panicService(soteErr)
+		PanicService(soteErr)
 	}
 
 	return
+}
+
+func PanicService(soteErr SoteError) {
+	sLogger.DebugMethod()
+
+	sLogger.Info(soteErr.FmtErrMsg)
+	panic(soteErr.FmtErrMsg)
 }
 
 func formatErrorDetails(tErrDetails map[string]string) (errDetails string) {
@@ -410,12 +417,5 @@ func formatErrorDetails(tErrDetails map[string]string) (errDetails string) {
 	}
 
 	return
-}
-
-func panicService(soteErr SoteError) {
-	sLogger.DebugMethod()
-
-	sLogger.Info(soteErr.FmtErrMsg)
-	panic(soteErr.FmtErrMsg)
 }
 
