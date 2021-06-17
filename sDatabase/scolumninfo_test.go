@@ -1,9 +1,11 @@
 package sDatabase
 
 import (
+	"runtime"
 	"strconv"
 	"testing"
 
+	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
@@ -17,36 +19,59 @@ func init() {
 }
 
 func TestGetColumnInfo(tPtr *testing.T) {
-	var tConnInfo ConnInfo
-	if _, soteErr := GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 209299 {
-		tPtr.Errorf("GetColumnInfo Failed: Expected error code of 209299")
+	var (
+		soteErr           sError.SoteError
+		tConnInfo         ConnInfo
+		columnInfo        []SColumnInfo
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+	)
+
+	if _, soteErr = GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 209299 {
+		tPtr.Errorf("%v Failed: Expected error code of 209299", testName)
 		tPtr.Fail()
 	}
 
-	if soteErr := GetAWSParams(); soteErr.ErrCode != nil {
-		tPtr.Errorf("getAWSParams Failed: Expected error code to be nil.")
+	if tConnInfo, soteErr = getMyDBConn(tPtr); soteErr.ErrCode == nil {
+		if _, soteErr = GetColumnInfo("", INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 200513 {
+			tPtr.Errorf("%v Failed: Expected error code of 200513", testName)
+			tPtr.Fail()
+		}
+		if _, soteErr = GetColumnInfo(TESTINFOSCHEMA, "", tConnInfo); soteErr.ErrCode != 200513 {
+			tPtr.Errorf("%v Failed: Expected error code of 200513", testName)
+			tPtr.Fail()
+		}
+		if columnInfo, soteErr = GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be nil [%v]", testName, strconv.Itoa(soteErr.ErrCode.(int)))
+			tPtr.Fail()
+		}
+		if len(columnInfo) == 0 {
+			tPtr.Errorf("%v Failed: Expected at least one column's info to be returned", testName)
+			tPtr.Fail()
+		} else {
+			if columnInfo[0].ColName == "" {
+				tPtr.Errorf("%v Failed: Expected the column name to be returned", testName)
+				tPtr.Fail()
+			}
+		}
+	}
+}
+func getMyDBConn(tPtr *testing.T) (myDBConn ConnInfo, soteErr sError.SoteError) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+	)
+
+	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
+		tPtr.Errorf("%v Failed: Expected error code to be nil.", testName)
 		tPtr.Fatal()
 	}
 
-	tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
+	myDBConn, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
 	if soteErr.ErrCode != nil {
-		tPtr.Errorf("GetConnection Failed: Please Investigate")
+		tPtr.Errorf("%v Failed: Expected a nil error code.", testName)
 		tPtr.Fail()
 	}
 
-	var columnInfo []SColumnInfo
-	if columnInfo, soteErr = GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != nil {
-		tPtr.Errorf("GetColumnInfo Failed: Expected error code to be nil [" + strconv.Itoa(soteErr.ErrCode.(int)) + "]")
-		tPtr.Fail()
-	}
-
-	if len(columnInfo) == 0 {
-		tPtr.Errorf("GetColumnInfo Failed: Expected at least one column's info to be returned")
-		tPtr.Fail()
-	} else {
-		if columnInfo[0].ColName == "" {
-			tPtr.Errorf("GetColumnInfo Failed: Expected the column name to be returned")
-			tPtr.Fail()
-		}
-	}
+	return
 }
