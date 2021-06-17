@@ -1,6 +1,7 @@
 package sAuthentication
 
 import (
+	"flag"
 	"reflect"
 	"testing"
 
@@ -31,6 +32,12 @@ func validateBodyMock(data []byte, tApplication, tEnvironment string) sError.Sot
 		return nil
 	})
 	return ValidateBody(data, tApplication, tEnvironment, true)
+}
+
+func TestInit(t *testing.T) {
+	soteErr := validateBodyTest([]byte(`{}`))
+	sHelper.AssertEqual(t, soteErr.ErrCode, nil)           //ignored by default
+	flag.Lookup("test.count").Value.(flag.Getter).Set("0") //enable unittest validations
 }
 
 func TestRequestMissingAwsUserName(t *testing.T) {

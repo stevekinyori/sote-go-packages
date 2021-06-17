@@ -2,6 +2,7 @@ package sAuthentication
 
 import (
 	"encoding/json"
+	"flag"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sHelper"
@@ -15,6 +16,13 @@ type RequestHeader struct {
 }
 
 func ValidateBody(data []byte, tApplication, tEnvironment string, isTestMode bool) (soteErr sError.SoteError) {
+	isUnitest := flag.Lookup("test.count")
+	if isUnitest != nil { // go test ./...
+		val, _ := isUnitest.Value.(flag.Getter)
+		if val.Get().(uint) != 0 { //skip validation for unittests except srequest_test.go
+			return soteErr
+		}
+	}
 	rh := RequestHeader{}
 	json.Unmarshal(data, &rh) //flush stream
 	if rh.AwsUserName == "" && rh.Header.AwsUserName == "" {
