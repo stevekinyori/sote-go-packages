@@ -69,9 +69,9 @@ echo -n '.'
 echo -n 'sConfigParams ' 1>>/tmp/tmp_$$.out
 go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
-echo -n 'sAuthorize ' 1>>/tmp/tmp_$$.out
-rm sAuthorize/coverage.out 2>/dev/null
-go test sAuthorize/*.go -coverprofile sAuthorize/coverage.out 1>>/tmp/tmp_$$.out
+echo -n 'sAuthentication ' 1>>/tmp/tmp_$$.out
+rm sAuthentication/coverage.out 2>/dev/null
+go test sAuthentication/*.go -coverprofile sAuthentication/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sMessage ' 1>>/tmp/tmp_$$.out
 go test sMessage/*.go -coverprofile sMessage/coverage.out 1>>/tmp/tmp_$$.out
@@ -135,7 +135,7 @@ go tool cover -func=sLogger/coverage.out >>coverage_review.out
 go tool cover -func=sError/coverage.out >>coverage_review.out
 go tool cover -func=sDatabase/coverage.out >>coverage_review.out
 go tool cover -func=sConfigParams/coverage.out >>coverage_review.out
-go tool cover -func=sAuthorize/coverage.out >>coverage_review.out
+go tool cover -func=sAuthentication/coverage.out >>coverage_review.out
 go tool cover -func=sMessage/coverage.out >>coverage_review.out
 go tool cover -func=sHTTPClient/coverage.out >>coverage_review.out
 go tool cover -func=sHelper/coverage.out >>coverage_review.out
