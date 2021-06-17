@@ -108,8 +108,8 @@ echo -n '.'
 echo -n 'sConfigParams_external_test ' 1>>/tmp/tmp_$$.out
 go test sConfigParams_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
-echo -n 'sAuthorize_external_test ' 1>>/tmp/tmp_$$.out
-go test sAuthorize_external_test.go 1>>/tmp/tmp_$$.out
+echo -n 'sAuthentication ' 1>>/tmp/tmp_$$.out
+go test sAuthentication_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sMessage_external_test ' 1>>/tmp/tmp_$$.out
 go test sMessages_external_test.go 1>>/tmp/tmp_$$.out

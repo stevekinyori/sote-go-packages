@@ -15,6 +15,7 @@
 package sError
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strconv"
@@ -35,17 +36,21 @@ type SoteError struct {
 }
 
 // Error categories
-const USERERROR string = "User_Error"
-const PROCESSERROR string = "Process_Error"
-const NATSERROR string = "NATS_Error"
-const CONTENTERROR string = "Content_Error"
-const PERMISSIONERROR string = "Permission_Error"
-const CONFIGURATIONISSUE string = "Configuration_Issue"
-const APICONTRACTERROR string = "API_Contract_Error"
-const GENERALERROR string = "General_Error"
-const MARKDOWNTITLEBAR string = "| Error Code | Category | Parameter Description | Formatted Error Text |\n|--------|--------|--------|--------|\n"
-const FUNCCOMMENTSHEADER string = "\tError Code with requiring parameters:\n"
-const SQLSTATE string = "SQLSTATE"
+const (
+	USERERROR          string = "User_Error"
+	PROCESSERROR       string = "Process_Error"
+	NATSERROR          string = "NATS_Error"
+	CONTENTERROR       string = "Content_Error"
+	PERMISSIONERROR    string = "Permission_Error"
+	CONFIGURATIONISSUE string = "Configuration_Issue"
+	APICONTRACTERROR   string = "API_Contract_Error"
+	GENERALERROR       string = "General_Error"
+	MARKDOWNTITLEBAR   string = "| Error Code | Category | Parameter Description | Formatted Error Text |\n|--------|--------|--------|--------|\n"
+	FUNCCOMMENTSHEADER string = "\tError Code with requiring parameters:\n"
+	SQLSTATE           string = "SQLSTATE"
+	PREFIX             string = ""
+	INDENT             string = "  "
+)
 
 var (
 	EmptyMap = make(map[string]string)
@@ -69,15 +74,15 @@ var (
 		200100: {200100, PROCESSERROR, 0, "None", ": Table doesn't exist", EmptyMap, ""},
 		200200: {200200, PROCESSERROR, 2, "Parameter name, Data type of parameter", ": %v must be of type %v", EmptyMap, ""},
 		200250: {200250, PROCESSERROR, 3, "Parameter name, Parameter value, List of values allowed", ": %v (%v) must contain one of these values: %v",
-					EmptyMap, ""},
+			EmptyMap, ""},
 		200260: {200260, PROCESSERROR, 3, "Other parameter name, Parameter name, Parameter value", ": %v must be provided when %v is set to (%v)",
-					EmptyMap, ""},
+			EmptyMap, ""},
 		200510: {200510, PROCESSERROR, 3, "Parameter name, Field name, Field value", ": %v can't be updated because %v is set to %v", EmptyMap, ""},
 		200511: {200511, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated or null", EmptyMap, ""},
 		200512: {200512, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated", EmptyMap, ""},
 		200513: {200513, PROCESSERROR, 1, "Parameter name", ": %v must be populated", EmptyMap, ""},
 		200514: {200514, PROCESSERROR, 3, "Parameter name, Another parameter name, Another parameter name", ": %v, %v and %v must all be populated",
-					EmptyMap, ""},
+			EmptyMap, ""},
 		200515: {200515, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v must be empty when %v is populated", EmptyMap, ""},
 		200600: {200600, PROCESSERROR, 1, "Info returned from HTTP/HTTPS Request", ": Bad HTTP/HTTPS Request - %v", EmptyMap, ""},
 		200700: {200700, PROCESSERROR, 1, "Environment Name", ": The API you are calling is not available in this environment (%v)", EmptyMap, ""},
@@ -86,9 +91,9 @@ var (
 		200999: {200999, PROCESSERROR, 0, "None", ": SQL error - see Details", EmptyMap, ""},
 		201999: {201999, PROCESSERROR, 0, "None", ": Cognito error - see Details", EmptyMap, ""},
 		203000: {203000, PROCESSERROR, 0, "None", ": The number of parameters provided for the error message does not match the required number",
-					EmptyMap, ""},
+			EmptyMap, ""},
 		203050: {203050, PROCESSERROR, 2, "Name, Application/Package name", ": Number of parameters defined in the %v is not support by %v", EmptyMap,
-					""},
+			""},
 		203060: {203060, PROCESSERROR, 2, "Provided parameter count, Expected parameter count",
 			": Number of parameters provided (%v) doesn't match the number expected (%v)", EmptyMap, ""},
 		205000: {205000, PROCESSERROR, 0, "None", ": AWS SES error - see details in retPack", EmptyMap, ""},
@@ -117,25 +122,25 @@ var (
 		207065: {207065, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters other than underscore", EmptyMap, ""},
 		207070: {207070, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid date", EmptyMap, ""},
 		207080: {207080, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap,
-					""},
+			""},
 		207090: {207090, CONTENTERROR, 6, "Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size",
-					": %v (%v) is too %v. %v size: %v Actual size: %v", EmptyMap, ""},
+			": %v (%v) is too %v. %v size: %v Actual size: %v", EmptyMap, ""},
 		207095: {207095, CONTENTERROR, 4, "Field name, Field value, greater than value, less than value",
-					": %v (%v) must be greater than %v and less than %v", EmptyMap, ""},
+			": %v (%v) must be greater than %v and less than %v", EmptyMap, ""},
 		207100: {207100, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v - JSON conversion error",
-					EmptyMap, ""},
+			EmptyMap, ""},
 		207105: {207105, CONTENTERROR, 2, "Data Structure Name, Data Structure Type",
-					": %v (%v) couldn't be converted to JSON - JSON conversion error", EmptyMap, ""},
+			": %v (%v) couldn't be converted to JSON - JSON conversion error", EmptyMap, ""},
 		207110: {207110, CONTENTERROR, 1, "Parameter name", ": %v couldn't be parsed - Invalid JSON error", EmptyMap, ""},
 		207111: {207111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v couldn't be converted to a map/keyed array - %v",
-					EmptyMap, ""},
+			EmptyMap, ""},
 		207200: {207200, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v", EmptyMap, ""},
 		208000: {208000, CONTENTERROR, 0, "None", ": Column must have a non-null value. Details: ", EmptyMap, ""},
 		208010: {208010, CONTENTERROR, 0, "None", ": Column data type is not support or invalid. Details: ", EmptyMap, ""},
 		208110: {208110, CONTENTERROR, 2, "Thing being changed, System Id for the thing",
-					": No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
+			": No update is needed. No fields where changed for %v with id %v", EmptyMap, ""},
 		208120: {208120, CONTENTERROR, 3, "JSON array name, Thing being changed, System Id for the thing", ": The %v was empty for %v with id %v",
-					EmptyMap, ""},
+			EmptyMap, ""},
 		208200: {208200, CONTENTERROR, 1, "Error message number", ": %v error message is missing from sError package", EmptyMap, ""},
 		208300: {208300, PERMISSIONERROR, 0, "None", ": iss (Issuer) is not valid", EmptyMap, ""},
 		208310: {208310, PERMISSIONERROR, 1, "Subject", ": sub (Subject: %v) was not present", EmptyMap, ""},
@@ -152,7 +157,7 @@ var (
 		209100: {209100, CONFIGURATIONISSUE, 1, "Environment name", ": environment variable is missing (%v)", EmptyMap, ""},
 		209110: {209110, CONFIGURATIONISSUE, 1, "Environment name", ": environment value (%v) is invalid", EmptyMap, ""},
 		209200: {209200, CONFIGURATIONISSUE, 3, "Database name, Database driver name, Port value",
-					": Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
+			": Unable to connect to database %v using driver %v on port %v", EmptyMap, ""},
 		209210: {209210, CONFIGURATIONISSUE, 0, "None", ": Unable to pass database authentication", EmptyMap, ""},
 		209220: {209220, CONFIGURATIONISSUE, 1, "SSL Mode", ": Only disable, allow, prefer and required are supported.", EmptyMap, ""},
 		209230: {209230, CONFIGURATIONISSUE, 1, "Connection Type", ": Only single or pool are supported.", EmptyMap, ""},
@@ -176,6 +181,7 @@ var (
 		210499: {210499, GENERALERROR, 0, "None", ": Synadia error has occurred that is not expected.", EmptyMap, ""},
 		210599: {210599, GENERALERROR, 0, "None", ": Business Service error has occurred that is not expected.", EmptyMap, ""},
 	}
+	testMode     = false
 )
 
 /*
@@ -357,7 +363,7 @@ func BuildParams(values []string) (s []interface{}) {
 	This will generate the markdown syntax that can be published on a Wiki page.  This makes
 	this code the master source of Sote Error messages. Results are output to the console.
 */
-func GenerateDocumentation() (markDown, funcComments string){
+func GenerateDocumentation() (markDown, funcComments string) {
 	sLogger.DebugMethod()
 
 	// Sort the Keys from SError map
@@ -377,6 +383,29 @@ func GenerateDocumentation() (markDown, funcComments string){
 	return
 }
 
+func OutputErrorJSON(inSoteErr SoteError) (outSoteErr []byte) {
+	sLogger.DebugMethod()
+
+	var (
+		err error
+	)
+
+	if outSoteErr, err = json.MarshalIndent(inSoteErr, PREFIX, INDENT+INDENT); err != nil {
+		sLogger.Info(err.Error())
+		soteErr := GetSError(207110, BuildParams([]string{"Sote Error"}), EmptyMap)
+		PanicService(soteErr)
+	}
+
+	return
+}
+
+func PanicService(soteErr SoteError) {
+	sLogger.DebugMethod()
+
+	sLogger.Info(soteErr.FmtErrMsg)
+	panic(soteErr.FmtErrMsg)
+}
+
 func formatErrorDetails(tErrDetails map[string]string) (errDetails string) {
 	sLogger.DebugMethod()
 
@@ -389,3 +418,4 @@ func formatErrorDetails(tErrDetails map[string]string) (errDetails string) {
 
 	return
 }
+

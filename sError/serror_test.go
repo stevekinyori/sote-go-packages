@@ -12,7 +12,6 @@ func TestIncorrectParams(tPtr *testing.T) {
 		tPtr.Errorf("The wrong error code (%v) was returned.  203060 should have been returned.", x.ErrCode)
 	}
 }
-
 func TestErrorCodeNotFound(tPtr *testing.T) {
 	errCode := 999999999
 	if x := GetSError(errCode, nil, EmptyMap); x.ErrCode != 208200 {
@@ -328,6 +327,16 @@ func TestGenerateDocumentation(tPtr *testing.T) {
 	} else {
 		// This outputs the documentation so it can be cut/paste to the source code.
 		fmt.Print(y)
+	}
+}
+func TestOutputErrorJSON(tPtr *testing.T) {
+	var (
+		errCode             = 999999999
+		s       []interface{} = BuildParams([]string{""})
+		x       []byte
+	)
+	if x = OutputErrorJSON(GetSError(errCode, nil, EmptyMap)); string(x) == "" {
+		tPtr.Errorf(GetSError(207100, s, EmptyMap).FmtErrMsg)
 	}
 }
 func validateReply(tPtr *testing.T, errCode int, params []interface{}, x SoteError) {
