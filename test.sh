@@ -71,7 +71,7 @@ go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out 1>>/tmp/tmp_
 echo -n '.'
 echo -n 'sAuthentication ' 1>>/tmp/tmp_$$.out
 rm sAuthentication/coverage.out 2>/dev/null
-go test sAuthentication/*.go -coverprofile sAuthentication/coverage.out 1>>/tmp/tmp_$$.out
+GOARCH=amd64 go test sAuthentication/*.go -coverprofile sAuthentication/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sMessage ' 1>>/tmp/tmp_$$.out
 go test sMessage/*.go -coverprofile sMessage/coverage.out 1>>/tmp/tmp_$$.out
