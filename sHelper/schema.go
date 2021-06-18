@@ -11,20 +11,14 @@ import (
 	"reflect"
 	"strings"
 
+	"gitlab.com/soteapps/packages/v2021/sAuthentication"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 const SHEMA_VERSION = 1 //temporary released request header inline
 
-type RequestHeaderSchema struct {
-	JsonWebToken   string   `json:"json-web-token"`
-	MessageId      string   `json:"message-id"`
-	AwsUserName    string   `json:"aws-user-name"`
-	OrganizationId int      `json:"organizations-id"`
-	RoleList       []string `json:"role-list"` //optional
-	DeviceId       int64    `json:"device-id"` //optional
-}
+type RequestHeaderSchema = sAuthentication.RequestHeaderSchema
 
 type FilterHeaderSchema struct {
 	Items    []string               `json:"items"`

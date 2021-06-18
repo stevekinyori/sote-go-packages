@@ -6,7 +6,7 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-const ENVDEFAULTAPPNAME = "internal-clearance"
+const ENVDEFAULTAPPNAME = "synadia"
 const ENVDEFAULTTARGET = "staging"
 
 type Environment struct {
