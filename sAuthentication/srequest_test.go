@@ -54,7 +54,7 @@ func TestInit(t *testing.T) {
 	flag.Lookup("test.count").Value.(flag.Getter).Set("0") //enable unittest validations
 }
 
-func TestScriptAcessMissingFile(t *testing.T) {
+func TestScriptAccessMissingFile(t *testing.T) {
 	os.Remove(DEVICE_FILE)
 	soteErr := validateBodyTest([]byte(`{
 		"aws-user-name": "soteuser",
@@ -64,9 +64,9 @@ func TestScriptAcessMissingFile(t *testing.T) {
 	AssertEqual(t, soteErr.FmtErrMsg, "208355: Token is invalid")
 }
 
-func TestScriptAcessInvalidEntry(t *testing.T) {
+func TestScriptAccessInvalidEntry(t *testing.T) {
 	os.Remove(DEVICE_FILE)
-	ioutil.WriteFile(DEVICE_FILE, []byte("HELLO WORLD"), 0)
+	ioutil.WriteFile(DEVICE_FILE, []byte("HELLO WORLD"), 0644)
 	soteErr := validateBodyTest([]byte(`{
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003,
@@ -75,10 +75,10 @@ func TestScriptAcessInvalidEntry(t *testing.T) {
 	AssertEqual(t, soteErr.FmtErrMsg, "208355: Token is invalid")
 }
 
-func TestScriptAcessTimeoutToken(t *testing.T) {
+func TestScriptAccessTimeoutToken(t *testing.T) {
 	now := fmt.Sprint(time.Now().Unix() - DEVICE_TIMEOUT)
 	os.Remove(DEVICE_FILE)
-	ioutil.WriteFile(DEVICE_FILE, []byte(now), 0)
+	ioutil.WriteFile(DEVICE_FILE, []byte(now), 0644)
 	soteErr := validateBodyTest([]byte(`{
 		"request-header": {
 			"aws-user-name": "soteuser",
@@ -89,10 +89,10 @@ func TestScriptAcessTimeoutToken(t *testing.T) {
 	AssertEqual(t, soteErr.FmtErrMsg, "208350: Token is expired")
 }
 
-func TestScriptAcess(t *testing.T) {
+func TestScriptAccess(t *testing.T) {
 	now := fmt.Sprint(time.Now().Unix())
 	os.Remove(DEVICE_FILE)
-	ioutil.WriteFile(DEVICE_FILE, []byte(now), 0)
+	ioutil.WriteFile(DEVICE_FILE, []byte(now), 0644)
 	soteErr := validateBodyTest([]byte(`{
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003,
