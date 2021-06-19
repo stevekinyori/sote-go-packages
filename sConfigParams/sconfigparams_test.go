@@ -151,8 +151,8 @@ func TestGetClientId(tPtr *testing.T) {
 	if _, soteErr := GetClientId("SCOTT", STAGING); soteErr.ErrCode != 109999 {
 		tPtr.Errorf("GetClientId failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr := GetClientId("", STAGING); soteErr.ErrCode != 200513 {
-		tPtr.Errorf("GetClientId failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+	if _, soteErr := GetClientId("", STAGING); soteErr.ErrCode != 109999 {
+		tPtr.Errorf("GetClientId failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidateEnvironment(tPtr *testing.T) {

@@ -316,19 +316,17 @@ func GetUserPoolId(environment string) (userPoolId string, soteErr sError.SoteEr
 GetClientId will retrieve the cognito client id for the allocation that is in AWS System Manager service for the ROOTPATH and
 environment.  Application and environment are required.
 */
-func GetClientId(application, environment string) (clientId string, soteErr sError.SoteError) {
+func GetClientId(clientName, environment string) (clientId string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tClientId interface{}
 
-	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tClientId, soteErr = getParameter(application, strings.ToLower(environment), CLIENTIDKEY)
+			tClientId, soteErr = getParameter(clientName, strings.ToLower(environment), CLIENTIDKEY)
 			if tClientId != nil {
 				clientId = tClientId.(string)
 			}
 		}
-	}
 
 	return
 }
