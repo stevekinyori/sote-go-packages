@@ -8,7 +8,7 @@ go run main.go --targetEnv production
 
 ### Update go.mod and git configuration
 require gitlab.com/soteapps/packages/v2021 latest
-git update-index --assume-unchanged
+git update-index --assume-unchanged go.mod
 
 ### The GOTRACEBACK variable controls the amount of output generated
 GOTRACEBACK=system
