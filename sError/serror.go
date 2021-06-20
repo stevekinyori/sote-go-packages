@@ -17,6 +17,7 @@ package sError
 import (
 	"encoding/json"
 	"fmt"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -181,7 +182,7 @@ var (
 		210499: {210499, GENERALERROR, 0, "None", ": Synadia error has occurred that is not expected.", EmptyMap, ""},
 		210599: {210599, GENERALERROR, 0, "None", ": Business Service error has occurred that is not expected.", EmptyMap, ""},
 	}
-	testMode     = false
+	testMode = false
 )
 
 /*
@@ -306,6 +307,10 @@ func GetSError(code int, params []interface{}, errorDetails map[string]string) (
 			soteErr.FmtErrMsg = strconv.Itoa(code) + fmt.Sprintf(soteErr.FmtErrMsg, params...) + fmt.Sprintf(formatErrorDetails(soteErr.ErrorDetails))
 		}
 	}
+	_, file, no, ok := runtime.Caller(1)
+	if ok {
+		sLogger.Info(fmt.Sprintf("called from %s#%d\n", file, no))
+	}
 	return
 }
 
@@ -418,4 +423,3 @@ func formatErrorDetails(tErrDetails map[string]string) (errDetails string) {
 
 	return
 }
-

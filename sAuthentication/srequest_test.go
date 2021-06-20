@@ -25,10 +25,10 @@ func AssertEqual(t *testing.T, actual, expected interface{}) {
 }
 
 func validateBodyTest(data []byte) sError.SoteError {
-	return ValidateBody(data, "internal-clearance", sConfigParams.STAGING, true)
+	return ValidateBody(data, sConfigParams.STAGING, true)
 }
 
-func validateBodyMock(data []byte, tApplication, tEnvironment string) sError.SoteError {
+func validateBodyMock(data []byte, tEnvironment string) sError.SoteError {
 	var (
 		validPatch  *monkey.PatchGuard
 		verifyPatch *monkey.PatchGuard
@@ -42,7 +42,7 @@ func validateBodyMock(data []byte, tApplication, tEnvironment string) sError.Sot
 		verifyPatch.Unpatch()
 		return nil
 	})
-	return ValidateBody(data, tApplication, tEnvironment, true)
+	return ValidateBody(data, tEnvironment, true)
 }
 
 func TestInit(t *testing.T) {
@@ -145,39 +145,39 @@ func TestRequestExpiredToken(t *testing.T) {
 	AssertEqual(t, soteErr.FmtErrMsg, "208350: Token is expired")
 }
 
-func TestRequestInvalidEnvironment(t *testing.T) {
+/*func TestRequestInvalidEnvironment(t *testing.T) {
 	soteErr := ValidateBody([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
 	}`), "internal-clearance", sConfigParams.DEVELOPMENT, true)
 	AssertEqual(t, soteErr.FmtErrMsg, "208355: Token is invalid")
-}
+}*/
 
 func TestRequestInvalidKid(t *testing.T) {
 	soteErr := validateBodyMock([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
-	}`), SDCC, sConfigParams.DEVELOPMENT)
+	}`), sConfigParams.DEVELOPMENT)
 	AssertEqual(t, soteErr.FmtErrMsg, "209521: Kid (e8+xMn+8f+fiH/Nd3Cdcq9ToSqO+7YbW//ILBaRrLIM=) was not found in public key set")
 }
 
-func TestRequestInvalidAppName(t *testing.T) {
+/*func TestRequestInvalidAppName(t *testing.T) {
 	soteErr := validateBodyMock([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
-	}`), SDCC, sConfigParams.STAGING)
+	}`), sConfigParams.STAGING)
 	AssertEqual(t, soteErr.FmtErrMsg, "208340: client id is not valid for this application")
-}
+}*/
 
 func TestRequestRequesrHeaderReleaseOne(t *testing.T) {
 	soteErr := validateBodyMock([]byte(`{
 		"json-web-token": "`+stagingExpToken+`",
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
-	}`), "internal-clearance", sConfigParams.STAGING)
+	}`), sConfigParams.STAGING)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
 }
 
@@ -188,6 +188,6 @@ func TestRequestRequesrHeaderFutureReleases(t *testing.T) {
 			"aws-user-name": "soteuser",
 			"organizations-id": 10003
 		}
-	}`), "internal-clearance", sConfigParams.STAGING)
+	}`), sConfigParams.STAGING)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
 }

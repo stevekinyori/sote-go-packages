@@ -37,37 +37,38 @@ func init() {
 
 func TestValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
+	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidMissingSegmentToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidFakeToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
+	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.FmtErrMsg)
 	}
 }
-func TestValidTokenMissingParams(tPtr *testing.T) {
+
+/*func TestValidTokenMissingParams(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken("", sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 200514 {
+	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 200514 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 200514 %v", soteErr.FmtErrMsg)
 	}
-}
+}*/
 func TestInValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(SDCC, sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
+	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.FmtErrMsg)
 	}
 }
@@ -118,29 +119,29 @@ func TestFetchPublicKey(tPtr *testing.T) {
 }
 func TestValidateClaims(tPtr *testing.T) {
 	var claims jwt.MapClaims
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208370 {
+	if soteErr := validateClaims(claims, sConfigParams.STAGING); soteErr.ErrCode != 208370 {
 		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208370")
 	}
 	claims = make(map[string]interface{})
 	claims["scope"] = "scott.fake.scope"
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
+	if soteErr := validateClaims(claims, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
 		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
 	claims = make(map[string]interface{})
 	claims["token_use"] = "scott.fake.use"
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
+	if soteErr := validateClaims(claims, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
 		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
 	claims = make(map[string]interface{})
 	claims["iss"] = "scott.fake.iss"
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
+	if soteErr := validateClaims(claims, sConfigParams.STAGING); soteErr.ErrCode != 208360 {
 		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
 	}
-	claims = make(map[string]interface{})
+	/*claims = make(map[string]interface{})
 	claims["client_id"] = "scott.fake.client_id"
-	if soteErr := validateClaims(claims, SDCC, sConfigParams.STAGING); soteErr.ErrCode != 208340 {
+	if soteErr := validateClaims(claims, sConfigParams.STAGING); soteErr.ErrCode != 208340 {
 		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208340")
-	}
+	}*/
 }
 func TestValidateClientId(tPtr *testing.T) {
 	clientId, soteErr := sConfigParams.GetClientId(SDCC, sConfigParams.STAGING)
