@@ -409,9 +409,10 @@ func (s *Schema) Parse(data []byte, body interface{}) (soteErr sError.SoteError)
 	return
 }
 
-func (s *Schema) JWTParse(env Environment, data []byte, body interface{}) (soteErr sError.SoteError) {
-	if soteErr = sAuthentication.ValidateBody(data, env.TargetEnvironment, env.TestMode); soteErr.ErrCode == nil {
-		soteErr = s.Parse(data, body)
+func (s *Schema) ParseAndValidate(env Environment, data []byte, body interface{}) (rh RequestHeaderSchema, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+	if soteErr = s.Parse(data, body); soteErr.ErrCode == nil {
+		rh, soteErr = sAuthentication.ValidateBody(data, env.TargetEnvironment, env.TestMode)
 	}
 	return
 }

@@ -3,10 +3,13 @@ package sHelper
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
 )
@@ -642,4 +645,39 @@ func TestSchemaFunctionalInvalidFile(t *testing.T) {
 		AssertEqual(t, r != nil, true)
 	}()
 	loadDefinition(&Schema{}, "", "", "file:///")
+}
+
+func TestParseAndValidate(t *testing.T) {
+	fileName := "coverage.out"
+	now := fmt.Sprint(time.Now().Unix())
+	os.Remove(fileName)
+	ioutil.WriteFile(fileName, []byte(now), 0644)
+	schema := Schema{
+		FileName:  "schema_test.json",
+		StructRef: &TestSchema{},
+	}
+	soteErr := schema.Validate()
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	body := TestSchema{}
+	env := Environment{
+		TargetEnvironment: "staging",
+		TestMode:          true,
+	}
+	header, soteErr := schema.ParseAndValidate(env, []byte(`{
+		"request-header": {
+			"aws-user-name": "soteuser",
+			"organizations-id": 10003,
+			"device-id": `+now+`
+		},
+		"field1": "Hello",
+		"field2": "World"
+	}`), &body)
+	fmt.Println(header)
+	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, body.Field1, "Hello")
+	AssertEqual(t, body.Field2, "World")
+	AssertEqual(t, body.Field3, "VALUE1")
+	AssertEqual(t, header.AwsUserName, "soteuser")
+	AssertEqual(t, header.OrganizationId, 10003)
+	AssertEqual(t, fmt.Sprint(header.DeviceId), now)
 }

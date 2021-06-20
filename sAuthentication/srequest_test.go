@@ -25,7 +25,8 @@ func AssertEqual(t *testing.T, actual, expected interface{}) {
 }
 
 func validateBodyTest(data []byte) sError.SoteError {
-	return ValidateBody(data, sConfigParams.STAGING, true)
+	_, soteError := ValidateBody(data, sConfigParams.STAGING, true)
+	return soteError
 }
 
 func validateBodyMock(data []byte, tEnvironment string) sError.SoteError {
@@ -42,7 +43,8 @@ func validateBodyMock(data []byte, tEnvironment string) sError.SoteError {
 		verifyPatch.Unpatch()
 		return nil
 	})
-	return ValidateBody(data, tEnvironment, true)
+	_, soteError := ValidateBody(data, tEnvironment, true)
+	return soteError
 }
 
 func TestInit(t *testing.T) {
