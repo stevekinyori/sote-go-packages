@@ -408,3 +408,10 @@ func (s *Schema) Parse(data []byte, body interface{}) (soteErr sError.SoteError)
 	}
 	return
 }
+
+func (s *Schema) JWTParse(env Environment, data []byte, body interface{}) (soteErr sError.SoteError) {
+	if soteErr = sAuthentication.ValidateBody(data, env.TargetEnvironment, env.TestMode); soteErr.ErrCode == nil {
+		soteErr = s.Parse(data, body)
+	}
+	return
+}
