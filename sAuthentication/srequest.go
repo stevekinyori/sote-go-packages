@@ -31,7 +31,7 @@ type RequestHeader struct {
 	Header RequestHeaderSchema `json:"request-header"`
 }
 
-func ValidateBody(data []byte, tApplication, tEnvironment string, isTestMode bool) (soteErr sError.SoteError) {
+func ValidateBody(data []byte, tEnvironment string, isTestMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	rh := RequestHeader{}
 	json.Unmarshal(data, &rh) //flush stream
@@ -88,7 +88,7 @@ func ValidateBody(data []byte, tApplication, tEnvironment string, isTestMode boo
 		if accessToken == "" {
 			accessToken = rh.JsonWebToken
 		}
-		soteErr = ValidToken(tApplication, tEnvironment, accessToken)
+		soteErr = ValidToken(tEnvironment, accessToken)
 	}
 	return
 }

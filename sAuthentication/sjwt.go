@@ -11,9 +11,9 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.SoteError) {
+func ValidToken(tEnvironment, rawToken string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
-	if tApplication != "" && tEnvironment != "" && rawToken != "" {
+	if tEnvironment != "" && rawToken != "" {
 		if len(strings.Split(rawToken, ".")) == 3 {
 			token, err := jwt.Parse(rawToken, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
@@ -55,7 +55,7 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 
 			if soteErr.ErrCode == nil {
 				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-					soteErr = validateClaims(claims, tApplication, tEnvironment)
+					soteErr = validateClaims(claims, tEnvironment)
 				} else {
 					soteErr = sError.GetSError(208355, nil, sError.EmptyMap)
 				}
@@ -65,7 +65,7 @@ func ValidToken(tApplication, tEnvironment, rawToken string) (soteErr sError.Sot
 			sLogger.Info(soteErr.FmtErrMsg)
 		}
 	} else {
-		soteErr = sError.GetSError(200514, sError.BuildParams([]string{"tApplication", "tEnvironment", "rawToken"}), sError.EmptyMap)
+		soteErr = sError.GetSError(200514, sError.BuildParams([]string{"tEnvironment", "rawToken"}), sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
@@ -134,7 +134,7 @@ func fetchPublicKey(region, userPoolId, tEnvironment string) (keySet jwk.Set, so
 /*
 This checks if the claim in the token are valid
 */
-func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (soteErr sError.SoteError) {
+func validateClaims(claims jwt.MapClaims, tEnvironment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -180,18 +180,18 @@ func validateClaims(claims jwt.MapClaims, tApplication, tEnvironment string) (so
 					soteErr = sError.GetSError(208360, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 					sLogger.Info(soteErr.FmtErrMsg)
 				}
-			case "client_id":
+				/*case "client_id":
 				claimCount++
 				if soteErr = validateClientId(claim.(string), tApplication, tEnvironment); soteErr.ErrCode == nil {
 					sLogger.Info("Claim (client_id) was found")
-				}
+				}*/
 			}
 		} else {
 			break
 		}
 	}
 
-	if claimCount != 4 && soteErr.ErrCode == nil {
+	if claimCount != 3 && soteErr.ErrCode == nil {
 		soteErr = sError.GetSError(208370, nil, sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
