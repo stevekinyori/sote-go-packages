@@ -7,13 +7,14 @@ import (
 	"math"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-const DEVICE_FILE = "../coverage.out"
+const DEVICE_FILE = "coverage.out"
 const DEVICE_TIMEOUT = 30
 
 type RequestHeaderSchema struct {
@@ -63,10 +64,9 @@ func ValidateBody(data []byte, tEnvironment string, isTestMode bool) (RequestHea
 			path, _ := filepath.Abs(DEVICE_FILE)
 			fileData, err := ioutil.ReadFile(path)
 			if err != nil {
-				sLogger.Debug(err.Error())
-				return rh.Header, sError.GetSError(208355, nil, nil)
+				return rh.Header, sError.GetSError(209010, []interface{}{DEVICE_FILE, err.Error()}, nil)
 			} else {
-				t, err := strconv.ParseInt(string(fileData), 10, 0)
+				t, err := strconv.ParseInt(strings.TrimSpace(string(fileData)), 10, 0)
 				if err != nil {
 					sLogger.Debug(err.Error())
 					return rh.Header, sError.GetSError(208355, nil, nil)
