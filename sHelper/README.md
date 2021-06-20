@@ -6,6 +6,10 @@ go run main.go
 or
 go run main.go --targetEnv production
 
+### Update go.mod and git configuration
+require gitlab.com/soteapps/packages/v2021 latest
+git update-index --assume-unchanged
+
 ### The GOTRACEBACK variable controls the amount of output generated
 GOTRACEBACK=system
 (is like "all" but adds stack frames for run-time functions and shows goroutines created internally by the run-time.)
