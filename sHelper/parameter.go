@@ -3,7 +3,9 @@ package sHelper
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/nats-io/jsm.go/natscontext"
 	"gitlab.com/soteapps/packages/v2021/sConfigParams"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 
@@ -19,9 +21,12 @@ type Parameter struct {
 
 func (p Parameter) Init() Environment {
 	sLogger.DebugMethod()
-	applicationName := ENVDEFAULTAPPNAME
-	targetEnvironment := ENVDEFAULTTARGET
-	isVerbose := false
+	var (
+		targetEnvironment string
+		applicationName   = ENVDEFAULTAPPNAME
+		isVerbose         = false
+	)
+
 	appDescription := `%s.
 		Version:
 			- %s
@@ -62,6 +67,14 @@ func (p Parameter) Init() Environment {
 		sLogger.SetLogLevelDebug()
 	}
 	sLogger.SetLogMessagePrefix(applicationName)
+
+	if targetEnvironment == "" {
+		targetEnvironment = natscontext.SelectedContext() //sote-{ENV}
+		if targetEnvironment == "" {
+			targetEnvironment = ENVDEFAULTTARGET
+		}
+		targetEnvironment = strings.Replace(targetEnvironment, "sote-", "", 1)
+	}
 
 	appEnvironment, soteErr := sConfigParams.GetEnvironmentAppEnvironment()
 	if soteErr.ErrCode != nil && appEnvironment == "" {

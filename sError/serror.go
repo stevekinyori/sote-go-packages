@@ -309,7 +309,10 @@ func GetSError(code int, params []interface{}, errorDetails map[string]string) (
 	}
 	_, file, no, ok := runtime.Caller(1)
 	if ok {
-		sLogger.Info(fmt.Sprintf("called from %s#%d\n", file, no))
+		for i := 2; ok && strings.HasSuffix(file, "/packages/sHelper/error.go"); i++ {
+			_, file, no, ok = runtime.Caller(i)
+		}
+		sLogger.Info(fmt.Sprintf("called from %s#%d", file, no))
 	}
 	return
 }

@@ -1,7 +1,9 @@
 package sHelper
 
 import (
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/integrii/flaggy"
@@ -26,6 +28,7 @@ func TestParameterInit(t *testing.T) {
 
 func TestParameterDefaultEnv(t *testing.T) {
 	os.Setenv("APP_ENVIRONMENT", "")
+	os.Setenv("XDG_CONFIG_HOME", "")
 	params := newParam()
 	env := params.Init()
 	AssertEqual(t, flaggy.DefaultParser.Version, params.Version)
@@ -91,4 +94,19 @@ func TestParameterInvalidEnv(t *testing.T) {
 		AssertEqual(t, r, "Panic instead of exit with code: 2")
 	}()
 	newParam().Init()
+}
+
+func TestParameterTargetEnv(t *testing.T) {
+	flaggy.ResetParser()
+	parent := "./"
+	tempNatsDir := filepath.Join(parent, "nats")
+	os.Setenv("XDG_CONFIG_HOME", parent)
+	os.Mkdir(tempNatsDir, 0644)
+	ioutil.WriteFile(filepath.Join(tempNatsDir, "context.txt"), []byte("sote-production"), 0644)
+	os.Args = []string{"main"}
+	params := newParam()
+	env := params.Init()
+	os.RemoveAll(tempNatsDir)
+	os.Setenv("XDG_CONFIG_HOME", "")
+	AssertEqual(t, env.TargetEnvironment, "production")
 }
