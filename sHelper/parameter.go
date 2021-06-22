@@ -23,6 +23,7 @@ func (p Parameter) Init() Environment {
 	sLogger.DebugMethod()
 	var (
 		targetEnvironment string
+		configHomeDir     string
 		applicationName   = ENVDEFAULTAPPNAME
 		isVerbose         = false
 	)
@@ -56,6 +57,9 @@ func (p Parameter) Init() Environment {
 	flaggy.String(&targetEnvironment, "t", "targetEnv",
 		"Pulls configuration information from aws based on the environment supplied (development|staging|demo|production).  "+
 			"This requires that you have aws credentials/config setup on the system at ~/.aws. (default: '"+ENVDEFAULTTARGET+"')")
+	flaggy.String(&configHomeDir, "c", "config",
+		"Defines the base directory relative to which user-specific configuration files should be stored. If $XDG_CONFIG_HOME is either not set or empty, "+
+			"a default equal to $HOME/.config should be used.")
 	flaggy.Bool(&isVerbose, "v", "verbose",
 		"Verbose output: log all tests as they are run. Also print all text from Log and Logf calls even if the test succeeds.")
 
@@ -69,6 +73,9 @@ func (p Parameter) Init() Environment {
 	sLogger.SetLogMessagePrefix(applicationName)
 
 	if targetEnvironment == "" {
+		if configHomeDir != "" {
+			os.Setenv("XDG_CONFIG_HOME", configHomeDir)
+		}
 		targetEnvironment = natscontext.SelectedContext() //sote-{ENV}
 		if targetEnvironment == "" {
 			targetEnvironment = ENVDEFAULTTARGET

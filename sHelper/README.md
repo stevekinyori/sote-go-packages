@@ -22,8 +22,11 @@ go test ./sHelper/... -cover
 
 go test ./sHelper/ -coverprofile=coverage.out && go tool cover -func=coverage.out
 
-### Optional variable XDG_CONFIG_HOME if the path to the NATS_CLI .config directory is not under user $HOME
-export XDG_CONFIG_HOME=C:\\Users\\%USERNAME%\\AppData\\Local\\Packages\\CanonicalGroupLimited.Ubuntu20.04onWindows_%xxx%\\LocalState\\rootfs\\home\\dgofman\\.config
+### Optional variable XDG_CONFIG_HOME if the path to the $HOME/.config directory
+```
+Windows/Ubuntu Path
+export XDG_CONFIG_HOME=C:\\Users\\%USERNAME%\\AppData\\Local\\Packages\\CanonicalGroupLimited.Ubuntu20.04onWindows_%xxx%\\LocalState\\rootfs\\home\\%USERNAME%\\.config
+```
 
 ### main.go
 ```
