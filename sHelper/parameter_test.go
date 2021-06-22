@@ -98,9 +98,10 @@ func TestParameterInvalidEnv(t *testing.T) {
 
 func TestParameterTargetEnv(t *testing.T) {
 	flaggy.ResetParser()
-	parent := "./"
+	parent, _ := filepath.Abs(".config")
 	tempNatsDir := filepath.Join(parent, "nats")
-	os.Mkdir(tempNatsDir, 0644)
+	err := os.MkdirAll(tempNatsDir, os.ModePerm)
+	AssertEqual(t, err, nil)
 	ioutil.WriteFile(filepath.Join(tempNatsDir, "context.txt"), []byte("sote-production"), 0644)
 	os.Args = []string{"main", "--config", parent}
 	params := newParam()
