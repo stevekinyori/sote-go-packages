@@ -1,8 +1,10 @@
 package sDatabase
 
 import (
+	"runtime"
 	"testing"
 
+	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
@@ -115,4 +117,23 @@ func TestSRows(tPtr *testing.T) {
 		tPtr.Errorf("TestSRows testing creation of SRows variable Failed: Expected error code to be nil.")
 		tPtr.Fail()
 	}
+}
+func getMyDBConn(tPtr *testing.T) (myDBConn ConnInfo, soteErr sError.SoteError) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+	)
+
+	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
+		tPtr.Errorf("%v Failed: Expected error code to be nil.", testName)
+		tPtr.Fatal()
+	}
+
+	myDBConn, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
+	if soteErr.ErrCode != nil {
+		tPtr.Errorf("%v Failed: Expected a nil error code.", testName)
+		tPtr.Fail()
+	}
+
+	return
 }

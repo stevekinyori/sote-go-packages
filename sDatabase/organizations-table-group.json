@@ -1,0 +1,13 @@
+{
+  "table-group-name": "organizations",
+  "schema": "sote",
+  "tables": [
+    "organizations",
+    "organizationshistory",
+    "organizationproducts",
+    "organizationroles",
+    "organizationclientcompany",
+    "organizationclientcompanyhistory",
+    "organizationcompanysuppliers"
+  ]
+}

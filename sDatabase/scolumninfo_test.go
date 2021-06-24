@@ -67,22 +67,3 @@ func TestGetColumnInfo(tPtr *testing.T) {
 
 	tConnInfo.DBPoolPtr.Close()
 }
-func getMyDBConn(tPtr *testing.T) (myDBConn ConnInfo, soteErr sError.SoteError) {
-	var (
-		function, _, _, _ = runtime.Caller(0)
-		testName          = runtime.FuncForPC(function).Name()
-	)
-
-	if soteErr = GetAWSParams(); soteErr.ErrCode != nil {
-		tPtr.Errorf("%v Failed: Expected error code to be nil.", testName)
-		tPtr.Fatal()
-	}
-
-	myDBConn, soteErr = GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
-	if soteErr.ErrCode != nil {
-		tPtr.Errorf("%v Failed: Expected a nil error code.", testName)
-		tPtr.Fail()
-	}
-
-	return
-}
