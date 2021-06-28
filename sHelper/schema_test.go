@@ -672,7 +672,6 @@ func TestParseAndValidate(t *testing.T) {
 		"field1": "Hello",
 		"field2": "World"
 	}`), &body)
-	fmt.Println(header)
 	AssertEqual(t, soteErr.FmtErrMsg, "")
 	AssertEqual(t, body.Field1, "Hello")
 	AssertEqual(t, body.Field2, "World")
