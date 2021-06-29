@@ -16,7 +16,6 @@ type Subscriber struct {
 	ConsumerName string
 	Subject      string
 	Schema       *Schema
-	Brodcast     *Brodcast
 	Listener     MessageListener
 
 	PullSubscribe   func() sError.SoteError
@@ -44,9 +43,6 @@ func NewSubscriber(r *Run, consumerName, subject string, streamName ...string) *
 		Publish:         s.publish,
 		PublishMessage:  s.publishMessage,
 		DoFetch:         s.doFetch,
-	}
-	s.Brodcast = &Brodcast{
-		subscriber: &s,
 	}
 	if len(streamName) == 1 {
 		s.StreamName = streamName[0]
