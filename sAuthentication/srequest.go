@@ -5,6 +5,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"math"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -14,7 +15,7 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-const DEVICE_FILE = "coverage.out"
+const DEVICE_FILE = ".git/device.info"
 const DEVICE_TIMEOUT = 30
 
 type RequestHeaderSchema struct {
@@ -61,6 +62,8 @@ func ValidateBody(data []byte, tEnvironment string, isTestMode bool) (RequestHea
 			}
 		}
 		if rh.Header.DeviceId != 0 { //access from test scripts
+			git, _ := filepath.Abs(".git")
+			os.MkdirAll(git, os.ModePerm)
 			path, _ := filepath.Abs(DEVICE_FILE)
 			fileData, err := ioutil.ReadFile(path)
 			if err != nil {

@@ -64,7 +64,7 @@ func TestScriptAccessMissingFile(t *testing.T) {
 		"organizations-id": 10003,
 		"device-id": 123456789
 	}`))
-	AssertEqual(t, strings.Split(soteErr.FmtErrMsg, " Message return:")[0], "209010: coverage.out file was not found.")
+	AssertEqual(t, strings.Split(soteErr.FmtErrMsg, " Message return:")[0], "209010: .git/device.info file was not found.")
 }
 
 func TestScriptAccessInvalidEntry(t *testing.T) {
