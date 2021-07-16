@@ -26,6 +26,7 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
+// Deprecated: This file/struct has been deprecated, use Exception instead
 type SoteError struct {
 	ErrCode          interface{}
 	ErrType          string
@@ -182,7 +183,6 @@ var (
 		210499: {210499, GENERALERROR, 0, "None", ": Synadia error has occurred that is not expected.", EmptyMap, ""},
 		210599: {210599, GENERALERROR, 0, "None", ": Business Service error has occurred that is not expected.", EmptyMap, ""},
 	}
-	testMode = false
 )
 
 /*

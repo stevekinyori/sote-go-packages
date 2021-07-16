@@ -331,7 +331,7 @@ func TestGenerateDocumentation(tPtr *testing.T) {
 }
 func TestOutputErrorJSON(tPtr *testing.T) {
 	var (
-		errCode             = 999999999
+		errCode               = 999999999
 		s       []interface{} = BuildParams([]string{""})
 		x       []byte
 	)
