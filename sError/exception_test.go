@@ -7,8 +7,8 @@ import (
 )
 
 func TestExceptionParams(t *testing.T) {
-	compare(t, fmt.Sprintf("%v"+ItemAlreadyExists.fmtErrMsg, ItemAlreadyExists.errCode, "A"), ItemAlreadyExists.Params("A").fmtErrMsg)
-	compare(t, fmt.Sprintf("%v"+InvalidParameterCount.fmtErrMsg, InvalidParameterCount.errCode, 1, 2), ItemAlreadyExists.Params("A", "B").fmtErrMsg)
+	compare(t, fmt.Sprintf("%v"+ItemAlreadyExists.fmtErrMsg, ItemAlreadyExists.errCode, "A"), ItemAlreadyExists.SetParams("A").fmtErrMsg)
+	compare(t, fmt.Sprintf("%v"+InvalidParameterCount.fmtErrMsg, InvalidParameterCount.errCode, 1, 2), ItemAlreadyExists.SetParams("A", "B").fmtErrMsg)
 }
 
 func TestExceptionGetException(t *testing.T) {
@@ -16,12 +16,13 @@ func TestExceptionGetException(t *testing.T) {
 }
 
 func TestExceptionString(t *testing.T) {
-	ex := ItemAlreadyExists.Params("A").Details("File Already Exists")
+	ex := ItemAlreadyExists.SetParams("A").SetDetails("File Already Exists")
+	ex.LogInfo()
 	compare(t, "100000: A already exists\nFile Already Exists", ex.String())
 }
 
 func TestExceptionJson(t *testing.T) {
-	exJson := ItemAlreadyExists.Params("A").Details("File Already Exists").Json()
+	exJson := ItemAlreadyExists.SetParams("A").SetDetails("File Already Exists").GenerateJson()
 	props := []string{
 		`"ErrCode": 100000`,
 		`"ErrorDetails": "File Already Exists"`,
@@ -40,7 +41,7 @@ func TestExceptionDocumentation(t *testing.T) {
 	x := ItemAlreadyExists
 	xMarkDown := fmt.Sprintf("| %v | %v | %v |\n", x.errCode, x.paramDescription, x.fmtErrMsg)
 	xFuncComments := fmt.Sprintf("\t\t%v\t%v > %v\n", x.errCode, x.paramDescription, x.fmtErrMsg)
-	markDown, funcComments := ExceptionDocumentation()
+	markDown, funcComments := GenerateDoc()
 	if !strings.Contains(markDown, xMarkDown) {
 		t.Fatal("Cannot find markDown: " + xMarkDown)
 	}
@@ -130,16 +131,16 @@ func validate(t *testing.T, ex Exception) {
 		fmtErrMsg = ex.fmtErrMsg
 	)
 	if ex.paramCount == 0 {
-		newEx = ex.Details("Custom Error Message")
+		newEx = ex.SetDetails("Custom Error Message")
 		compare(t, "Custom Error Message", newEx.errorDetails)
 	} else if ex.paramCount > 0 {
 		params := []interface{}{"A", "B", "C", "D", "E", "F"}[:ex.paramCount]
-		newEx = ex.Params(params...)
+		newEx = ex.SetParams(params...)
 		compare(t, fmt.Sprint(ex.errCode)+fmt.Sprintf(fmtErrMsg, params...), newEx.fmtErrMsg)
 	}
 	compare(t, fmtErrMsg, ex.fmtErrMsg)
 	compare(t, "", ex.errorDetails)
-	compare(t, ex.Code(), newEx.Code())
+	compare(t, ex.GetCode(), newEx.GetCode())
 }
 
 func compare(t *testing.T, expected, actual interface{}) {
