@@ -16,13 +16,13 @@ func TestExceptionGetException(t *testing.T) {
 }
 
 func TestExceptionString(t *testing.T) {
-	ex := ItemAlreadyExists.SetParams("A").SetDetails("File Already Exists")
+	ex := ItemAlreadyExists.SetDetails("File Already Exists").SetParams("A")
 	ex.LogInfo()
 	compare(t, "100000: A already exists\nFile Already Exists", ex.String())
 }
 
 func TestExceptionJson(t *testing.T) {
-	exJson := ItemAlreadyExists.SetParams("A").SetDetails("File Already Exists").GenerateJson()
+	exJson := ItemAlreadyExists.SetDetails("File Already Exists").SetParams("A").GenerateJson()
 	props := []string{
 		`"ErrCode": 100000`,
 		`"ErrorDetails": "File Already Exists"`,
