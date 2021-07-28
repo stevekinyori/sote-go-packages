@@ -23,6 +23,20 @@ func Test100100Error(tPtr *testing.T) {
 	s := BuildParams([]string{"SUPER_USER, EXECUTIVE", "DELETE"})
 	validateReply(tPtr, errCode, s, GetSError(errCode, s, EmptyMap))
 }
+func Test100200Error(tPtr *testing.T) {
+	var errCode = 100200
+	validateReply(tPtr, errCode, nil, GetSError(errCode, nil, EmptyMap))
+}
+func Test100500Error(tPtr *testing.T) {
+	var errCode = 100500
+	s := BuildParams([]string{"OBJECT"})
+	validateReply(tPtr, errCode, s, GetSError(errCode, s, EmptyMap))
+}
+func Test100600Error(tPtr *testing.T) {
+	var errCode = 100600
+	s := BuildParams([]string{"OBJECT"})
+	validateReply(tPtr, errCode, s, GetSError(errCode, s, EmptyMap))
+}
 func Test101010Error(tPtr *testing.T) {
 	var errCode = 101010
 	s := BuildParams([]string{"SERVICE_NAME"})

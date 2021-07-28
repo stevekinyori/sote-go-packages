@@ -68,6 +68,7 @@ var (
 		100100: {100100, USERERROR, 2, "List of users roles, Requested action", ": Your roles %v are not authorized to %v", EmptyMap, ""},
 		100200: {100200, PROCESSERROR, 0, "None", ": Row has been updated since reading it, re-read the row", EmptyMap, ""},
 		100500: {100500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, ""},
+		100600: {100600, PROCESSERROR, 1, "Item is not active", ": You are making changes to an inactive %v", EmptyMap, ""},
 		101010: {101010, PROCESSERROR, 1, "Service Name", ": %v timed out", EmptyMap, ""},
 		109999: {109999, USERERROR, 1, "Item name", ": %v was/were not found", EmptyMap, ""},
 		199999: {199999, GENERALERROR, 1, "Error Details", ": An error has occurred that is not expected. See Log! %v", EmptyMap, ""},
@@ -193,6 +194,7 @@ var (
 		100100	List of users roles, Requested action > : Your roles %v are not authorized to %v
 		100200	None > : Row has been updated since reading it, re-read the row
 		100500	Thing being changed > : You are making changes to a canceled or completed %v
+		100600	Item is not active > : You are making changes to an inactive %v
 		101010	Service Name > : %v timed out
 		109999	Item name > : %v was/were not found
 		199999	Error Details > : An error has occurred that is not expected. See Log! %v

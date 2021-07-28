@@ -55,6 +55,7 @@ func TestValidateExceptions(t *testing.T) {
 	validate(t, NotAuthorized)
 	validate(t, DirtyRead)
 	validate(t, CanceledComplete)
+	validate(t, ItemInactive)
 	validate(t, TimeOut)
 	validate(t, ItemNotFound)
 	validate(t, UnexpectedError)

@@ -112,6 +112,8 @@ var (
 	DirtyRead        = newException(100200, 0, "None", ": Row has been updated since reading it, re-read the row")
 	CanceledComplete = newException(100500, 1, "Thing being changed",
 		": You are making changes to a canceled or completed %v")
+	ItemInactive = newException(100500, 1, "Item is not active",
+		": You are making changes to an inactive %v")
 	TimeOut              = newException(101010, 1, "Service Name", ": %v timed out")
 	ItemNotFound         = newException(109999, 1, "Item name", ": %v was/were not found")
 	UnexpectedError      = newException(199999, 1, "Error Details", ": An error has occurred that is not expected. See Log! %v")
