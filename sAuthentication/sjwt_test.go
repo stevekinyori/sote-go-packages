@@ -60,12 +60,12 @@ func TestInValidSignatureToken(tPtr *testing.T) {
 	}
 }
 
-/*func TestValidTokenMissingParams(tPtr *testing.T) {
+func TestValidTokenMissingParams(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 200514 {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 200514 %v", soteErr.FmtErrMsg)
+	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, ""); soteErr.ErrCode != 200512 {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be 200512 %v", soteErr.FmtErrMsg)
 	}
-}*/
+}
 func TestInValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
 	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {

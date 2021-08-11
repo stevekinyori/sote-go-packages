@@ -65,7 +65,7 @@ func ValidToken(tEnvironment, rawToken string) (soteErr sError.SoteError) {
 			sLogger.Info(soteErr.FmtErrMsg)
 		}
 	} else {
-		soteErr = sError.GetSError(200514, sError.BuildParams([]string{"tEnvironment", "rawToken"}), sError.EmptyMap)
+		soteErr = sError.GetSError(200512, sError.BuildParams([]string{"Environment", "Token"}), sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
