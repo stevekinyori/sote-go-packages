@@ -20,13 +20,11 @@ func TestNew(tPtr *testing.T) {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestNewExpect210090(tPtr *testing.T) {
 	if _, soteErr := New("", TOKEN); soteErr.ErrCode != 210090 {
 		tPtr.Errorf("New Failed: Expected error code 210090 but got : %v", soteErr.ErrCode)
 	}
 }
-
 func TestParamFormatting(tPtr *testing.T) {
 	var (
 		soteErr   sError.SoteError
@@ -47,7 +45,6 @@ func TestParamFormatting(tPtr *testing.T) {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestParamFormattingExpect207200(tPtr *testing.T) {
 	var (
 		soteErr   sError.SoteError
@@ -92,7 +89,6 @@ func TestConvertErrors(tPtr *testing.T) {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestConvertErrorsExpect200600(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -114,7 +110,6 @@ func TestConvertErrorsExpect200600(tPtr *testing.T) {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestConvertErrorsExpect207200(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -136,7 +131,6 @@ func TestConvertErrorsExpect207200(tPtr *testing.T) {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestHTTPCall(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -155,7 +149,6 @@ func TestHTTPCall(tPtr *testing.T) {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestHTTPCallExpect200600(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -174,7 +167,6 @@ func TestHTTPCallExpect200600(tPtr *testing.T) {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestGetExpect207200(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -186,14 +178,13 @@ func TestGetExpect207200(tPtr *testing.T) {
 			"q": "news",
 		}
 
-		if soteErr = httpm.Get("/get", reqParams); soteErr.ErrCode != 207200 {
+		if soteErr = httpm.Get("/get", reqParams, true); soteErr.ErrCode != 207200 {
 			tPtr.Errorf("Get failed: Expected error code 207200 but got %v", soteErr)
 		}
 	} else {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestGetExpect200600(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -205,14 +196,13 @@ func TestGetExpect200600(tPtr *testing.T) {
 			"q": "news",
 		}
 
-		if soteErr = httpm.Get("/delete", reqParams); soteErr.ErrCode != 200600 {
+		if soteErr = httpm.Get("/delete", reqParams,true); soteErr.ErrCode != 200600 {
 			tPtr.Errorf("Get failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestDeleteExpect207200(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -222,14 +212,13 @@ func TestDeleteExpect207200(tPtr *testing.T) {
 	if httpm, soteErr = New(SURL, TOKEN); soteErr.ErrCode == nil {
 		reqParams := make(map[string]interface{})
 
-		if soteErr = httpm.Delete("/delete", reqParams); soteErr.ErrCode != 207200 {
+		if soteErr = httpm.Delete("/delete", reqParams, true); soteErr.ErrCode != 207200 {
 			tPtr.Errorf("Post failed: Expected error code 207200 but got %v", soteErr.ErrCode)
 		}
 	} else {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestDeleteExpect200600(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -239,14 +228,13 @@ func TestDeleteExpect200600(tPtr *testing.T) {
 	if httpm, soteErr = New(SURL, TOKEN); soteErr.ErrCode == nil {
 		reqParams := make(map[string]interface{})
 
-		if soteErr = httpm.Delete("/get", reqParams); soteErr.ErrCode != 200600 {
+		if soteErr = httpm.Delete("/get", reqParams, true); soteErr.ErrCode != 200600 {
 			tPtr.Errorf("Post failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestPostExpect207200(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -258,14 +246,13 @@ func TestPostExpect207200(tPtr *testing.T) {
 			"name": "value",
 		}
 
-		if soteErr = httpm.Post("/post", reqParams); soteErr.ErrCode != 207200 {
+		if soteErr = httpm.Post("/post", reqParams, true); soteErr.ErrCode != 207200 {
 			tPtr.Errorf("Post failed: Expected error code 207200 but got %v", soteErr.ErrCode)
 		}
 	} else {
 		tPtr.Errorf("New failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 	}
 }
-
 func TestPostExpect200600(tPtr *testing.T) {
 	var (
 		soteErr sError.SoteError
@@ -277,7 +264,10 @@ func TestPostExpect200600(tPtr *testing.T) {
 			"name": "value",
 		}
 
-		if soteErr = httpm.Post("/get", reqParams); soteErr.ErrCode != 200600 {
+		if soteErr = httpm.Post("/get", reqParams, true); soteErr.ErrCode != 200600 {
+			tPtr.Errorf("Post failed: Expected error code 200600 but got %v", soteErr.ErrCode)
+		}
+		if soteErr = httpm.Post("/get", reqParams, false); soteErr.ErrCode != 200600 {
 			tPtr.Errorf("Post failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {

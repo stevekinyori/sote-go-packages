@@ -66,15 +66,15 @@ func (httpm *HTTPManager) setURL(sURL string) (soteErr sError.SoteError) {
 }
 
 /*
-	This will make a HTTP DELETE call to the set route with the supplied request parameters
+	This will make an HTTP DELETE call to the set route with the supplied request parameters
 */
-func (httpm *HTTPManager) Delete(route string, reqParams map[string]interface{}) (soteErr sError.SoteError) {
+func (httpm *HTTPManager) Delete(route string, reqParams map[string]interface{}, parseResult bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = httpm.paramFormatting(reqParams); soteErr.ErrCode == nil {
 		if soteErr = httpm.sHTTPCall("DELETE", route); soteErr.ErrCode == nil {
 			if soteErr = httpm.readHTTPResponse(); soteErr.ErrCode == nil {
-				soteErr = httpm.resultFormatting()
+				soteErr = httpm.parseJSONResult(parseResult)
 			}
 		}
 	}
@@ -83,15 +83,17 @@ func (httpm *HTTPManager) Delete(route string, reqParams map[string]interface{})
 }
 
 /*
-	This will make a HTTP GET call to the set route with the supplied request parameters
+	This will make an HTTP GET call to the set route with the supplied request parameters
+	Using the parseResult parameter, you can load the raw result or the JSON result
+	into the struct payloadManager.RetPack using the parseResult parameter (false = load row, true = parse JSON)
 */
-func (httpm *HTTPManager) Get(route string, reqParams map[string]interface{}) (soteErr sError.SoteError) {
+func (httpm *HTTPManager) Get(route string, reqParams map[string]interface{}, parseResult bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = httpm.paramFormatting(reqParams); soteErr.ErrCode == nil {
 		if soteErr = httpm.sHTTPCall("GET", route); soteErr.ErrCode == nil {
 			if soteErr = httpm.readHTTPResponse(); soteErr.ErrCode == nil {
-				soteErr = httpm.resultFormatting()
+				soteErr = httpm.parseJSONResult(parseResult)
 			}
 		}
 	}
@@ -100,15 +102,15 @@ func (httpm *HTTPManager) Get(route string, reqParams map[string]interface{}) (s
 }
 
 /*
-	This will make a HTTP POST call to the set route with the supplied request parameters
+	This will make an HTTP POST call to the set route with the supplied request parameters
 */
-func (httpm *HTTPManager) Post(route string, reqParams map[string]interface{}) (soteErr sError.SoteError) {
+func (httpm *HTTPManager) Post(route string, reqParams map[string]interface{}, parseResult bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = httpm.paramFormatting(reqParams); soteErr.ErrCode == nil {
 		if soteErr = httpm.sHTTPCall("POST", route); soteErr.ErrCode == nil {
 			if soteErr = httpm.readHTTPResponse(); soteErr.ErrCode == nil {
-				soteErr = httpm.resultFormatting()
+				soteErr = httpm.parseJSONResult(parseResult)
 			}
 		}
 	}
@@ -136,7 +138,6 @@ func (httpm *HTTPManager) sHTTPCall(method string, route string) (soteErr sError
 			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
-
 	case "POST":
 		if httpm.sHTTPResponse, err = httpm.httpclient.Post(httpm.sURL+route, httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
 			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
@@ -197,7 +198,10 @@ func (httpm *HTTPManager) readHTTPResponse() (soteErr sError.SoteError) {
 		sLogger.Debug(soteErr.FmtErrMsg)
 	}
 
-	httpm.sHTTPResponse.Body.Close()
+	err = httpm.sHTTPResponse.Body.Close()
+	if err != nil {
+		panic(err.Error())
+	}
 
 	return
 }
@@ -205,17 +209,21 @@ func (httpm *HTTPManager) readHTTPResponse() (soteErr sError.SoteError) {
 /*
 	This formats the HTTP []byte payload to Sote error if errCode is not 0 else puts the response in HTTPManager RetPack which is a map[string]interface{}
 */
-func (httpm *HTTPManager) resultFormatting() (soteErr sError.SoteError) {
+func (httpm *HTTPManager) parseJSONResult(parseResult bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
 		err error
 	)
 
-	if err = json.Unmarshal(httpm.sHTTPBytePayload, &httpm.sHTTPMapPayload); err != nil {
-		soteErr = sError.GetSError(207105, sError.BuildParams([]string{"sPayloadBody", "[]byte"}), sError.EmptyMap)
-		sLogger.Info(soteErr.FmtErrMsg)
-	} else if soteErr = httpm.convertErrors(); soteErr.ErrCode == nil {
+	if parseResult {
+		if err = json.Unmarshal(httpm.sHTTPBytePayload, &httpm.sHTTPMapPayload); err != nil {
+			soteErr = sError.GetSError(207105, sError.BuildParams([]string{"sPayloadBody", "[]byte"}), sError.EmptyMap)
+			sLogger.Info(soteErr.FmtErrMsg)
+		} else if soteErr = httpm.convertErrors(); soteErr.ErrCode == nil {
+			httpm.RetPack = httpm.sHTTPMapPayload["retPack"]
+		}
+	} else {
 		httpm.RetPack = httpm.sHTTPMapPayload["retPack"]
 	}
 
