@@ -26,11 +26,11 @@ type HTTPManager struct {
 	httpclient *httpclient.HttpClient
 	sURL       string
 	reqParams  map[string]string
-	payloadManager
+	PayloadManager
 	sync.Mutex
 }
 
-type payloadManager struct {
+type PayloadManager struct {
 	sHTTPResponse    *httpclient.Response
 	sHTTPBytePayload []byte
 	sHTTPMapPayload  map[string]interface{}
@@ -224,7 +224,7 @@ func (httpm *HTTPManager) parseJSONResult(parseResult bool) (soteErr sError.Sote
 			httpm.RetPack = httpm.sHTTPMapPayload["retPack"]
 		}
 	} else {
-		httpm.RetPack = httpm.sHTTPMapPayload["retPack"]
+		httpm.RetPack = httpm.sHTTPBytePayload
 	}
 
 	return
