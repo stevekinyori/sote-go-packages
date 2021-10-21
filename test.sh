@@ -81,6 +81,8 @@ go test sHTTPClient/*.go -coverprofile sHTTPClient/coverage.out 1>>/tmp/tmp_$$.o
 echo -n '.'
 echo -n 'sHelper ' 1>>/tmp/tmp_$$.out
 GOARCH=amd64 go test sHelper/*.go -coverprofile sHelper/coverage.out 1>>/tmp/tmp_$$.out
+echo -n 'sCustom ' 1>>/tmp/tmp_$$.out
+go test sCustom/*.go -coverprofile sCustom/coverage.out 1>>/tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<<"$(grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}')"
@@ -117,8 +119,8 @@ echo -n '.'
 echo -n 'sHTTPClient_external_test ' 1>>/tmp/tmp_$$.out
 go test sHTTPClient_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
-echo -n 'sHelper_external_test ' 1>>/tmp/tmp_$$.out
-go test sHelper_external_test.go 1>>/tmp/tmp_$$.out
+echo -n 'sCustom_external_test ' 1>>/tmp/tmp_$$.out
+go test sCustom_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo "Done"
 cat /tmp/tmp_$$.out
@@ -142,6 +144,7 @@ go tool cover -func=sAuthentication/coverage.out >>coverage_review.out
 go tool cover -func=sMessage/coverage.out >>coverage_review.out
 go tool cover -func=sHTTPClient/coverage.out >>coverage_review.out
 go tool cover -func=sHelper/coverage.out >>coverage_review.out
+go tool cover -func=sCustom/coverage.out >>coverage_review.out
 echo "Done"
 #
 # # Review the coverage totals for 70%+ compliance

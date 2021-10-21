@@ -13,7 +13,7 @@ RESTRICTIONS:
 NOTES:
     {Enter any additional notes that you believe will help the next developer.}
 */
-package sHelper
+package sCustom
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	LOGMESSAGEPREFIX = "sHelper"
+	LOGMESSAGEPREFIX = "sCustom"
 	// Add Constants here
 )
 

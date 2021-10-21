@@ -13,22 +13,20 @@ RESTRICTIONS:
 NOTES:
     {Enter any additional notes that you believe will help the next developer.}
 */
-package packages
+package sCustom
 
 import (
 	// Add imports here
 
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2021/sHelper"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 const (
 	// Add Constants here
-	LOGMESSAGEPREFIX        = "sHelper_external_test.go"
-	PREFIX           string = ""
-	INDENT           string = "  "
+	PREFIX string = ""
+	INDENT string = "  "
 )
 
 // List type's here
@@ -46,11 +44,11 @@ func TestMarshal(tPtr *testing.T) {
 		v = map[string]string{"note": "Example & test note"}
 	)
 
-	if _, soteErr := sHelper.JSONMarshalIndent(v, PREFIX, INDENT); soteErr.ErrCode != nil {
+	if _, soteErr := JSONMarshalIndent(v, PREFIX, INDENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestMarshal Failed: Expected error code to be %v but got %v", nil, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := sHelper.JSONMarshal(v); soteErr.ErrCode != nil {
+	if _, soteErr := JSONMarshal(v); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestMarshal Failed: Expected error code to be %v but got %v", nil, soteErr.FmtErrMsg)
 	}
 }
