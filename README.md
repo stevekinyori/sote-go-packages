@@ -15,18 +15,3 @@
    #### AFTER
    ![Before](img/containerctl_after.png)
 
-- You must have ImageMagick installed to convert inbound documents to PDF
-  #### To install, run:
-  
-  ```brew install ImageMagick```
-  
-  #### Check ImageMagick's  information after install. Install dependencies if they are missing. Information it 
-  #### should be  similar to attached image, run:
-
-  ```brew info ImageMagick```
-  ####
-  ![Information](img/ImageMagick_information.png)
-
-  #### Add this option to the preprocessor. To allow supply of system-specific preprocessor options that GCC does not recognize
-  
-  ``echo 'export CGO_CFLAGS_ALLOW="-Xpreprocessor"' >> ~/.zhsrc``

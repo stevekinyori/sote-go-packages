@@ -50,7 +50,7 @@ fi
 #
 # Remove all coverage.out and coverage_review.out files
 echo "removing coverage files"
-find . -name "coverage*.out" -type f -delete 1>> /dev/null
+find . -name "coverage*.out" -type f -delete 1>>/dev/null
 #
 # Display processing message
 echo -n 'processing internal tests .'
@@ -116,6 +116,9 @@ go test sMessages_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sHTTPClient_external_test ' 1>>/tmp/tmp_$$.out
 go test sHTTPClient_external_test.go 1>>/tmp/tmp_$$.out
+echo -n '.'
+echo -n 'sHelper_external_test ' 1>>/tmp/tmp_$$.out
+go test sHelper_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo "Done"
 cat /tmp/tmp_$$.out
