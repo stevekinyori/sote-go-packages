@@ -4,7 +4,7 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sHTTPClient"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
-	//"fmt"
+	// "fmt"
 	"testing"
 )
 
@@ -38,11 +38,11 @@ func TestGet(tPtr *testing.T) {
 			"q": "news",
 		}
 
-		if soteErr = httpm.Get("/get", reqParams); soteErr.ErrCode != 207200 {
+		if soteErr = httpm.Get("/get", reqParams, true); soteErr.ErrCode != 207200 {
 			tPtr.Errorf("Get failed: Expected error code 207200 but got %v", soteErr)
 		}
 
-		if soteErr = httpm.Get("/delete", reqParams); soteErr.ErrCode != 200600 {
+		if soteErr = httpm.Get("/delete", reqParams, true); soteErr.ErrCode != 200600 {
 			tPtr.Errorf("Get failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {
@@ -59,11 +59,11 @@ func TestDelete(tPtr *testing.T) {
 	if httpm, soteErr = sHTTPClient.New(SURL, TOKEN); soteErr.ErrCode == nil {
 		reqParams := make(map[string]interface{})
 
-		if soteErr = httpm.Delete("/delete", reqParams); soteErr.ErrCode != 207200 {
+		if soteErr = httpm.Delete("/delete", reqParams, true); soteErr.ErrCode != 207200 {
 			tPtr.Errorf("Post failed: Expected error code 207200 but got %v", soteErr.ErrCode)
 		}
 
-		if soteErr = httpm.Delete("/get", reqParams); soteErr.ErrCode != 200600 {
+		if soteErr = httpm.Delete("/get", reqParams, true); soteErr.ErrCode != 200600 {
 			tPtr.Errorf("Post failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {
@@ -82,11 +82,11 @@ func TestPost(tPtr *testing.T) {
 			"name": "value",
 		}
 
-		if soteErr = httpm.Post("/post", reqParams); soteErr.ErrCode != 207200 {
+		if soteErr = httpm.Post("/post", reqParams, true); soteErr.ErrCode != 207200 {
 			tPtr.Errorf("Post failed: Expected error code 207200 but got %v", soteErr.ErrCode)
 		}
 
-		if soteErr = httpm.Post("/get", reqParams); soteErr.ErrCode != 200600 {
+		if soteErr = httpm.Post("/get", reqParams, true); soteErr.ErrCode != 200600 {
 			tPtr.Errorf("Post failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {
