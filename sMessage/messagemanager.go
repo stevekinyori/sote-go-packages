@@ -30,8 +30,9 @@ type MessageManager struct {
 	RawMessage        *nats.RawStreamMsg
 }
 
-type sStreamInfo *nats.StreamInfo
-type sConsumerInfo *nats.ConsumerInfo
+type SStreamInfo *nats.StreamInfo
+type SConsumerInfo *nats.ConsumerInfo
+type SMsg *nats.Msg
 
 /*
 	New will create a Sote Message Manager and a connection to the NATS network.
@@ -215,9 +216,9 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	sLogger.DebugMethod()
 
 	var (
-		panicError = true
-		testMode   = false
-		errorDetail = make( map[string]string)
+		panicError  = true
+		testMode    = false
+		errorDetail = make(map[string]string)
 	)
 
 	switch err.Error() {
