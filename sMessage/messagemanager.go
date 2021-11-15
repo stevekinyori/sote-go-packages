@@ -285,3 +285,12 @@ func dumpParams(params map[string]string) (paramString string) {
 
 	return
 }
+
+// NewMessage creates a message for publishing that will use headers.
+func NewMessage(subject string) (msg *nats.Msg) {
+	sLogger.DebugMethod()
+
+	msg = nats.NewMsg(subject)
+
+	return
+}
