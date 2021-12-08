@@ -11,16 +11,14 @@ func testListener(s *Subscriber, m *Msg) sError.SoteError {
 }
 
 func testNewHelper(t *testing.T) *Helper {
-	var s Subscriber
+	var s *Subscriber
 	env, _ := NewEnvironment(ENVDEFAULTAPPNAME, ENVDEFAULTTARGET, ENVDEFAULTTARGET)
 	helper := NewHelper(env)
-	helper.CreateSubscriber = func(consumerName, subject string) *Subscriber {
-		s = Subscriber{
-			Run: helper.r,
-		}
+	helper.CreateSubscriber = func(consumerName, subject string, streamName ...string) *Subscriber {
+		s = NewSubscriber(helper.r, consumerName, subject, streamName...)
 		s.Run.returnChain = make(chan *ReturnChain, 1)
 		s.Run.Listen = func(listener func(*Subscriber) sError.SoteError) {
-			listener(&s)
+			listener(s)
 		}
 		s.PullSubscribe = func() sError.SoteError {
 			return sError.SoteError{}
@@ -33,7 +31,7 @@ func testNewHelper(t *testing.T) *Helper {
 			}
 			return messages, sError.SoteError{}
 		}
-		return &s
+		return s
 	}
 	helper.CreateDatabase = func() sError.SoteError {
 		return sError.SoteError{}
@@ -87,9 +85,27 @@ func TestHelperRunAsync(t *testing.T) {
 				AssertEqual(t, rc.msg.Subject, "Test-subject")
 			}
 		}()
+		AssertEqual(t, s.StreamName, BSLSTREAMNAME)
 		return sError.SoteError{}
 	}
 	soteErr := helper.AddSubscriber("bsl-notification-wildcard", "bsl.notification.add", testListener, nil)
+	AssertEqual(t, soteErr.ErrCode, nil)
+	helper.Run(true)
+}
+
+func TestHelperCustomStreamNameSubscriber(t *testing.T) {
+	helper := testNewHelper(t)
+	testListener := func(s *Subscriber, m *Msg) sError.SoteError {
+		go func() {
+			for rc := range s.Run.returnChain {
+				AssertEqual(t, rc.soteErr.FmtErrMsg, "")
+				AssertEqual(t, rc.msg.Subject, "Test-subject")
+			}
+		}()
+		AssertEqual(t, s.StreamName, SALSTREAMNAME)
+		return sError.SoteError{}
+	}
+	soteErr := helper.AddSubscriber("bsl-notification-wildcard", "bsl.notification.add", testListener, nil, SALSTREAMNAME)
 	AssertEqual(t, soteErr.ErrCode, nil)
 	helper.Run(true)
 }

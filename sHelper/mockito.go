@@ -36,7 +36,7 @@ func MockRunHelper(t iTesting, verifyConsumerName string, verifySubject ...strin
 			Env: env,
 		}
 		helper.Run = func(isGoroutine bool) {}
-		helper.AddSubscriber = func(consumerName, subject string, _ MessageListener, _ *Schema) sError.SoteError {
+		helper.AddSubscriber = func(consumerName, subject string, _ MessageListener, _ *Schema, _ ...string) sError.SoteError {
 			AssertEqual(t, consumerName, verifyConsumerName)
 			found := false
 			for _, s := range verifySubject {

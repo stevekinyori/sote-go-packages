@@ -62,7 +62,7 @@ func TestRunListen(t *testing.T) {
 	}()
 	run.AddSubscriber(&Subscriber{
 		Run:          run,
-		StreamName:   STREAMNAME,
+		StreamName:   BSLSTREAMNAME,
 		ConsumerName: "test-cosumer",
 		Subject:      "test-subject",
 	}, testSubscribeListener)
@@ -85,7 +85,7 @@ func TestRunReturnChainError(t *testing.T) {
 	}()
 	run.AddSubscriber(&Subscriber{
 		Run:          run,
-		StreamName:   STREAMNAME,
+		StreamName:   BSLSTREAMNAME,
 		ConsumerName: "test-cosumer",
 		Subject:      "test-subject",
 	}, testSubscribeListener)

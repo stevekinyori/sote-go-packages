@@ -20,7 +20,7 @@ func TestNewSubscriber(t *testing.T) {
 	s := newSubscriber()
 	AssertEqual(t, s.ConsumerName, "test-consumer")
 	AssertEqual(t, s.Subject, "test-subject")
-	AssertEqual(t, s.StreamName, STREAMNAME)
+	AssertEqual(t, s.StreamName, BSLSTREAMNAME)
 
 	s = NewSubscriber(s.Run, "test-consumer", "test-subject", "test-stream")
 	AssertEqual(t, s.ConsumerName, "test-consumer")

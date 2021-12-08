@@ -8,7 +8,8 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-const STREAMNAME = "business-service-layer"
+const BSLSTREAMNAME = "business-service-layer"
+const SALSTREAMNAME = "service-access-layer"
 
 type Subscriber struct {
 	Run          *Run
@@ -34,7 +35,7 @@ func NewSubscriber(r *Run, consumerName, subject string, streamName ...string) *
 	)
 	s = Subscriber{
 		Run:             r,
-		StreamName:      STREAMNAME,
+		StreamName:      BSLSTREAMNAME,
 		ConsumerName:    consumerName,
 		Subject:         subject,
 		PullSubscribe:   s.subscribe,

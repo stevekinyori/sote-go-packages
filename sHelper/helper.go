@@ -12,10 +12,10 @@ var (
 type Helper struct {
 	Env              Environment
 	r                *Run
-	CreateSubscriber func(consumerName, subject string) *Subscriber
+	CreateSubscriber func(consumerName, subject string, streamName ...string) *Subscriber
 	CreateDatabase   func() sError.SoteError
 	InitApp          func() sError.SoteError
-	AddSubscriber    func(consumerName, subject string, listener MessageListener, schema *Schema) sError.SoteError
+	AddSubscriber    func(consumerName, subject string, listener MessageListener, schema *Schema, streamName ...string) sError.SoteError
 	Run              func(isGoroutine bool)
 }
 
@@ -35,9 +35,9 @@ func NewHelper(env Environment) *Helper {
 	return &h
 }
 
-func (h *Helper) addSubscriber(consumerName, subject string, listener MessageListener, schema *Schema) (soteErr sError.SoteError) {
+func (h *Helper) addSubscriber(consumerName, subject string, listener MessageListener, schema *Schema, streamName ...string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
-	s := h.CreateSubscriber(consumerName, subject)
+	s := h.CreateSubscriber(consumerName, subject, streamName...)
 	if schema != nil {
 		s.Schema = schema
 		soteErr = schema.Validate()
@@ -81,9 +81,9 @@ func (h *Helper) run(isGoroutine bool) {
 	})
 }
 
-func (h *Helper) createSubscriber(consumerName, subject string) *Subscriber {
+func (h *Helper) createSubscriber(consumerName, subject string, streamName ...string) *Subscriber {
 	sLogger.DebugMethod()
-	return NewSubscriber(h.r, consumerName, subject)
+	return NewSubscriber(h.r, consumerName, subject, streamName...)
 }
 
 func (h *Helper) createDatabase() sError.SoteError {
