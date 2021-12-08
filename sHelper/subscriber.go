@@ -89,6 +89,7 @@ func (s *Subscriber) fetch() (messages []Msg, soteErr sError.SoteError) {
 			for index, msg := range s.Run.myMMPtr.Messages {
 				messages = append(messages, Msg{
 					Subject: msg.Subject,
+					Header:  msg.Header,
 					Data:    msg.Data,
 					index:   index,
 					uuid:    UUID(UUIDKind.Short),

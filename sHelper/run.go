@@ -41,6 +41,7 @@ type natsConfig struct {
 
 type Msg struct {
 	Subject string
+	Header  nats.Header
 	Data    []byte
 	index   int
 	uuid    string
