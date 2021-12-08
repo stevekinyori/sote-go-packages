@@ -3,14 +3,17 @@ package sAuthentication
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/nats-io/nats.go"
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
@@ -33,14 +36,32 @@ type RequestHeader struct {
 	Header RequestHeaderSchema `json:"request-header"`
 }
 
+func ValidateHeader(h nats.Header, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
+	rh := RequestHeader{}
+	rh.Header.JsonWebToken = h.Get("json-web-token")
+	rh.Header.MessageId = h.Get("message-id")
+	rh.Header.AwsUserName = h.Get("aws-user-name")
+	rh.Header.RoleList = strings.Split(regexp.MustCompile(`\[|\]`).ReplaceAllString(h.Get("role-list"), ""), ",")
+	fmt.Sscan(h.Get("organizations-id"), &rh.Header.OrganizationId)
+	fmt.Sscan(h.Get("device-id"), &rh.Header.DeviceId)
+	return Validate(rh, tEnvironment, isTestMode)
+}
+
 func ValidateBody(data []byte, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
 	sLogger.DebugMethod()
 	rh := RequestHeader{}
-	soteErr := sError.SoteError{}
 	json.Unmarshal(data, &rh) //flush stream
+
 	if rh.Header.AwsUserName == "" {
 		json.Unmarshal(data, &rh.Header) //suports schema version 0.1
+		return Validate(rh, tEnvironment, isTestMode)
+	} else {
+		return Validate(rh, tEnvironment, isTestMode)
 	}
+}
+
+func Validate(rh RequestHeader, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
+	soteErr := sError.SoteError{}
 	if rh.Header.AwsUserName == "" {
 		soteErr = sError.GetSError(206200, []interface{}{"#/properties/aws-user-name"}, nil)
 	} else if rh.Header.OrganizationId == 0 {
