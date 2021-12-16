@@ -8,11 +8,12 @@ package sHTTPClient
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ddliu/go-httpclient"
 	"io/ioutil"
 	"net/url"
 	"strconv"
 	"sync"
+
+	"github.com/ddliu/go-httpclient"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
 	"gitlab.com/soteapps/packages/v2021/sLogger"
@@ -139,7 +140,7 @@ func (httpm *HTTPManager) sHTTPCall(method string, route string) (soteErr sError
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
 	case "POST":
-		if httpm.sHTTPResponse, err = httpm.httpclient.Post(httpm.sURL+route, httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
+		if httpm.sHTTPResponse, err = httpm.httpclient.PostJson(httpm.sURL+route, httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
 			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
