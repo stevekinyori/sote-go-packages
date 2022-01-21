@@ -29,31 +29,31 @@ const (
 
 func TestValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
+	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENEXPIRED).(sError.SoteError); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.ErrCode)
 	}
 }
 func TestValidFakeToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT).(sError.SoteError); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidMissingSegmentToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, FAKETOKEN).(sError.SoteError); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
+	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALIDSIG).(sError.SoteError); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.ErrCode)
 	}
 }
 func TestInValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
+	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALID).(sError.SoteError); soteErr.ErrCode != 208355 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.ErrCode)
 	}
 }
