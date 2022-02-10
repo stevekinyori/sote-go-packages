@@ -27,21 +27,15 @@ import (
 	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
-type ErrorCode int
-
 type SoteError struct {
-	// Machine-readable error code
-	ErrCode interface{}
-	ErrType string
-
+	ErrCode          interface{}
+	ErrType          string
 	ParamCount       int
 	ParamDescription string
-
-	// Human-readable message
-	FmtErrMsg    string
-	ErrorDetails map[string]string
-	Loc          string
-	Err          error
+	FmtErrMsg        string
+	ErrorDetails     map[string]string
+	Loc              string
+	Err              error
 }
 
 // Error categories
@@ -71,8 +65,7 @@ var (
 	*/
 	soteErrors = map[int]SoteError{
 		// Errors where the Front End can take action
-		100000: {
-			100000, USERERROR, 1, "Item Name", ": %v already exists", EmptyMap, "", nil},
+		100000: {100000, USERERROR, 1, "Item Name", ": %v already exists", EmptyMap, "", nil},
 		100100: {100100, USERERROR, 2, "List of users roles, Requested action", ": Your roles %v are not authorized to %v", EmptyMap, "", nil},
 		100200: {100200, PROCESSERROR, 0, "None", ": Row has been updated since reading it, re-read the row", EmptyMap, "", nil},
 		100500: {100500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, "", nil},
@@ -195,7 +188,7 @@ var (
 )
 
 // Error returns the string representation of the error message.
-func (e SoteError) Error() string {
+func (e *SoteError) Error() string {
 
 	var buf bytes.Buffer
 
@@ -212,7 +205,7 @@ func (e SoteError) Error() string {
 	return buf.String()
 }
 
-func (e SoteError) Unwrap() error { return e.Err }
+func (e *SoteError) Unwrap() error { return e.Err }
 
 /*
 	This will return the formatted message using the supplied code and parameters
