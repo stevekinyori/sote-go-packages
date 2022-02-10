@@ -26,6 +26,7 @@ type MessageManager struct {
 	Subscriptions     map[string]*nats.Subscription
 	SyncSubscriptions map[string]*nats.Subscription
 	PullSubscriptions map[string]*nats.Subscription
+	ConsumerInfo      *nats.ConsumerInfo
 	Messages          []*nats.Msg
 	RawMessage        *nats.RawStreamMsg
 }

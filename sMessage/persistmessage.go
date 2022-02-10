@@ -107,7 +107,7 @@ func (mmPtr *MessageManager) PullSubscribe(subject, durableName string, testMode
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
-	mmPtr.PullSubscriptions[durableName], err = js.PullSubscribe(subject, durableName)
+	mmPtr.PullSubscriptions[durableName], err = js.PullSubscribe(subject, durableName, nats.ManualAck())
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
@@ -187,9 +187,11 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 
-	for _, message := range mmPtr.Messages {
-		mmPtr.Ack(message, autoAck, testMode)
-		// 	TODO Review if err needs to be handled for failed Acks
+	if autoAck {
+		for _, message := range mmPtr.Messages {
+			mmPtr.Ack(message, testMode)
+			// 	TODO Review if err needs to be handled for failed Acks
+		}
 	}
 
 	return
@@ -198,22 +200,12 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck
 /*
 	Ack acknowledges a message
 */
-func (mmPtr *MessageManager) Ack(message *nats.Msg, autoAck, testMode bool) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) Ack(message *nats.Msg, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
-
-	var (
-		err error
-	)
 
 	params := make(map[string]string)
 	params["testMode"] = strconv.FormatBool(testMode)
-	if autoAck {
-		err = message.Ack()
-	} else {
-		err = message.Nak()
-	}
-
-	if err != nil {
+	if err := message.Ack(); err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 
