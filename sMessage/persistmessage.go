@@ -186,11 +186,10 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
-	if autoAck {
-		for _, message := range mmPtr.Messages {
-			mmPtr.Ack(message, false)
-			// 	TODO Review if err needs to be handled for failed Acks
-		}
+
+	for _, message := range mmPtr.Messages {
+		mmPtr.Ack(message, autoAck, testMode)
+		// 	TODO Review if err needs to be handled for failed Acks
 	}
 
 	return
@@ -199,13 +198,22 @@ func (mmPtr *MessageManager) Fetch(durableName string, messageCount int, autoAck
 /*
 	Ack acknowledges a message
 */
-func (mmPtr *MessageManager) Ack(message *nats.Msg, testMode bool) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) Ack(message *nats.Msg, autoAck, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
+
+	var (
+		err error
+	)
 
 	params := make(map[string]string)
 	params["testMode"] = strconv.FormatBool(testMode)
+	if autoAck {
+		err = message.Ack()
+	} else {
+		err = message.Nak()
+	}
 
-	if err := message.Ack(); err != nil {
+	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 

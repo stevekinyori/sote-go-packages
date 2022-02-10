@@ -190,7 +190,7 @@ func TestAck(tPtr *testing.T) {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 		if mmPtr.Messages != nil {
-			if soteErr = mmPtr.Ack(mmPtr.Messages[0], true); soteErr.ErrCode != nil {
+			if soteErr = mmPtr.Ack(mmPtr.Messages[0], true, true); soteErr.ErrCode != nil {
 				tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 			}
 		} else {
