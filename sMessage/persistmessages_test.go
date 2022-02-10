@@ -92,7 +92,7 @@ func TestPullSubscribe(tPtr *testing.T) {
 	soteErr = initPullTest()
 
 	if soteErr.ErrCode == nil {
-		if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
+		if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
@@ -156,7 +156,7 @@ func TestFetch(tPtr *testing.T) {
 		if _, soteErr = mmPtr.PPublish(testPullSubjects[0], "Hello world", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
-		if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
+		if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 		if soteErr = mmPtr.Fetch(TESTCONSUMERNAMEPULL, 1, true, false); soteErr.ErrCode != nil && soteErr.ErrCode != 101010 {
@@ -181,7 +181,7 @@ func TestAck(tPtr *testing.T) {
 		if _, soteErr = mmPtr.PPublish(testPullSubjects[0], "Hello world", false); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
-		if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
+		if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 		// time.Sleep(5 * time.Millisecond)

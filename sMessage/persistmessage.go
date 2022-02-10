@@ -93,9 +93,10 @@ func (mmPtr *MessageManager) PSubscribeSync(subject, durableName string, testMod
 
 /*
 	PullSubscribe creates a subscription that can be used to fetch messages.
+This binds consumer to a stream without creating the consumer and does not auto-acknowledge messages
 The subscription is saved in the an map of pull subscriptions in the Message Manager structure. The durable name is the index to the subscription.
 */
-func (mmPtr *MessageManager) PullSubscribe(subject, durableName string, testMode bool) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) PullSubscribe(subject, streamName, durableName string, testMode bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	params := make(map[string]string)
@@ -107,7 +108,9 @@ func (mmPtr *MessageManager) PullSubscribe(subject, durableName string, testMode
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
-	mmPtr.PullSubscriptions[durableName], err = js.PullSubscribe(subject, durableName, nats.ManualAck())
+
+	mmPtr.PullSubscriptions[durableName], err = js.PullSubscribe(subject, durableName, nats.ManualAck(),
+		nats.Bind(streamName, durableName))
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}

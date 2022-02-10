@@ -189,9 +189,7 @@ func (mmPtr *MessageManager) GetConsumerInfo(streamName, durableName string, tes
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 
-	if sConsumer, err = js.ConsumerInfo(streamName, durableName); err == nil {
-		mmPtr.ConsumerInfo = sConsumer
-	} else {
+	if sConsumer, err = js.ConsumerInfo(streamName, durableName); err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
 	}
 

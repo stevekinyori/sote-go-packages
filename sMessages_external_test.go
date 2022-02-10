@@ -12,7 +12,7 @@ import (
 
 const (
 	TESTSTREAMNAME         = "TEST_STREAM_NAME"
-	TESTCONSUMERNAMEPULL       = "TEST_CONSUMER_NAME"
+	TESTCONSUMERNAMEPULL   = "TEST_CONSUMER_NAME"
 	TESTSYNADIAURL         = "west.eu.geo.ngs.global"
 	TESTAPPLICATIONSYNADIA = "synadia"
 )
@@ -158,8 +158,9 @@ func TestPPullSubscribe(tPtr *testing.T) {
 			tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 		}
 		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1, false); soteErr.ErrCode == nil {
-				if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
+			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
+				false); soteErr.ErrCode == nil {
+				if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
 			}
@@ -239,11 +240,12 @@ func TestPFetch(tPtr *testing.T) {
 			tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 		}
 		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1, false); soteErr.ErrCode == nil {
+			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
+				false); soteErr.ErrCode == nil {
 				if _, soteErr = mmPtr.PPublish(testPullSubjects[0], "Hello world", false); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPFetch Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
-				if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
+				if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestPSubscribeSync Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
 				if soteErr = mmPtr.Fetch(TESTCONSUMERNAMEPULL, 1, true, false); soteErr.ErrCode != nil && soteErr.ErrCode != 101010 {
@@ -270,7 +272,8 @@ func TestPullReplayInstantConsumer(tPtr *testing.T) {
 			tPtr.Errorf("TestPullReplayInstantConsumer Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 		}
 		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1, false); soteErr.ErrCode != nil {
+			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
+				false); soteErr.ErrCode != nil {
 				tPtr.Errorf("TestPullReplayInstantConsumer Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 			}
 		}
@@ -291,7 +294,8 @@ func TestGetConsumerInfo(tPtr *testing.T) {
 			tPtr.Errorf("TestGetConsumerInfo Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 		}
 		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1, false); soteErr.ErrCode == nil {
+			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
+				false); soteErr.ErrCode == nil {
 				if _, soteErr = mmPtr.GetConsumerInfo(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
 					tPtr.Errorf("TestGetConsumerInfo Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 				}
@@ -317,7 +321,7 @@ func TestCreateLimitsStreamWithFileStorage(tPtr *testing.T) {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1,false); soteErr.ErrCode != nil {
+	if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 
@@ -386,7 +390,7 @@ func TestCreateWorkQueueStreamWithMemoryStorage(tPtr *testing.T) {
 		tPtr.Errorf("TestCreateLimitsStreamWithFileStorage Failed: Expected error code to be nil or 109999 got %v", soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = mmPtr.CreateWorkQueueStreamWithMemoryStorage(TESTSTREAMNAME, testPullSubjects, 1,false); soteErr.ErrCode != nil {
+	if _, soteErr = mmPtr.CreateWorkQueueStreamWithMemoryStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestCreateWorkQueueStreamWithMemoryStorage Failed: Expected error code to be nil got %v", soteErr.FmtErrMsg)
 	}
 
@@ -396,7 +400,7 @@ func TestCreateWorkQueueStreamWithMemoryStorage(tPtr *testing.T) {
 }
 func TestPublish(tPtr *testing.T) {
 	var (
-		mmPtr *sMessage.MessageManager
+		mmPtr   *sMessage.MessageManager
 		soteErr sError.SoteError
 	)
 
@@ -409,10 +413,11 @@ func TestPublish(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestSubscribe(tPtr *testing.T) {
 	var (
-		mmPtr *sMessage.MessageManager
+		mmPtr   *sMessage.MessageManager
 		soteErr sError.SoteError
 	)
 
@@ -425,10 +430,11 @@ func TestSubscribe(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestPublishRequest(tPtr *testing.T) {
 	var (
-		mmPtr *sMessage.MessageManager
+		mmPtr   *sMessage.MessageManager
 		soteErr sError.SoteError
 	)
 
@@ -441,10 +447,11 @@ func TestPublishRequest(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestSubscribeSync(tPtr *testing.T) {
 	var (
-		mmPtr *sMessage.MessageManager
+		mmPtr   *sMessage.MessageManager
 		soteErr sError.SoteError
 	)
 
@@ -457,10 +464,11 @@ func TestSubscribeSync(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestNextMsg(tPtr *testing.T) {
 	var (
-		mmPtr *sMessage.MessageManager
+		mmPtr   *sMessage.MessageManager
 		soteErr sError.SoteError
 	)
 
@@ -479,14 +487,16 @@ func TestNextMsg(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestRequest(tPtr *testing.T) {
 	// TODO This code is not being tested at this time. How to test this needs to be investigated.
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestRequestReply(tPtr *testing.T) {
 	var (
-		mmPtr *sMessage.MessageManager
+		mmPtr   *sMessage.MessageManager
 		soteErr sError.SoteError
 	)
 
