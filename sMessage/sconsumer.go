@@ -121,7 +121,7 @@ func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableNam
 		sConsumerConfig = &nats.ConsumerConfig{
 			Durable:         durableName,
 			DeliverSubject:  "",
-			DeliverPolicy:   nats.DeliverAllPolicy,
+			DeliverPolicy:   nats.DeliverNewPolicy,
 			OptStartSeq:     0,
 			OptStartTime:    nil,
 			AckPolicy:       nats.AckExplicitPolicy,
@@ -139,7 +139,7 @@ func (mmPtr *MessageManager) createConsumer(consumerType, streamName, durableNam
 		sConsumerConfig = &nats.ConsumerConfig{
 			Durable:         durableName,
 			DeliverSubject:  deliverySubject,
-			DeliverPolicy:   nats.DeliverAllPolicy,
+			DeliverPolicy:   nats.DeliverNewPolicy,
 			OptStartSeq:     0,
 			OptStartTime:    nil,
 			AckPolicy:       nats.AckExplicitPolicy,
