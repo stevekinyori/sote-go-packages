@@ -31,34 +31,34 @@ const (
 )
 
 var (
-	logMessage *log.Logger
-	logLevel   string = InfoLogLevel
-	logPrefix  string = logPrefixMissing
+	logLevel  string = InfoLogLevel
+	logPrefix string = logPrefixMissing
 )
 
 // This is used to set the logging message format
-func initLogger(infoHandle io.Writer, msgType string) {
+func initLogger(infoHandle io.Writer, msgType string) (logMessage *log.Logger) {
 	logMessage = log.New(infoHandle, fmt.Sprintf("%v.%v:", logPrefix, msgType), log.Lmsgprefix|log.LstdFlags|log.Lmicroseconds|log.LUTC)
+	return
 }
 
-// This will publish a log message at the INFO level
+// Info will publish a log message at the INFO level
 func Info(tMessage string) {
-	initLogger(os.Stdout, InfoLogLevel)
+	logMessage := initLogger(os.Stdout, InfoLogLevel)
 	logMessage.Println(tMessage)
 }
 
-// This will publish a log message at the DEBUG level
+// Debug will publish a log message at the DEBUG level
 func Debug(tMessage string) {
 	if logLevel == DebugLogLevel {
-		initLogger(os.Stdout, DebugLogLevel)
+		logMessage := initLogger(os.Stdout, DebugLogLevel)
 		logMessage.Println(tMessage)
 	}
 }
 
-// This will publish a log message at the DEBUG level for the function that is being executed.
+// DebugMethod will publish a log message at the DEBUG level for the function that is being executed.
 func DebugMethod(depthList ...int) {
 	if logLevel == DebugLogLevel {
-		initLogger(os.Stdout, DebugLogLevel)
+		logMessage := initLogger(os.Stdout, DebugLogLevel)
 		var depth int
 		if depthList == nil {
 			depth = 1
@@ -71,22 +71,22 @@ func DebugMethod(depthList ...int) {
 	}
 }
 
-// This will set the log level to DEBUG
+// SetLogLevelDebug will set the log level to DEBUG
 func SetLogLevelDebug() {
 	logLevel = DebugLogLevel
 }
 
-// This will set the log level to INFO
+// SetLogLevelInfo will set the log level to INFO
 func SetLogLevelInfo() {
 	logLevel = InfoLogLevel
 }
 
-// This will return the logging level (It doesn't follow return referring to the func declaration)
+// GetLogLevel will return the logging level (It doesn't follow return referring to the func declaration)
 func GetLogLevel() string {
 	return logLevel
 }
 
-// Allows a message prefix to be applied
+// SetLogMessagePrefix allows a message prefix to be applied
 // The prefix is forced to upper case
 func SetLogMessagePrefix(prefix string) {
 	logPrefix = strings.ToUpper(prefix)
