@@ -36,7 +36,6 @@ const (
 	DEMO        = "demo"
 	PRODUCTION  = "production"
 	// System Manager Parameter Keys
-	AWSACCOUNTIDKEY         = "AWS_ACCOUNT_ID"
 	AWSREGIONIKEY           = "AWS_REGION"
 	CLIENTIDKEY             = "COGNITO_CLIENT_ID"
 	CREDENTIALS             = "credentials"
@@ -279,22 +278,6 @@ func GetDBSSLMode(application, environment string) (dbSSLMode string, soteErr sE
 }
 
 /*
-GetAWSAccountId will retrieve the AWS Client ID parameter that is in AWS System Manager service for the ROOTPATH
-*/
-func GetAWSAccountId() (AWSAccountId string, soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var tAWSAccountId interface{}
-
-	tAWSAccountId, soteErr = getParameter("", "", AWSACCOUNTIDKEY)
-	if tAWSAccountId != nil {
-		AWSAccountId = tAWSAccountId.(string)
-	}
-
-	return
-}
-
-/*
 GetRegion will retrieve the AWS Region parameter that is in AWS System Manager service for the ROOTPATH
 */
 func GetRegion() (region string, soteErr sError.SoteError) {
@@ -338,12 +321,12 @@ func GetClientId(clientName, environment string) (clientId string, soteErr sErro
 
 	var tClientId interface{}
 
-	if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-		tClientId, soteErr = getParameter(clientName, strings.ToLower(environment), CLIENTIDKEY)
-		if tClientId != nil {
-			clientId = tClientId.(string)
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			tClientId, soteErr = getParameter(clientName, strings.ToLower(environment), CLIENTIDKEY)
+			if tClientId != nil {
+				clientId = tClientId.(string)
+			}
 		}
-	}
 
 	return
 }

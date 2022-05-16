@@ -1,7 +1,6 @@
 package packages
 
 import (
-	"runtime"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2021/sConfigParams"
@@ -10,7 +9,7 @@ import (
 
 const (
 	// Application values
-	API     string = "api"
+	API string = "api"
 	SYNADIA string = "synadia"
 )
 
@@ -81,19 +80,6 @@ func TestGetDBUser(tPtr *testing.T) {
 		tPtr.Errorf("GetDBUser failed: Expected soteErr to be 109999: %v", soteErr.ErrCode)
 	}
 }
-func TestGetAWSClientId(tPtr *testing.T) {
-	var (
-		function, _, _, _ = runtime.Caller(0)
-		testName          = runtime.FuncForPC(function).Name()
-		soteErr           sError.SoteError
-	)
-
-	tPtr.Run("Get AWS Client ID", func(tPtr *testing.T) {
-		if _, soteErr = sConfigParams.GetAWSAccountId(); soteErr.ErrCode != nil {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
-		}
-	})
-}
 func TestGetRegion(tPtr *testing.T) {
 	if _, soteErr := sConfigParams.GetRegion(); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetRegion failed: Expected soteErr to be nil: %v", soteErr.ErrCode)
@@ -124,7 +110,7 @@ func TestValidateEnvironment(tPtr *testing.T) {
 func TestGetNATSCredentials(tPtr *testing.T) {
 	var (
 		credValues func(string, string) (interface{}, sError.SoteError)
-		soteErr    sError.SoteError
+		soteErr sError.SoteError
 	)
 	if credValues = sConfigParams.GetNATSCredentials(); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetNATSCredentials failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
