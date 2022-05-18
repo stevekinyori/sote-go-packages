@@ -87,7 +87,7 @@ func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatCo
 		)
 
 		if len(fmtConditionParams.Filters) > 0 {
-			if tWhere, tParams, tParamCount, tSoteErr = formatFilterCondition(ctx, fmtConditionParams, panicService); tSoteErr.ErrCode != nil {
+			if tWhere, tParams, tParamCount, tSoteErr = FormatFilterCondition(ctx, fmtConditionParams, panicService); tSoteErr.ErrCode != nil {
 				soteErrChan <- tSoteErr
 				whereChan <- tWhere
 				paramsChan <- tParams
@@ -149,7 +149,7 @@ func FormatSummaryListQueryConditions(ctx context.Context, fmtConditionParams *F
 		)
 
 		if len(fmtConditionParams.Filters) > 0 {
-			if tWhere, tParams, tParamCount, tSoteErr = formatFilterCondition(ctx, fmtConditionParams, panicService); tSoteErr.ErrCode != nil {
+			if tWhere, tParams, tParamCount, tSoteErr = FormatFilterCondition(ctx, fmtConditionParams, panicService); tSoteErr.ErrCode != nil {
 				soteErrChan <- tSoteErr
 				whereChan <- tWhere
 				paramsChan <- tParams
@@ -176,7 +176,7 @@ func FormatSummaryListQueryConditions(ctx context.Context, fmtConditionParams *F
 	return
 }
 
-func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatConditionParams, panicService panicServiceFunc) (queryStr string, params []interface{},
+func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatConditionParams, panicService panicServiceFunc) (queryStr string, params []interface{},
 	paramCount int, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -220,9 +220,20 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 						col = fmtConditionParams.TblPrefix + fmtConditionParams.SortOrderKeysMap[field.FieldName]["field"].(string)
 						val = fmt.Sprintf("$%v", paramCount)
 					}
-
-					queryStr += fmt.Sprintf(" %v %v %v %v", col, field.Operator, val, operand)
-					params = append(params, field.Value)
+					// filter by is not null or is null
+					if field.Value == nil {
+						subQuery := "NULL"
+						switch field.Operator {
+						case "=":
+							subQuery = "IS " + subQuery
+						case "!=":
+							subQuery = "IS NOT " + subQuery
+						}
+						queryStr += fmt.Sprintf(" %v %v %v", col, subQuery, operand)
+					} else {
+						queryStr += fmt.Sprintf(" %v %v %v %v", col, field.Operator, val, operand)
+						params = append(params, field.Value)
+					}
 				}
 			}
 			queryStr = fmt.Sprintf("%v)%v", strings.TrimSuffix(queryStr, operand), join)
