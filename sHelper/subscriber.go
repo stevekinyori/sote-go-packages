@@ -65,7 +65,7 @@ func (s *Subscriber) End(msg *Msg, soteErr sError.SoteError) {
 
 func (s *Subscriber) subscribe() sError.SoteError {
 	sLogger.DebugMethod()
-	return s.Run.myMMPtr.PullSubscribe(s.Subject, s.ConsumerName, s.Run.Env.TestMode)
+	return s.Run.myMMPtr.PullSubscribe(s.Subject, s.StreamName, s.ConsumerName, s.Run.Env.TestMode)
 }
 
 func (s *Subscriber) getConsumerInfo() (*ConsumerInfo, sError.SoteError) {
