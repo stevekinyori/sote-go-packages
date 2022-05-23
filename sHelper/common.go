@@ -73,7 +73,7 @@ func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatCo
 		if fmtConditionParams.SortOrderStr == "" {
 			orderChan <- ""
 		} else {
-			orderChan <- fmt.Sprintf("ORDER BY shipmentfintrans.%v ", fmtConditionParams.SortOrderStr)
+			orderChan <- fmt.Sprintf("ORDER BY %v%v ", fmtConditionParams.TblPrefix, fmtConditionParams.SortOrderStr)
 		}
 	}()
 
