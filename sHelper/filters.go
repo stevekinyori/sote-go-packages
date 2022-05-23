@@ -107,6 +107,20 @@ func SetFilters[F FilterFieldConstraints](tFilters map[string][]F) (filters map[
 					field = FilterFields(f.(ContainerFilterFields))
 				case ShipmentFinTransFilterFields:
 					field = FilterFields(f.(ShipmentFinTransFilterFields))
+				case TripFinTransFilterFields:
+					field = FilterFields(f.(TripFinTransFilterFields))
+				case TripsFilterFields:
+					field = FilterFields(f.(TripsFilterFields))
+				case ClientFilterFields:
+					field = FilterFields(f.(ClientFilterFields))
+				case DocumentsFilterFields:
+					field = FilterFields(f.(DocumentsFilterFields))
+				case LOVFilterFields:
+					field = FilterFields(f.(LOVFilterFields))
+				case NotesFilterFields:
+					field = FilterFields(f.(NotesFilterFields))
+				case OrgFilterFields:
+					field = FilterFields(f.(OrgFilterFields))
 				}
 				filters[operand] = append(filters[operand], field)
 			}
