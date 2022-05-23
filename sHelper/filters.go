@@ -85,8 +85,13 @@ type ArrFilterParam struct {
 	CaseInsensitive   bool
 }
 
-// SetFilters set convert filters of map[string][]ShipmentsFilterFields | map[string][] ContainerFilterFields to map[string][]FilterFields
-func SetFilters[F ShipmentsFilterFields | ContainerFilterFields | ShipmentFinTransFilterFields](tFilters map[string][]F) (filters map[string][]FilterFields) {
+//FilterFieldConstraints defines the list of acceptable filter data types
+type FilterFieldConstraints interface {
+	ShipmentsFilterFields | ContainerFilterFields | TripsFilterFields | TripFinTransFilterFields | OrgFilterFields | ShipmentFinTransFilterFields | ClientFilterFields | DocumentsFilterFields | LOVFilterFields | NotesFilterFields
+}
+
+// SetFilters set convert filters of in FilterFieldConstraints to map[string][]FilterFields
+func SetFilters[F FilterFieldConstraints](tFilters map[string][]F) (filters map[string][]FilterFields) {
 	sLogger.DebugMethod()
 
 	if len(tFilters) > 0 {
