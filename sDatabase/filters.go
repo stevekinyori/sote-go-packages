@@ -141,8 +141,21 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 						val = fmt.Sprintf("$%v", paramCount)
 					}
 
-					queryStr += fmt.Sprintf(" %v %v %v %v", col, field.Operator, val, operand)
-					params = append(params, field.Value)
+					// filter by is not null or is null
+					if field.Value == nil {
+						subQuery := "NULL"
+						switch field.Operator {
+						case "=":
+							subQuery = "IS " + subQuery
+						case "!=":
+							subQuery = "IS NOT " + subQuery
+						}
+
+						queryStr += fmt.Sprintf(" %v %v %v", col, subQuery, operand)
+					} else {
+						queryStr += fmt.Sprintf(" %v %v %v %v", col, field.Operator, val, operand)
+						params = append(params, field.Value)
+					}
 				}
 			}
 			queryStr = fmt.Sprintf("%v)%v", strings.TrimSuffix(queryStr, operand), join)
