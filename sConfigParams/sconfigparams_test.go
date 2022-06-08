@@ -48,6 +48,17 @@ func TestGetParametersNotFound(tPtr *testing.T) {
 		tPtr.Errorf("GetParameters failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
+func TestGetSMTPConfig(tPtr *testing.T) {
+	if _, soteErr := GetSMTPConfig(API, STAGING); soteErr.ErrCode != nil {
+		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetSMTPConfig("SCOTT", STAGING); soteErr.ErrCode != 109999 {
+		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetSMTPConfig("", STAGING); soteErr.ErrCode != 200513 {
+		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+	}
+}
 func TestGetSmtpUsername(tPtr *testing.T) {
 	if _, soteErr := GetSmtpUsername(API, STAGING); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)

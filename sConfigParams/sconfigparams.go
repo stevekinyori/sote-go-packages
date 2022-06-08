@@ -52,6 +52,8 @@ const (
 	USERPOOLIDKEY           = "COGNITO_USER_POOL_ID"
 	SMTPUSERNAME            = "SMTP_USERNAME"
 	SMTPPASSWORD            = "SMTP_PASSWORD"
+	SMTPPORT                = "SMTP_PORT"
+	SMTPHOST                = "SMTP_HOST"
 	// Root Path
 	ROOTPATH = "/sote"
 )
@@ -63,6 +65,13 @@ var (
 	maxResult  int64 = 10
 	pMaxResult       = &maxResult
 )
+
+type SMTPConfig struct {
+	Host     string
+	UserName string
+	Password string
+	Port     string
+}
 
 /*
 This will establish a session using the default .aws location
@@ -96,6 +105,49 @@ func GetParameters(application, environment string) (parameters map[string]inter
 				for _, pParameter := range pSSMPathOutput.Parameters {
 					parameters[*pParameter.Name] = *pParameter.Value
 				}
+			}
+		}
+	}
+
+	return
+}
+
+func GetSMTPConfig(application, environment string) (parameters *SMTPConfig, soteErr sError.SoteError) {
+	var (
+		smtpUserNameKey  = setPath(application, environment) + "/" + SMTPUSERNAME
+		smtpPasswordKey  = setPath(application, environment) + "/" + SMTPPASSWORD
+		smtpHostKey      = setPath(application, "") + "/" + SMTPHOST
+		smtpPortKey      = setPath(application, "") + "/" + SMTPPORT
+		pSSMParamsOutput = &ssm.GetParametersOutput{}
+		err              error
+	)
+
+	parameters = &SMTPConfig{}
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			environment = strings.ToLower(environment)
+			if pSSMParamsOutput, err = awsService.GetParameters(&ssm.GetParametersInput{
+				Names:          []*string{&smtpUserNameKey, &smtpPasswordKey, &smtpHostKey, &smtpPortKey},
+				WithDecryption: pTrue,
+			}); err == nil {
+				if len(pSSMParamsOutput.Parameters) == 0 {
+					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"smtp configuration"}), sError.EmptyMap)
+				} else {
+					for _, pParameter := range pSSMParamsOutput.Parameters {
+						switch *pParameter.Name {
+						case smtpUserNameKey:
+							parameters.UserName = *pParameter.Value
+						case smtpPasswordKey:
+							parameters.Password = *pParameter.Value
+						case smtpHostKey:
+							parameters.Host = *pParameter.Value
+						case smtpPortKey:
+							parameters.Port = *pParameter.Value
+						}
+					}
+				}
+			} else {
+				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			}
 		}
 	}
@@ -321,12 +373,12 @@ func GetClientId(clientName, environment string) (clientId string, soteErr sErro
 
 	var tClientId interface{}
 
-		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tClientId, soteErr = getParameter(clientName, strings.ToLower(environment), CLIENTIDKEY)
-			if tClientId != nil {
-				clientId = tClientId.(string)
-			}
+	if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+		tClientId, soteErr = getParameter(clientName, strings.ToLower(environment), CLIENTIDKEY)
+		if tClientId != nil {
+			clientId = tClientId.(string)
 		}
+	}
 
 	return
 }
