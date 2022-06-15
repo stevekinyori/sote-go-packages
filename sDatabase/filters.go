@@ -3,12 +3,13 @@ package sDatabase
 import (
 	"context"
 	"fmt"
-	"gitlab.com/soteapps/packages/v2021/sError"
-	"gitlab.com/soteapps/packages/v2021/sLogger"
 	"reflect"
 	"runtime"
 	"strings"
 	"sync"
+
+	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2021/sLogger"
 )
 
 // FilterCommon describes the  format for common filter expression in the request json payload
@@ -58,7 +59,7 @@ type FormatConditionsResp struct {
 }
 
 // FormatArrayFilterCondition formats slice/array filter conditions for a get/list request
-func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]map[string]interface{}, reqParams *ArrFilterParam) (arrFilterResp *ArrFilterResponse, soteErr sError.SoteError) {
+func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]map[string]interface{}, reqParams *ArrFilterParam) (arrFilterResp ArrFilterResponse, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -106,7 +107,7 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 		paramCount    int
 		queryStr      string
 		params        []interface{}
-		arrFilterResp *ArrFilterResponse
+		arrFilterResp ArrFilterResponse
 	)
 	if len(fmtConditionParams.Filters) > 0 {
 		paramCount = fmtConditionParams.InitialParamCount
@@ -120,6 +121,7 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 			for _, field := range filterValues {
 				if field.Operator == "IN" || field.Operator == "NOT IN" {
 					if arrFilterResp, soteErr = FormatArrayFilterCondition(ctx, fmtConditionParams.SortOrderKeysMap, &ArrFilterParam{
+						FieldName:         field.FieldName,
 						FilterCommon:      FilterCommon{Operator: field.Operator, Value: field.Value},
 						Prefix:            fmtConditionParams.TblPrefix,
 						InitialParamCount: paramCount,
