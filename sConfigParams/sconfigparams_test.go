@@ -1,6 +1,7 @@
 package sConfigParams
 
 import (
+	"runtime"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2021/sError"
@@ -249,4 +250,17 @@ func TestSGetS3BucketURL(t *testing.T) {
 		t.Errorf("SGetS3BucketURL failed: Expected error code of 200513 got %v", soteErr.FmtErrMsg)
 	}
 
+}
+func TestGetAWSS3Bucket(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+	)
+
+	tPtr.Run("Get AWS S3 Bucket", func(tPtr *testing.T) {
+		if _, soteErr = GetAWSS3Bucket(DOCUMENTS); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
 }

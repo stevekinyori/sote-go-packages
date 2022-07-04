@@ -36,7 +36,9 @@ const (
 	DEMO        = "demo"
 	PRODUCTION  = "production"
 	// System Manager Parameter Keys
+	AWSACCOUNTIDKEY         = "AWS_ACCOUNT_ID"
 	AWSREGIONIKEY           = "AWS_REGION"
+	AWSS3BUCKETKEY          = "AWS_S3_BUCKET"
 	CLIENTIDKEY             = "COGNITO_CLIENT_ID"
 	CREDENTIALS             = "credentials"
 	DBHOSTKEY               = "DB_HOST"
@@ -440,6 +442,38 @@ func GetNATSTLSURLMask(application string) (natsTLSURLMask string, soteErr sErro
 		if tNATSTLSURLMask != nil {
 			natsTLSURLMask = tNATSTLSURLMask.(string)
 		}
+	}
+
+	return
+}
+
+/*
+GetAWSS3Bucket will retrieve the AWS S3 Bucket parameter that is in AWS System Manager service for the ROOTPATH
+*/
+func GetAWSS3Bucket(application string) (AWSS3Bucket string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tAWSS3Bucket interface{}
+
+	tAWSS3Bucket, soteErr = getParameter(application, "", AWSS3BUCKETKEY)
+	if tAWSS3Bucket != nil {
+		AWSS3Bucket = tAWSS3Bucket.(string)
+	}
+
+	return
+}
+
+/*
+GetAWSAccountId will retrieve the AWS Client ID parameter that is in AWS System Manager service for the ROOTPATH
+*/
+func GetAWSAccountId() (AWSAccountId string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tAWSAccountId interface{}
+
+	tAWSAccountId, soteErr = getParameter("", "", AWSACCOUNTIDKEY)
+	if tAWSAccountId != nil {
+		AWSAccountId = tAWSAccountId.(string)
 	}
 
 	return

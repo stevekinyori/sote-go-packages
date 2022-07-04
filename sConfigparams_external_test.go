@@ -1,6 +1,7 @@
 package packages
 
 import (
+	"runtime"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2021/sConfigParams"
@@ -9,8 +10,9 @@ import (
 
 const (
 	// Application values
-	API string = "api"
-	SYNADIA string = "synadia"
+	API       string = "api"
+	SYNADIA   string = "synadia"
+	DOCUMENTS string = "documents"
 )
 
 func TestGetParametersFound(tPtr *testing.T) {
@@ -110,7 +112,7 @@ func TestValidateEnvironment(tPtr *testing.T) {
 func TestGetNATSCredentials(tPtr *testing.T) {
 	var (
 		credValues func(string, string) (interface{}, sError.SoteError)
-		soteErr sError.SoteError
+		soteErr    sError.SoteError
 	)
 	if credValues = sConfigParams.GetNATSCredentials(); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetNATSCredentials failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
@@ -136,4 +138,30 @@ func TestGetNATSURL(tPtr *testing.T) {
 	if _, soteErr := sConfigParams.GetNATSURL("", sConfigParams.STAGING); soteErr.ErrCode != 200513 {
 		tPtr.Errorf("GetNATSURL failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
+}
+func TestGetAWSClientId(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+	)
+
+	tPtr.Run("Get AWS Client ID", func(tPtr *testing.T) {
+		if _, soteErr = sConfigParams.GetAWSAccountId(); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
+}
+func TestGetAWSS3Bucket(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+	)
+
+	tPtr.Run("Get AWS S3 Bucket", func(tPtr *testing.T) {
+		if _, soteErr = sConfigParams.GetAWSS3Bucket(DOCUMENTS); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
 }
