@@ -8,14 +8,14 @@ import (
 	"strings"
 
 	"github.com/nats-io/nats.go"
-	"gitlab.com/soteapps/packages/v2021/sError"
-	"gitlab.com/soteapps/packages/v2021/sLogger"
+	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 const (
-	LIMITSFILESTREAM = "limits-file"
-	LIMITSMEMORYSTREAM = "limits-memory"
-	WORKQUEUEFILESTREAM = "workqueue-file"
+	LIMITSFILESTREAM      = "limits-file"
+	LIMITSMEMORYSTREAM    = "limits-memory"
+	WORKQUEUEFILESTREAM   = "workqueue-file"
 	WORKQUEUEMEMORYSTREAM = "workqueue-memory"
 )
 

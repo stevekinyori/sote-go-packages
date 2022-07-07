@@ -1,8 +1,8 @@
 package sDatabase
 
 import (
-	"gitlab.com/soteapps/packages/v2021/sConfigParams"
-	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
+	"gitlab.com/soteapps/packages/v2022/sError"
 )
 
 const (
@@ -38,7 +38,7 @@ func GetAWSParams() (soteErr sError.SoteError) {
 				}
 			}
 		}
-	} 
+	}
 
 	return
 }

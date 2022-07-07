@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/soteapps/packages/v2021/sConfigParams"
-	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
+	"gitlab.com/soteapps/packages/v2022/sError"
 )
 
 const (
 	TESTCONSUMERNAMEPULL = "test-consumer-delete-me-pull"
 	TESTCONSUMERNAMEPUSH = "test-consumer-delete-me-push"
-	TESTDELIVERYSUBJECT = "TEST-ME"
+	TESTDELIVERYSUBJECT  = "TEST-ME"
 )
 
 func TestSetMaxDeliver(tPtr *testing.T) {

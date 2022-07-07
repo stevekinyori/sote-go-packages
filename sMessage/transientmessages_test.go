@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/soteapps/packages/v2021/sConfigParams"
-	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
+	"gitlab.com/soteapps/packages/v2022/sError"
 )
 
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
@@ -14,8 +14,8 @@ func TestPublish(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr *MessageManager
-		soteErr sError.SoteError
+		mmPtr             *MessageManager
+		soteErr           sError.SoteError
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -27,13 +27,14 @@ func TestPublish(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestSubscribe(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr *MessageManager
-		soteErr sError.SoteError
+		mmPtr             *MessageManager
+		soteErr           sError.SoteError
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -45,13 +46,14 @@ func TestSubscribe(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestPublishRequest(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr *MessageManager
-		soteErr sError.SoteError
+		mmPtr             *MessageManager
+		soteErr           sError.SoteError
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -63,13 +65,14 @@ func TestPublishRequest(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestSubscribeSync(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr *MessageManager
-		soteErr sError.SoteError
+		mmPtr             *MessageManager
+		soteErr           sError.SoteError
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -81,13 +84,14 @@ func TestSubscribeSync(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestNextMsg(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr *MessageManager
-		soteErr sError.SoteError
+		mmPtr             *MessageManager
+		soteErr           sError.SoteError
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -105,17 +109,19 @@ func TestNextMsg(tPtr *testing.T) {
 
 	mmPtr.Close()
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestRequest(tPtr *testing.T) {
 	// TODO This code is not being tested at this time. How to test this needs to be investigated.
 }
+
 // We are not testing to see if NATS messaging works. We are only testing if the code works.
 func TestRequestReply(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		mmPtr *MessageManager
-		soteErr sError.SoteError
+		mmPtr             *MessageManager
+		soteErr           sError.SoteError
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,

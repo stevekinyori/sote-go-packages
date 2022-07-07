@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/nats-io/nats.go"
-	"gitlab.com/soteapps/packages/v2021/sMessage"
+	"gitlab.com/soteapps/packages/v2022/sMessage"
 )
 
 func main() {

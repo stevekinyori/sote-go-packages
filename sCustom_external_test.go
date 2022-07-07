@@ -20,8 +20,8 @@ import (
 
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2021/sCustom"
-	"gitlab.com/soteapps/packages/v2021/sLogger"
+	"gitlab.com/soteapps/packages/v2022/sCustom"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 const (

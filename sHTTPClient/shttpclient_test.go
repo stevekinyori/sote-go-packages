@@ -1,8 +1,8 @@
 package sHTTPClient
 
 import (
-	"gitlab.com/soteapps/packages/v2021/sError"
-	"gitlab.com/soteapps/packages/v2021/sLogger"
+	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 	"testing"
 )
 
@@ -196,7 +196,7 @@ func TestGetExpect200600(tPtr *testing.T) {
 			"q": "news",
 		}
 
-		if soteErr = httpm.Get("/delete", reqParams,true); soteErr.ErrCode != 200600 {
+		if soteErr = httpm.Get("/delete", reqParams, true); soteErr.ErrCode != 200600 {
 			tPtr.Errorf("Get failed: Expected error code 200600 but got %v", soteErr.ErrCode)
 		}
 	} else {

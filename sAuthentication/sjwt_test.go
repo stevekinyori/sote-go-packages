@@ -7,9 +7,9 @@ import (
 	"github.com/lestrrat-go/jwx/jwk"
 
 	// "github.com/lestrrat-go/jwx/jwk"
-	"gitlab.com/soteapps/packages/v2021/sConfigParams"
-	"gitlab.com/soteapps/packages/v2021/sError"
-	"gitlab.com/soteapps/packages/v2021/sLogger"
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
+	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 const (
@@ -55,7 +55,8 @@ func TestValidFakeToken(tPtr *testing.T) {
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
+	if soteErr = ValidToken(sConfigParams.DEVELOPMENT,
+		TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.FmtErrMsg)
 	}
 }

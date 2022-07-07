@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2022/sError"
 )
 
 func TestIncorrectParams(tPtr *testing.T) {
@@ -252,7 +252,7 @@ func Test209521Error(tPtr *testing.T) {
 }
 func Test210030Error(tPtr *testing.T) {
 	var errCode = 210030
-	s := sError.BuildParams([]string{"REGION","ENVIRONMENT"})
+	s := sError.BuildParams([]string{"REGION", "ENVIRONMENT"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
 func Test210090Error(tPtr *testing.T) {

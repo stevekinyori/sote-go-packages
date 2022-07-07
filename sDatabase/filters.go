@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"gitlab.com/soteapps/packages/v2021/sError"
-	"gitlab.com/soteapps/packages/v2021/sLogger"
+	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 // FilterCommon describes the  format for common filter expression in the request json payload

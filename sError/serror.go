@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgconn"
-	"gitlab.com/soteapps/packages/v2021/sLogger"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 type SoteError struct {
@@ -81,7 +81,8 @@ var (
 			EmptyMap, "", nil},
 		200260: {200260, PROCESSERROR, 3, "Other parameter name, Parameter name, Parameter value", ": %v must be provided when %v is set to (%v)",
 			EmptyMap, "", nil},
-		200510: {200510, PROCESSERROR, 3, "Parameter name, Field name, Field value", ": %v can't be updated because %v is set to %v", EmptyMap, "", nil},
+		200510: {200510, PROCESSERROR, 3, "Parameter name, Field name, Field value", ": %v can't be updated because %v is set to %v", EmptyMap, "",
+			nil},
 		200511: {200511, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated or null", EmptyMap, "", nil},
 		200512: {200512, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated", EmptyMap, "", nil},
 		200513: {200513, PROCESSERROR, 1, "Parameter name", ": %v must be populated", EmptyMap, "", nil},
@@ -89,7 +90,8 @@ var (
 			EmptyMap, "", nil},
 		200515: {200515, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v must be empty when %v is populated", EmptyMap, "", nil},
 		200600: {200600, PROCESSERROR, 1, "Info returned from HTTP/HTTPS Request", ": Bad HTTP/HTTPS Request - %v", EmptyMap, "", nil},
-		200700: {200700, PROCESSERROR, 1, "Environment Name", ": The API you are calling is not available in this environment (%v)", EmptyMap, "", nil},
+		200700: {200700, PROCESSERROR, 1, "Environment Name", ": The API you are calling is not available in this environment (%v)", EmptyMap, "",
+			nil},
 		200800: {200800, PROCESSERROR, 0, "None", ": QuickSight error - see Details", EmptyMap, "", nil},
 		200900: {200900, PROCESSERROR, 0, "None", ": Database constraint error - see Details", EmptyMap, "", nil},
 		200999: {200999, PROCESSERROR, 0, "None", ": SQL error - see Details", EmptyMap, "", nil},
@@ -109,7 +111,8 @@ var (
 		206200: {206200, NATSERROR, 1, "List of required parameters",
 			": Message doesn't match signature. Sender must provide the following parameter names: %v", EmptyMap, "", nil},
 		206300: {206300, NATSERROR, 0, "None", ": Stream pointer is nil. Must be a validate pointer to a stream.", EmptyMap, "", nil},
-		206400: {206400, NATSERROR, 1, "Stream Name", ": Stream creation encountered an error that is not expected. Stream Name: %v", EmptyMap, "", nil},
+		206400: {206400, NATSERROR, 1, "Stream Name", ": Stream creation encountered an error that is not expected. Stream Name: %v", EmptyMap, "",
+			nil},
 		206600: {206600, NATSERROR, 2, "Stream Name, Consumer Name", ": Consumer creation encountered an error that is not expected. " +
 			"Stream Name: %v Consumer Name: %v", EmptyMap, "", nil},
 		206700: {206700, NATSERROR, 2, "Stream Name, Consumer Subject Filter",
@@ -122,8 +125,10 @@ var (
 		207030: {207030, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a array", EmptyMap, "", nil},
 		207040: {207040, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a json string", EmptyMap, "", nil},
 		207050: {207050, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid email address", EmptyMap, "", nil},
-		207060: {207060, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters which are not allowed", EmptyMap, "", nil},
-		207065: {207065, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters other than underscore", EmptyMap, "", nil},
+		207060: {207060, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters which are not allowed", EmptyMap, "",
+			nil},
+		207065: {207065, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters other than underscore", EmptyMap, "",
+			nil},
 		207070: {207070, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid date", EmptyMap, "", nil},
 		207080: {207080, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap,
 			"", nil},
@@ -157,7 +162,8 @@ var (
 		208360: {208360, PERMISSIONERROR, 1, "Claim names", ": These claims are invalid: %v", EmptyMap, "", nil},
 		208370: {208370, PERMISSIONERROR, 0, "None", ": Required claim(s) is/are missing", EmptyMap, "", nil},
 		209000: {209000, CONFIGURATIONISSUE, 0, "None", ": .env files are missing", EmptyMap, "", nil},
-		209010: {209010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", ": %v file was not found. Message return: %v", EmptyMap, "", nil},
+		209010: {209010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", ": %v file was not found. Message return: %v", EmptyMap, "",
+			nil},
 		209100: {209100, CONFIGURATIONISSUE, 1, "Environment name", ": environment variable is missing (%v)", EmptyMap, "", nil},
 		209110: {209110, CONFIGURATIONISSUE, 1, "Environment name", ": environment value (%v) is invalid", EmptyMap, "", nil},
 		209200: {209200, CONFIGURATIONISSUE, 3, "Database name, Database driver name, Port value",

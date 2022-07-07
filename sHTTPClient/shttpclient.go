@@ -15,8 +15,8 @@ import (
 
 	"github.com/ddliu/go-httpclient"
 
-	"gitlab.com/soteapps/packages/v2021/sError"
-	"gitlab.com/soteapps/packages/v2021/sLogger"
+	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 func init() {
@@ -45,7 +45,7 @@ type PayloadManager struct {
 func New(sURL string, token string) (pHTTPManager *HTTPManager, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	//http client is instantiated with the line below
+	// http client is instantiated with the line below
 	pHTTPManager = &HTTPManager{httpclient: httpclient.Defaults(httpclient.Map{"Authorization": "Bearer " + token})}
 	soteErr = pHTTPManager.setURL(sURL)
 	return
@@ -130,17 +130,20 @@ func (httpm *HTTPManager) sHTTPCall(method string, route string) (soteErr sError
 	// Success is indicated with 2xx status codes
 	switch method {
 	case "DELETE":
-		if httpm.sHTTPResponse, err = httpm.httpclient.Delete(httpm.sURL+route, httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
+		if httpm.sHTTPResponse, err = httpm.httpclient.Delete(httpm.sURL+route,
+			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
 			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
 	case "GET":
-		if httpm.sHTTPResponse, err = httpm.httpclient.Get(httpm.sURL+route, httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
+		if httpm.sHTTPResponse, err = httpm.httpclient.Get(httpm.sURL+route,
+			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
 			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
 	case "POST":
-		if httpm.sHTTPResponse, err = httpm.httpclient.PostJson(httpm.sURL+route, httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
+		if httpm.sHTTPResponse, err = httpm.httpclient.PostJson(httpm.sURL+route,
+			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
 			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}

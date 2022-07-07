@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2021/sLogger"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 func TestDefaultLogLevel(tPtr *testing.T) {
@@ -42,7 +42,7 @@ func TestDebugMessage(tPtr *testing.T) {
 	sLogger.Debug("Test Message")
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
-	if ! strings.Contains(string(out), sLogger.DebugLogLevel) {
+	if !strings.Contains(string(out), sLogger.DebugLogLevel) {
 		tPtr.Errorf("The Debug message was not found on StdOut.")
 	}
 }
@@ -53,7 +53,7 @@ func TestDebugInfoMessage(tPtr *testing.T) {
 	sLogger.Debug("Test Message")
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
-	if ! strings.Contains(string(out), sLogger.DebugLogLevel) {
+	if !strings.Contains(string(out), sLogger.DebugLogLevel) {
 		tPtr.Errorf("The Debug message was not found on StdOut.")
 	}
 	r, w, _ = os.Pipe()
@@ -61,7 +61,7 @@ func TestDebugInfoMessage(tPtr *testing.T) {
 	sLogger.Info("Test Message")
 	w.Close()
 	out, _ = ioutil.ReadAll(r)
-	if ! strings.Contains(string(out), sLogger.InfoLogLevel) {
+	if !strings.Contains(string(out), sLogger.InfoLogLevel) {
 		tPtr.Errorf("The Info message was not found on StdOut.")
 	}
 }
@@ -73,10 +73,10 @@ func TestDebugMethod(tPtr *testing.T) {
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	output := strings.TrimSuffix(string(out), "\n")
-	if ! strings.Contains(output, sLogger.DebugLogLevel) {
+	if !strings.Contains(output, sLogger.DebugLogLevel) {
 		tPtr.Errorf("The Debug message was not found on StdOut.")
 	}
-	if ! strings.Contains(output, "TestDebugMethod") {
+	if !strings.Contains(output, "TestDebugMethod") {
 		tPtr.Errorf("The Debug message have the func name for this test in Stdout.")
 	}
 }
@@ -89,10 +89,10 @@ func TestSetLogMessagePrefix(tPtr *testing.T) {
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	output := strings.TrimSuffix(string(out), "\n")
-	if ! strings.Contains(output, sLogger.DebugLogLevel) && ! strings.Contains(output, "SLOGGER_TEST") {
+	if !strings.Contains(output, sLogger.DebugLogLevel) && !strings.Contains(output, "SLOGGER_TEST") {
 		tPtr.Errorf("The Debug message didn't was not found on StdOut.")
 	}
-	if ! strings.Contains(output, "TestDebugMethod") && ! strings.Contains(output, "SLOGGER_TEST") {
+	if !strings.Contains(output, "TestDebugMethod") && !strings.Contains(output, "SLOGGER_TEST") {
 		tPtr.Errorf("The Debug message didn't have the func name for this test in Stdout.")
 	}
 }

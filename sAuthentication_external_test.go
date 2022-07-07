@@ -3,9 +3,9 @@ package packages
 import (
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2021/sAuthentication"
-	"gitlab.com/soteapps/packages/v2021/sConfigParams"
-	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2022/sAuthentication"
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
+	"gitlab.com/soteapps/packages/v2022/sError"
 )
 
 const (
@@ -47,7 +47,8 @@ func TestValidMissingSegmentToken(tPtr *testing.T) {
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT, TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
+	if soteErr = sAuthentication.ValidToken(sConfigParams.DEVELOPMENT,
+		TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.ErrCode)
 	}
 }

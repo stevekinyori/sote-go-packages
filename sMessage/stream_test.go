@@ -5,17 +5,17 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/soteapps/packages/v2021/sConfigParams"
-	"gitlab.com/soteapps/packages/v2021/sError"
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
+	"gitlab.com/soteapps/packages/v2022/sError"
 )
 
 const (
-	TESTSTREAMNAME    = "test-stream-delete-me"
+	TESTSTREAMNAME = "test-stream-delete-me"
 )
 
 var (
-	testPullSubjects = []string{"test-subject-delete-me-1","test-subject-delete-me-2"}
-	testPushSubjects = []string{"test-subject-delete-me-push-1","test-subject-delete-me-push-2"}
+	testPullSubjects = []string{"test-subject-delete-me-1", "test-subject-delete-me-2"}
+	testPushSubjects = []string{"test-subject-delete-me-push-1", "test-subject-delete-me-push-2"}
 )
 
 func TestSetReplicas(tPtr *testing.T) {
@@ -40,8 +40,8 @@ func TestCreateLimitsStreamWithFileStorage(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		soteErr sError.SoteError
-		mmPtr   *MessageManager
+		soteErr           sError.SoteError
+		mmPtr             *MessageManager
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -53,7 +53,7 @@ func TestCreateLimitsStreamWithFileStorage(tPtr *testing.T) {
 		tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1,false); soteErr.ErrCode != nil {
+	if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
@@ -65,8 +65,8 @@ func TestCreateLimitsStreamWithMemoryStorage(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		soteErr sError.SoteError
-		mmPtr   *MessageManager
+		soteErr           sError.SoteError
+		mmPtr             *MessageManager
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -90,8 +90,8 @@ func TestCreateWorkQueueStreamWithFileStorage(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		soteErr sError.SoteError
-		mmPtr   *MessageManager
+		soteErr           sError.SoteError
+		mmPtr             *MessageManager
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -115,8 +115,8 @@ func TestCreateWorkQueueStreamWithMemoryStorage(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
-		soteErr sError.SoteError
-		mmPtr   *MessageManager
+		soteErr           sError.SoteError
+		mmPtr             *MessageManager
 	)
 
 	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
@@ -128,7 +128,7 @@ func TestCreateWorkQueueStreamWithMemoryStorage(tPtr *testing.T) {
 		tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = mmPtr.CreateWorkQueueStreamWithMemoryStorage(TESTSTREAMNAME, testPullSubjects, 1,false); soteErr.ErrCode != nil {
+	if _, soteErr = mmPtr.CreateWorkQueueStreamWithMemoryStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
