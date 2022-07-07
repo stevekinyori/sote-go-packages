@@ -42,12 +42,17 @@ type ArrFilterResponse struct {
 type FormatConditionParams struct {
 	InitialParamCount int
 	RecordLimitCount  int
-	TblPrefix         string //e.g. tbl.'the prefix must have a dot at the end'
+	TblPrefixes       []string // e.g. tbl.'the prefix must have a dot at the end'
 	SortOrderStr      string
 	ColName           string
 	Operator          string
 	Filters           map[string][]FilterFields
-	SortOrderKeysMap  map[string]map[string]interface{}
+	SortOrderKeysMap  map[string]sortOrder
+}
+
+type sortOrder struct {
+	ColumnName    string
+	CaseSensitive bool
 }
 
 type FormatConditionsResp struct {
@@ -59,7 +64,8 @@ type FormatConditionsResp struct {
 }
 
 // FormatArrayFilterCondition formats slice/array filter conditions for a get/list request
-func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]map[string]interface{}, reqParams *ArrFilterParam) (arrFilterResp ArrFilterResponse, soteErr sError.SoteError) {
+func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]sortOrder,
+	reqParams *ArrFilterParam) (arrFilterResp *ArrFilterResponse, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -67,18 +73,19 @@ func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string
 		paramEnd   string
 	)
 
+	arrFilterResp = &ArrFilterResponse{}
 	s := reflect.ValueOf(reqParams.Value)
 	if kind := s.Kind(); kind == reflect.Slice || kind == reflect.Array {
 		reqParamLen := s.Len()
 		if reqParamLen > 0 {
 			arrFilterResp.ParamCount = reqParams.InitialParamCount
-
 			if reqParams.CaseInsensitive {
 				paramStart = "UPPER("
 				paramEnd = ")"
 			}
 
-			arrFilterResp.QueryStr = fmt.Sprintf(" %v%v%v%v %v (", paramStart, reqParams.Prefix, sortOrderKeysMap[reqParams.FieldName]["field"], paramEnd,
+			arrFilterResp.QueryStr = fmt.Sprintf(" %v%v%v%v %v (", paramStart, reqParams.Prefix, sortOrderKeysMap[reqParams.FieldName].ColumnName,
+				paramEnd,
 				reqParams.Operator)
 			arrFilterResp.Params = make([]interface{}, reqParamLen)
 
@@ -97,7 +104,8 @@ func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string
 	return
 }
 
-func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatConditionParams) (fmtConditionResp FormatConditionsResp, soteErr sError.SoteError) {
+func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatConditionParams) (fmtConditionResp FormatConditionsResp,
+	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -106,28 +114,37 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 		join          string
 		paramCount    int
 		queryStr      string
+		tQueryStr     string
 		params        []interface{}
-		arrFilterResp ArrFilterResponse
+		arrFilterResp = &ArrFilterResponse{}
+		prefix        string
 	)
 	if len(fmtConditionParams.Filters) > 0 {
 		paramCount = fmtConditionParams.InitialParamCount
 		join = " AND "
 		if fmtConditionParams.InitialParamCount > 0 {
-			queryStr += join
+			queryStr = join
+		} else {
+			queryStr = " WHERE "
 		}
+		if len(fmtConditionParams.TblPrefixes) > 0 {
+			prefix = fmtConditionParams.TblPrefixes[0]
+			fmtConditionParams.TblPrefixes = fmtConditionParams.TblPrefixes[1:]
+		}
+
 	firstLoop:
 		for operand, filterValues := range fmtConditionParams.Filters {
-			queryStr += "("
+			tQueryStr += "("
 			for _, field := range filterValues {
 				if field.Operator == "IN" || field.Operator == "NOT IN" {
 					if arrFilterResp, soteErr = FormatArrayFilterCondition(ctx, fmtConditionParams.SortOrderKeysMap, &ArrFilterParam{
 						FieldName:         field.FieldName,
 						FilterCommon:      FilterCommon{Operator: field.Operator, Value: field.Value},
-						Prefix:            fmtConditionParams.TblPrefix,
+						Prefix:            prefix,
 						InitialParamCount: paramCount,
-						CaseInsensitive:   fmtConditionParams.SortOrderKeysMap[field.FieldName]["case-insensitive"].(bool),
+						CaseInsensitive:   fmtConditionParams.SortOrderKeysMap[field.FieldName].CaseSensitive,
 					}); soteErr.ErrCode == nil {
-						queryStr += arrFilterResp.QueryStr + operand
+						tQueryStr += arrFilterResp.QueryStr + " " + operand
 						params = append(params, arrFilterResp.Params...)
 						paramCount = arrFilterResp.ParamCount
 					} else {
@@ -135,11 +152,12 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 					}
 				} else {
 					paramCount++
-					if fmtConditionParams.SortOrderKeysMap[field.FieldName]["case-insensitive"].(bool) {
-						col = fmt.Sprintf("UPPER(%v%v)", fmtConditionParams.TblPrefix, fmtConditionParams.SortOrderKeysMap[field.FieldName]["field"])
+					if fmtConditionParams.SortOrderKeysMap[field.FieldName].CaseSensitive {
+						col = fmt.Sprintf("UPPER(%v%v)", fmtConditionParams.TblPrefixes,
+							fmtConditionParams.SortOrderKeysMap[field.FieldName].ColumnName)
 						val = fmt.Sprintf("UPPER($%v)", paramCount)
 					} else {
-						col = fmtConditionParams.TblPrefix + fmtConditionParams.SortOrderKeysMap[field.FieldName]["field"].(string)
+						col = prefix + fmtConditionParams.SortOrderKeysMap[field.FieldName].ColumnName
 						val = fmt.Sprintf("$%v", paramCount)
 					}
 
@@ -153,18 +171,23 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 							subQuery = "IS NOT " + subQuery
 						}
 
-						queryStr += fmt.Sprintf(" %v %v %v", col, subQuery, operand)
+						tQueryStr += fmt.Sprintf(" %v %v %v", col, subQuery, operand)
 					} else {
-						queryStr += fmt.Sprintf(" %v %v %v %v", col, field.Operator, val, operand)
+						tQueryStr += fmt.Sprintf(" %v %v %v %v", col, field.Operator, val, operand)
 						params = append(params, field.Value)
 					}
 				}
 			}
-			queryStr = fmt.Sprintf("%v)%v", strings.TrimSuffix(queryStr, operand), join)
+			tQueryStr = fmt.Sprintf("%v)%v", strings.TrimSuffix(tQueryStr, operand), join)
 		}
 
 		if soteErr.ErrCode == nil {
-			queryStr = strings.TrimSuffix(queryStr, join)
+			ttQueryStr := strings.TrimSuffix(tQueryStr, join)
+			for _, p := range fmtConditionParams.TblPrefixes {
+				ttQueryStr += " OR " + strings.ReplaceAll(ttQueryStr, prefix, p)
+			}
+
+			queryStr += "(" + ttQueryStr + ")"
 		}
 
 		fmtConditionResp.Where = queryStr
@@ -176,7 +199,8 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 }
 
 // FormatListQueryConditions parses the query list for a /list endpoints and list nats action types to form relevant sql queries
-func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatConditionParams) (fmtConditionResp FormatConditionsResp, soteErr sError.SoteError) {
+func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatConditionParams) (fmtConditionResp FormatConditionsResp,
+	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -216,29 +240,29 @@ func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatCo
 		if fmtConditionParams.SortOrderStr == "" {
 			orderChan <- ""
 		} else {
-			orderChan <- fmt.Sprintf("ORDER BY %v%v ", fmtConditionParams.TblPrefix, fmtConditionParams.SortOrderStr)
+			orderChan <- fmt.Sprintf("ORDER BY %v%v ", fmtConditionParams.TblPrefixes, fmtConditionParams.SortOrderStr)
 		}
 	}()
 
 	go func() {
 		defer wg.Done()
 		var (
-			tSoteErr         sError.SoteError
-			fmtConditionResp FormatConditionsResp
+			tSoteErr          sError.SoteError
+			tFmtConditionResp FormatConditionsResp
 		)
 
 		if len(fmtConditionParams.Filters) > 0 {
-			if fmtConditionResp, tSoteErr = formatFilterCondition(ctx, fmtConditionParams); tSoteErr.ErrCode != nil {
+			if tFmtConditionResp, tSoteErr = formatFilterCondition(ctx, fmtConditionParams); tSoteErr.ErrCode != nil {
 				soteErrChan <- tSoteErr
-				whereChan <- fmtConditionResp.Where //where clause string
-				paramsChan <- fmtConditionResp.Params
-				paramCountChan <- fmtConditionResp.ParamCount
+				whereChan <- tFmtConditionResp.Where // where clause string
+				paramsChan <- tFmtConditionResp.Params
+				paramCountChan <- tFmtConditionResp.ParamCount
 				return
 			}
 			soteErrChan <- tSoteErr
-			whereChan <- fmtConditionResp.Where //where clause string
-			paramsChan <- fmtConditionResp.Params
-			paramCountChan <- fmtConditionResp.ParamCount
+			whereChan <- tFmtConditionResp.Where // where clause string
+			paramsChan <- tFmtConditionResp.Params
+			paramCountChan <- tFmtConditionResp.ParamCount
 		} else {
 			soteErrChan <- tSoteErr
 			whereChan <- ""
@@ -258,16 +282,17 @@ func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatCo
 }
 
 // FormatGenericFilterArray formats params from slice/array for additional filters that are not supported by the filters list. (i.e for summary endpoints)
-func FormatGenericFilterArray(ctx context.Context, fmtConditionParams *FormatConditionParams, args []string) (queryStr string, params []interface{}, paramCount int) {
+func FormatGenericFilterArray(ctx context.Context, fmtConditionParams *FormatConditionParams, args []string) (queryStr string, params []interface{},
+	paramCount int) {
 	paramStart := "UPPER("
 	paramEnd := ")"
 
 	reqParamLen := len(args)
 
-	//we are being paranoid here! We already know that this function will never be called with an empty slice:-)
+	// we are being paranoid here! We already know that this function will never be called with an empty slice:-)
 	if reqParamLen > 0 {
 		paramCount = fmtConditionParams.InitialParamCount
-		queryStr = fmt.Sprintf(" %v%v%v%v %v (", paramStart, fmtConditionParams.TblPrefix, fmtConditionParams.ColName, paramEnd,
+		queryStr = fmt.Sprintf(" %v%v%v%v %v (", paramStart, fmtConditionParams.TblPrefixes, fmtConditionParams.ColName, paramEnd,
 			fmtConditionParams.Operator)
 
 		params = make([]interface{}, reqParamLen)
