@@ -56,6 +56,12 @@ const (
 	SMTPPASSWORD            = "SMTP_PASSWORD"
 	SMTPPORT                = "SMTP_PORT"
 	SMTPHOST                = "SMTP_HOST"
+	QUICKBOOKSCLIENTID      = "QUICKBOOKS_CLIENT_ID"
+	QUICKBOOKSCLIENTSECRET  = "QUICKBOOKS_CLIENT_SECRET"
+	QUICKBOOKSWEBHOOKTOKEN  = "QUICKBOOKS_WEBHOOK_TOKEN"
+	QUICKBOOKSHOST          = "QUICKBOOKS_HOST"
+	QUICKBOOKSCONFIGURL     = "QUICKBOOKS_CONFIG_URL"
+
 	// Root Path
 	ROOTPATH = "/sote"
 )
@@ -114,6 +120,7 @@ func GetParameters(application, environment string) (parameters map[string]inter
 	return
 }
 
+// GetSMTPConfig retrieves all SMTP configurations  from SSM
 func GetSMTPConfig(application, environment string) (parameters *SMTPConfig, soteErr sError.SoteError) {
 	var (
 		smtpUserNameKey  = setPath(application, environment) + "/" + SMTPUSERNAME
@@ -144,6 +151,53 @@ func GetSMTPConfig(application, environment string) (parameters *SMTPConfig, sot
 						case smtpHostKey:
 							parameters.Host = *pParameter.Value
 						case smtpPortKey:
+							parameters.Port = *pParameter.Value
+						}
+					}
+				}
+			} else {
+				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+			}
+		}
+	}
+
+	return
+}
+
+// GetQuickbooksConfig retrieves all Quickbooks configurations  from SSM
+func GetQuickbooksConfig(application, environment string) (parameters *SMTPConfig, soteErr sError.SoteError) {
+	var (
+		clientIdKey      = setPath(application, environment) + "/" + QUICKBOOKSCLIENTID
+		clientSecretKey  = setPath(application, environment) + "/" + QUICKBOOKSCLIENTSECRET
+		hostKey          = setPath(application, environment) + "/" + QUICKBOOKSHOST
+		configURLKey     = setPath(application, environment) + "/" + QUICKBOOKSCONFIGURL
+		webhookToken     = setPath(application, environment) + "/" + QUICKBOOKSWEBHOOKTOKEN
+		pSSMParamsOutput = &ssm.GetParametersOutput{}
+		err              error
+	)
+
+	parameters = &SMTPConfig{}
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			environment = strings.ToLower(environment)
+			if pSSMParamsOutput, err = awsService.GetParameters(&ssm.GetParametersInput{
+				Names:          []*string{&clientIdKey, &clientSecretKey, &hostKey, &configURLKey, &webhookToken},
+				WithDecryption: pTrue,
+			}); err == nil {
+				if len(pSSMParamsOutput.Parameters) == 0 {
+					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"webhook configuration"}), sError.EmptyMap)
+				} else {
+					for _, pParameter := range pSSMParamsOutput.Parameters {
+						switch *pParameter.Name {
+						case clientIdKey:
+							parameters.UserName = *pParameter.Value
+						case clientSecretKey:
+							parameters.Password = *pParameter.Value
+						case hostKey:
+							parameters.Host = *pParameter.Value
+						case configURLKey:
+							parameters.Port = *pParameter.Value
+						case webhookToken:
 							parameters.Port = *pParameter.Value
 						}
 					}

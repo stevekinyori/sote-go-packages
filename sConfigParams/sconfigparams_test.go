@@ -50,14 +50,25 @@ func TestGetParametersNotFound(tPtr *testing.T) {
 	}
 }
 func TestGetSMTPConfig(tPtr *testing.T) {
-	if _, soteErr := GetSMTPConfig(API, STAGING); soteErr.ErrCode != nil {
+	if _, soteErr := GetSMTPConfig(API, DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr := GetSMTPConfig("SCOTT", STAGING); soteErr.ErrCode != 109999 {
+	if _, soteErr := GetSMTPConfig("MARY", DEVELOPMENT); soteErr.ErrCode != 109999 {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr := GetSMTPConfig("", STAGING); soteErr.ErrCode != 200513 {
+	if _, soteErr := GetSMTPConfig("", DEVELOPMENT); soteErr.ErrCode != 200513 {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+	}
+}
+func TestGetQuickbooksConfig(tPtr *testing.T) {
+	if _, soteErr := GetQuickbooksConfig(API, DEVELOPMENT); soteErr.ErrCode != nil {
+		tPtr.Errorf("GetQuickbooksConfig failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetQuickbooksConfig("MARY", DEVELOPMENT); soteErr.ErrCode != 109999 {
+		tPtr.Errorf("GetQuickbooksConfig failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetQuickbooksConfig("", DEVELOPMENT); soteErr.ErrCode != 200513 {
+		tPtr.Errorf("GetQuickbooksConfig failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestGetSmtpUsername(tPtr *testing.T) {
