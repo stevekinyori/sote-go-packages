@@ -16,6 +16,7 @@ NOTES:
 package sConfigParams
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -52,16 +53,23 @@ const (
 	UNPROCESSEDDOCUMENTSKEY = "inbound/name"
 	PROCESSEDDOCUMENTSKEY   = "processed/name"
 	USERPOOLIDKEY           = "COGNITO_USER_POOL_ID"
-	SMTPUSERNAME            = "SMTP_USERNAME"
-	SMTPPASSWORD            = "SMTP_PASSWORD"
-	SMTPPORT                = "SMTP_PORT"
-	SMTPHOST                = "SMTP_HOST"
-	QUICKBOOKSCLIENTID      = "QUICKBOOKS_CLIENT_ID"
-	QUICKBOOKSCLIENTSECRET  = "QUICKBOOKS_CLIENT_SECRET"
-	QUICKBOOKSWEBHOOKTOKEN  = "QUICKBOOKS_WEBHOOK_TOKEN"
-	QUICKBOOKSHOST          = "QUICKBOOKS_HOST"
-	QUICKBOOKSCONFIGURL     = "QUICKBOOKS_CONFIG_URL"
+	SMTPUSERNAME            = "USERNAME"
+	SMTPPASSWORD            = "PASSWORD"
+	SMTPPORT                = "PORT"
+	SMTPHOST                = "HOST"
+	QUICKBOOKSCLIENTID      = "CLIENT_ID"
+	QUICKBOOKSCLIENTSECRET  = "CLIENT_SECRET"
+	QUICKBOOKSWEBHOOKTOKEN  = "WEBHOOK_TOKEN"
+	QUICKBOOKSHOST          = "HOST"
+	QUICKBOOKSCONFIGURL     = "CONFIG_URL"
 
+	// Application values
+	API        string = "api"
+	SDCC       string = "sdcc"
+	SYNADIA    string = "synadia"
+	DOCUMENTS  string = "documents"
+	QUICKBOOKS        = "quickbooks"
+	SMTP              = "smtp"
 	// Root Path
 	ROOTPATH = "/sote"
 )
@@ -79,6 +87,14 @@ type SMTPConfig struct {
 	UserName string
 	Password string
 	Port     string
+}
+
+type QuickbooksConfig struct {
+	Host         string
+	ClientId     string
+	ClientSecret string
+	WebhookToken string
+	ConfigURL    string
 }
 
 /*
@@ -165,7 +181,7 @@ func GetSMTPConfig(application, environment string) (parameters *SMTPConfig, sot
 }
 
 // GetQuickbooksConfig retrieves all Quickbooks configurations  from SSM
-func GetQuickbooksConfig(application, environment string) (parameters *SMTPConfig, soteErr sError.SoteError) {
+func GetQuickbooksConfig(application, environment string) (parameters *QuickbooksConfig, soteErr sError.SoteError) {
 	var (
 		clientIdKey      = setPath(application, environment) + "/" + QUICKBOOKSCLIENTID
 		clientSecretKey  = setPath(application, environment) + "/" + QUICKBOOKSCLIENTSECRET
@@ -176,7 +192,7 @@ func GetQuickbooksConfig(application, environment string) (parameters *SMTPConfi
 		err              error
 	)
 
-	parameters = &SMTPConfig{}
+	parameters = &QuickbooksConfig{}
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
@@ -190,17 +206,18 @@ func GetQuickbooksConfig(application, environment string) (parameters *SMTPConfi
 					for _, pParameter := range pSSMParamsOutput.Parameters {
 						switch *pParameter.Name {
 						case clientIdKey:
-							parameters.UserName = *pParameter.Value
+							parameters.ClientId = *pParameter.Value
 						case clientSecretKey:
-							parameters.Password = *pParameter.Value
+							parameters.ClientSecret = *pParameter.Value
 						case hostKey:
 							parameters.Host = *pParameter.Value
 						case configURLKey:
-							parameters.Port = *pParameter.Value
+							parameters.ConfigURL = *pParameter.Value
 						case webhookToken:
-							parameters.Port = *pParameter.Value
+							parameters.WebhookToken = *pParameter.Value
 						}
 					}
+					fmt.Println(fmt.Printf("%+v", parameters))
 				}
 			} else {
 				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)

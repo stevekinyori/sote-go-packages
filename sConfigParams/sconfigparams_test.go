@@ -8,14 +8,6 @@ import (
 	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
-const (
-	// Application values
-	API       string = "api"
-	SDCC      string = "sdcc"
-	SYNADIA   string = "synadia"
-	DOCUMENTS string = "documents"
-)
-
 func init() {
 	sLogger.SetLogMessagePrefix("sconfigparams_test.go")
 }
@@ -50,7 +42,7 @@ func TestGetParametersNotFound(tPtr *testing.T) {
 	}
 }
 func TestGetSMTPConfig(tPtr *testing.T) {
-	if _, soteErr := GetSMTPConfig(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if _, soteErr := GetSMTPConfig(SMTP, DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetSMTPConfig("MARY", DEVELOPMENT); soteErr.ErrCode != 109999 {
@@ -61,7 +53,7 @@ func TestGetSMTPConfig(tPtr *testing.T) {
 	}
 }
 func TestGetQuickbooksConfig(tPtr *testing.T) {
-	if _, soteErr := GetQuickbooksConfig(API, DEVELOPMENT); soteErr.ErrCode != nil {
+	if _, soteErr := GetQuickbooksConfig(QUICKBOOKS, DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetQuickbooksConfig failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 	if _, soteErr := GetQuickbooksConfig("MARY", DEVELOPMENT); soteErr.ErrCode != 109999 {
@@ -72,24 +64,24 @@ func TestGetQuickbooksConfig(tPtr *testing.T) {
 	}
 }
 func TestGetSmtpUsername(tPtr *testing.T) {
-	if _, soteErr := GetSmtpUsername(API, STAGING); soteErr.ErrCode != nil {
+	if _, soteErr := GetSmtpUsername(SMTP, DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr := GetSmtpUsername("SCOTT", STAGING); soteErr.ErrCode != 109999 {
+	if _, soteErr := GetSmtpUsername("SCOTT", DEVELOPMENT); soteErr.ErrCode != 109999 {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr := GetSmtpUsername("", STAGING); soteErr.ErrCode != 200513 {
+	if _, soteErr := GetSmtpUsername("", DEVELOPMENT); soteErr.ErrCode != 200513 {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestGetSmtpPassword(tPtr *testing.T) {
-	if _, soteErr := GetSmtpPassword(API, STAGING); soteErr.ErrCode != nil {
+	if _, soteErr := GetSmtpPassword(SMTP, DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetSmtpPassword failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr := GetSmtpPassword("SCOTT", STAGING); soteErr.ErrCode != 109999 {
+	if _, soteErr := GetSmtpPassword("SCOTT", DEVELOPMENT); soteErr.ErrCode != 109999 {
 		tPtr.Errorf("GetSmtpPassword failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
 	}
-	if _, soteErr := GetSmtpPassword("", STAGING); soteErr.ErrCode != 200513 {
+	if _, soteErr := GetSmtpPassword("", DEVELOPMENT); soteErr.ErrCode != 200513 {
 		tPtr.Errorf("GetSmtpPassword failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
