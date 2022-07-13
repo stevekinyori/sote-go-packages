@@ -63,6 +63,17 @@ func TestGetQuickbooksConfig(tPtr *testing.T) {
 		tPtr.Errorf("GetQuickbooksConfig failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
+func TestGetCognitoConfig(tPtr *testing.T) {
+	if _, soteErr := GetCognitoConfig(COGNITO, STAGING); soteErr.ErrCode != nil {
+		tPtr.Errorf("TestGetCognitoConfig failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetCognitoConfig("MARY", DEVELOPMENT); soteErr.ErrCode != 109999 {
+		tPtr.Errorf("TestGetCognitoConfig failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetCognitoConfig("", DEVELOPMENT); soteErr.ErrCode != 200513 {
+		tPtr.Errorf("TestGetCognitoConfig failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+	}
+}
 func TestGetSmtpUsername(tPtr *testing.T) {
 	if _, soteErr := GetSmtpUsername(SMTP, DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)

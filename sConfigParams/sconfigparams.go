@@ -16,7 +16,6 @@ NOTES:
 package sConfigParams
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -41,6 +40,9 @@ const (
 	AWSREGIONIKEY           = "AWS_REGION"
 	AWSS3BUCKETKEY          = "AWS_S3_BUCKET"
 	CLIENTIDKEY             = "COGNITO_CLIENT_ID"
+	COGNITOUSER             = "USER"
+	COGNITOCLIENTID         = "CLIENT_ID"
+	COGNITOPASSWORD         = "DATA_LOAD_PASSWORD"
 	CREDENTIALS             = "credentials"
 	DBHOSTKEY               = "DB_HOST"
 	DBNAMEKEY               = "DB_NAME"
@@ -70,6 +72,7 @@ const (
 	DOCUMENTS  string = "documents"
 	QUICKBOOKS        = "quickbooks"
 	SMTP              = "smtp"
+	COGNITO           = "cognito"
 	// Root Path
 	ROOTPATH = "/sote"
 )
@@ -95,6 +98,12 @@ type QuickbooksConfig struct {
 	ClientSecret string
 	WebhookToken string
 	ConfigURL    string
+}
+
+type CognitoConfig struct {
+	ClientId string
+	UserName string
+	Password string
 }
 
 /*
@@ -217,7 +226,47 @@ func GetQuickbooksConfig(application, environment string) (parameters *Quickbook
 							parameters.WebhookToken = *pParameter.Value
 						}
 					}
-					fmt.Println(fmt.Printf("%+v", parameters))
+				}
+			} else {
+				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+			}
+		}
+	}
+
+	return
+}
+
+// GetCognitoConfig retrieves all Cognito configurations  from SSM
+func GetCognitoConfig(application, environment string) (parameters *CognitoConfig, soteErr sError.SoteError) {
+	var (
+		clientIdKey      = setPath(application, environment) + "/" + COGNITOCLIENTID
+		userKey          = setPath(application, environment) + "/" + COGNITOUSER
+		passwordKey      = setPath(application, environment) + "/" + COGNITOPASSWORD
+		pSSMParamsOutput = &ssm.GetParametersOutput{}
+		err              error
+	)
+
+	parameters = &CognitoConfig{}
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			environment = strings.ToLower(environment)
+			if pSSMParamsOutput, err = awsService.GetParameters(&ssm.GetParametersInput{
+				Names:          []*string{&clientIdKey, &userKey, &passwordKey},
+				WithDecryption: pTrue,
+			}); err == nil {
+				if len(pSSMParamsOutput.Parameters) == 0 {
+					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
+				} else {
+					for _, pParameter := range pSSMParamsOutput.Parameters {
+						switch *pParameter.Name {
+						case clientIdKey:
+							parameters.ClientId = *pParameter.Value
+						case userKey:
+							parameters.UserName = *pParameter.Value
+						case passwordKey:
+							parameters.Password = *pParameter.Value
+						}
+					}
 				}
 			} else {
 				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
