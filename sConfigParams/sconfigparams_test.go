@@ -4,6 +4,7 @@ import (
 	"context"
 	"runtime"
 	"testing"
+	"time"
 
 	"gitlab.com/soteapps/packages/v2022/sError"
 	"gitlab.com/soteapps/packages/v2022/sLogger"
@@ -280,4 +281,21 @@ func TestGetAWSS3Bucket(tPtr *testing.T) {
 			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
 	})
+}
+func TestUpdateQuickbooksRefreshToken(tPtr *testing.T) {
+	var soteErr sError.SoteError
+
+	param := QuickBooksRefreshToken{
+		Token:      "test2",
+		ExpiryDate: time.Now(),
+	}
+	if soteErr = UpdateQuickbooksRefreshToken(parentCtx, QUICKBOOKS, "MARY", param); soteErr.ErrCode != 209110 {
+		tPtr.Errorf("GetParameters failed: Expected soteErr to be 209110: %v", soteErr.FmtErrMsg)
+	}
+	if soteErr = UpdateQuickbooksRefreshToken(parentCtx, "MARY", DEVELOPMENT, param); soteErr.ErrCode != 109999 {
+		tPtr.Errorf("GetParameters failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if soteErr = UpdateQuickbooksRefreshToken(parentCtx, "", DEVELOPMENT, param); soteErr.ErrCode != 200513 {
+		tPtr.Errorf("GetParameters failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+	}
 }

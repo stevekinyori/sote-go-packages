@@ -25,6 +25,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	"github.com/aws/aws-sdk-go-v2/service/ssm/types"
 	"gitlab.com/soteapps/packages/v2022/sError"
 	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
@@ -118,7 +119,7 @@ type CognitoConfig struct {
 type SSMParameter struct {
 	Key        string
 	Content    string
-	TargetType *string
+	TargetType types.ParameterType
 }
 
 type Database struct {
@@ -758,6 +759,35 @@ func GetEnvironmentVariable(key string) (envValue string, soteErr sError.SoteErr
 	return
 }
 
+// UpdateQuickbooksRefreshToken updates the SSM value of quickbook refresh token and expiry date
+func UpdateQuickbooksRefreshToken(ctx context.Context, application, environment string,
+	parameters QuickBooksRefreshToken) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			var (
+				ssmParam = []SSMParameter{
+					{
+						Key:        QUICKBOOKSREFRESHTOKEN,
+						Content:    parameters.Token,
+						TargetType: types.ParameterTypeSecureString,
+					},
+					{
+						Key:        QUICKBOOKSREFRESHTOKENEXPIRY,
+						Content:    parameters.ExpiryDate.String(),
+						TargetType: types.ParameterTypeString,
+					},
+				}
+			)
+
+			soteErr = updateParameter(ctx, application, environment, ssmParam)
+		}
+	}
+
+	return
+}
+
 /*
 setPath will build the query path based on the ROOTPATH, Application and Environment.
 */
@@ -830,6 +860,32 @@ func getParameter(ctx context.Context, application, environment, key string) (re
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{name}), sError.EmptyMap)
 	} else {
 		returnValue = *pSSMParamOutput.Parameter.Value
+	}
+
+	return
+}
+
+// Updates one or more values for an SSM document.
+func updateParameter(ctx context.Context, application, environment string, parameters []SSMParameter) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	for _, parameter := range parameters {
+		if _, soteErr = getParameter(ctx, application, environment, parameter.Key); soteErr.ErrCode != nil {
+			break
+		}
+
+		name := setPath(application, environment) + "/" + parameter.Key
+		pSSMParamInput := &ssm.PutParameterInput{
+			Name:      &name,
+			Value:     &parameter.Content,
+			Type:      parameter.TargetType,
+			Overwrite: true,
+		}
+
+		if _, err := awsService.PutParameter(ctx, pSSMParamInput); err != nil {
+			soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+			break
+		}
 	}
 
 	return
