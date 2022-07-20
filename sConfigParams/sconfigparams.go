@@ -16,13 +16,15 @@ NOTES:
 package sConfigParams
 
 import (
+	"context"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"gitlab.com/soteapps/packages/v2022/sError"
 	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
@@ -36,34 +38,36 @@ const (
 	DEMO        = "demo"
 	PRODUCTION  = "production"
 	// System Manager Parameter Keys
-	AWSACCOUNTIDKEY         = "AWS_ACCOUNT_ID"
-	AWSREGIONIKEY           = "AWS_REGION"
-	AWSS3BUCKETKEY          = "AWS_S3_BUCKET"
-	CLIENTIDKEY             = "COGNITO_CLIENT_ID"
-	COGNITOUSER             = "USER"
-	COGNITOCLIENTID         = "CLIENT_ID"
-	COGNITOPASSWORD         = "DATA_LOAD_PASSWORD"
-	CREDENTIALS             = "credentials"
-	DBHOSTKEY               = "DB_HOST"
-	DBNAMEKEY               = "DB_NAME"
-	DBPASSWORDKEY           = "DATABASE_PASSWORD"
-	DBPORTKEY               = "DB_PORT"
-	DBSSLMODEKEY            = "DB_SSL_MODE"
-	DBUSERKEY               = "DB_USERNAME"
-	URL                     = "url"
-	TLSURLMASK              = "tls-urlmask"
-	UNPROCESSEDDOCUMENTSKEY = "inbound/name"
-	PROCESSEDDOCUMENTSKEY   = "processed/name"
-	USERPOOLIDKEY           = "COGNITO_USER_POOL_ID"
-	SMTPUSERNAME            = "USERNAME"
-	SMTPPASSWORD            = "PASSWORD"
-	SMTPPORT                = "PORT"
-	SMTPHOST                = "HOST"
-	QUICKBOOKSCLIENTID      = "CLIENT_ID"
-	QUICKBOOKSCLIENTSECRET  = "CLIENT_SECRET"
-	QUICKBOOKSWEBHOOKTOKEN  = "WEBHOOK_TOKEN"
-	QUICKBOOKSHOST          = "HOST"
-	QUICKBOOKSCONFIGURL     = "CONFIG_URL"
+	AWSACCOUNTIDKEY              = "AWS_ACCOUNT_ID"
+	AWSREGIONIKEY                = "AWS_REGION"
+	AWSS3BUCKETKEY               = "AWS_S3_BUCKET"
+	CLIENTIDKEY                  = "COGNITO_CLIENT_ID"
+	COGNITOUSER                  = "USER"
+	COGNITOCLIENTID              = "CLIENT_ID"
+	COGNITOPASSWORD              = "DATA_LOAD_PASSWORD"
+	CREDENTIALS                  = "credentials"
+	DBHOSTKEY                    = "DB_HOST"
+	DBNAMEKEY                    = "DB_NAME"
+	DBPASSWORDKEY                = "DATABASE_PASSWORD"
+	DBPORTKEY                    = "DB_PORT"
+	DBSSLMODEKEY                 = "DB_SSL_MODE"
+	DBUSERKEY                    = "DB_USERNAME"
+	URL                          = "url"
+	TLSURLMASK                   = "tls-urlmask"
+	UNPROCESSEDDOCUMENTSKEY      = "inbound/name"
+	PROCESSEDDOCUMENTSKEY        = "processed/name"
+	USERPOOLIDKEY                = "COGNITO_USER_POOL_ID"
+	SMTPUSERNAME                 = "USERNAME"
+	SMTPPASSWORD                 = "PASSWORD"
+	SMTPPORT                     = "PORT"
+	SMTPHOST                     = "HOST"
+	QUICKBOOKSCLIENTID           = "CLIENT_ID"
+	QUICKBOOKSCLIENTSECRET       = "CLIENT_SECRET"
+	QUICKBOOKSWEBHOOKTOKEN       = "WEBHOOK_TOKEN"
+	QUICKBOOKSHOST               = "HOST"
+	QUICKBOOKSCONFIGURL          = "CONFIG_URL"
+	QUICKBOOKSREFRESHTOKEN       = "REFRESH_TOKEN"
+	QUICKBOOKSREFRESHTOKENEXPIRY = "REFRESH_TOKEN_EXPIRY"
 
 	// Application values
 	API        string = "api"
@@ -78,11 +82,9 @@ const (
 )
 
 var (
-	awsService *ssm.SSM
-	setToTrue        = true       // This can not be a constant because we need a pointer.
-	pTrue            = &setToTrue // pointer to the setToTrue variable
-	maxResult  int64 = 10
-	pMaxResult       = &maxResult
+	awsService *ssm.Client
+	pTrue            = true // pointer to the setToTrue variable
+	pMaxResult int32 = 10
 )
 
 type SMTPConfig struct {
@@ -93,11 +95,18 @@ type SMTPConfig struct {
 }
 
 type QuickbooksConfig struct {
-	Host         string
-	ClientId     string
-	ClientSecret string
-	WebhookToken string
-	ConfigURL    string
+	Host               string
+	ClientId           string
+	ClientSecret       string
+	WebhookToken       string
+	ConfigURL          string
+	RefreshToken       string
+	RefreshTokenExpiry string
+}
+
+type QuickBooksRefreshToken struct {
+	Token      string
+	ExpiryDate time.Time
 }
 
 type CognitoConfig struct {
@@ -106,19 +115,33 @@ type CognitoConfig struct {
 	Password string
 }
 
+type SSMParameter struct {
+	Key        string
+	Content    string
+	TargetType *string
+}
+
+type Database struct {
+	Name     string
+	User     string
+	Password string
+	Host     string
+	SSLMode  string
+	Port     int
+}
+
 /*
 This will establish a session using the default .aws location
 */
 func init() {
 	sLogger.DebugMethod()
 
-	sSession, err := session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	})
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+
 	if err != nil {
 		log.Fatalln(err)
 	}
-	awsService = ssm.New(sSession)
+	awsService = ssm.NewFromConfig(cfg)
 }
 
 /*
@@ -126,7 +149,7 @@ GetParameters will retrieve the parameters that are in the AWS System Manager se
 application and environment.  AWS limits the maximum number of parameters to 10 in a single query.  sconfigparams
 doesn't support pulling more than the first 10 parameters based on the path.
 */
-func GetParameters(application, environment string) (parameters map[string]interface{}, soteErr sError.SoteError) {
+func GetParameters(ctx context.Context, application, environment string) (parameters map[string]interface{}, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var pSSMPathOutput *ssm.GetParametersByPathOutput
@@ -134,7 +157,7 @@ func GetParameters(application, environment string) (parameters map[string]inter
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			parameters = make(map[string]interface{})
-			if pSSMPathOutput, soteErr = listParameters(application, strings.ToLower(environment)); soteErr.ErrCode == nil {
+			if pSSMPathOutput, soteErr = listParameters(ctx, application, strings.ToLower(environment)); soteErr.ErrCode == nil {
 				for _, pParameter := range pSSMPathOutput.Parameters {
 					parameters[*pParameter.Name] = *pParameter.Value
 				}
@@ -146,7 +169,7 @@ func GetParameters(application, environment string) (parameters map[string]inter
 }
 
 // GetSMTPConfig retrieves all SMTP configurations  from SSM
-func GetSMTPConfig(application, environment string) (parameters *SMTPConfig, soteErr sError.SoteError) {
+func GetSMTPConfig(ctx context.Context, application, environment string) (parameters *SMTPConfig, soteErr sError.SoteError) {
 	var (
 		smtpUserNameKey  = setPath(application, environment) + "/" + SMTPUSERNAME
 		smtpPasswordKey  = setPath(application, environment) + "/" + SMTPPASSWORD
@@ -160,8 +183,8 @@ func GetSMTPConfig(application, environment string) (parameters *SMTPConfig, sot
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
-			if pSSMParamsOutput, err = awsService.GetParameters(&ssm.GetParametersInput{
-				Names:          []*string{&smtpUserNameKey, &smtpPasswordKey, &smtpHostKey, &smtpPortKey},
+			if pSSMParamsOutput, err = awsService.GetParameters(ctx, &ssm.GetParametersInput{
+				Names:          []string{smtpUserNameKey, smtpPasswordKey, smtpHostKey, smtpPortKey},
 				WithDecryption: pTrue,
 			}); err == nil {
 				if len(pSSMParamsOutput.Parameters) == 0 {
@@ -190,23 +213,25 @@ func GetSMTPConfig(application, environment string) (parameters *SMTPConfig, sot
 }
 
 // GetQuickbooksConfig retrieves all Quickbooks configurations  from SSM
-func GetQuickbooksConfig(application, environment string) (parameters *QuickbooksConfig, soteErr sError.SoteError) {
+func GetQuickbooksConfig(ctx context.Context, application, environment string) (parameters *QuickbooksConfig, soteErr sError.SoteError) {
 	var (
-		clientIdKey      = setPath(application, environment) + "/" + QUICKBOOKSCLIENTID
-		clientSecretKey  = setPath(application, environment) + "/" + QUICKBOOKSCLIENTSECRET
-		hostKey          = setPath(application, environment) + "/" + QUICKBOOKSHOST
-		configURLKey     = setPath(application, environment) + "/" + QUICKBOOKSCONFIGURL
-		webhookToken     = setPath(application, environment) + "/" + QUICKBOOKSWEBHOOKTOKEN
-		pSSMParamsOutput = &ssm.GetParametersOutput{}
-		err              error
+		clientIdKey        = setPath(application, environment) + "/" + QUICKBOOKSCLIENTID
+		clientSecretKey    = setPath(application, environment) + "/" + QUICKBOOKSCLIENTSECRET
+		hostKey            = setPath(application, environment) + "/" + QUICKBOOKSHOST
+		configURLKey       = setPath(application, environment) + "/" + QUICKBOOKSCONFIGURL
+		webhookToken       = setPath(application, environment) + "/" + QUICKBOOKSWEBHOOKTOKEN
+		refreshToken       = setPath(application, environment) + "/" + QUICKBOOKSREFRESHTOKEN
+		refreshTokenExpiry = setPath(application, environment) + "/" + QUICKBOOKSREFRESHTOKENEXPIRY
+		pSSMParamsOutput   = &ssm.GetParametersOutput{}
+		err                error
 	)
 
 	parameters = &QuickbooksConfig{}
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
-			if pSSMParamsOutput, err = awsService.GetParameters(&ssm.GetParametersInput{
-				Names:          []*string{&clientIdKey, &clientSecretKey, &hostKey, &configURLKey, &webhookToken},
+			if pSSMParamsOutput, err = awsService.GetParameters(ctx, &ssm.GetParametersInput{
+				Names:          []string{clientIdKey, clientSecretKey, hostKey, configURLKey, webhookToken},
 				WithDecryption: pTrue,
 			}); err == nil {
 				if len(pSSMParamsOutput.Parameters) == 0 {
@@ -224,6 +249,10 @@ func GetQuickbooksConfig(application, environment string) (parameters *Quickbook
 							parameters.ConfigURL = *pParameter.Value
 						case webhookToken:
 							parameters.WebhookToken = *pParameter.Value
+						case refreshToken:
+							parameters.RefreshToken = *pParameter.Value
+						case refreshTokenExpiry:
+							parameters.RefreshTokenExpiry = *pParameter.Value
 						}
 					}
 				}
@@ -237,7 +266,7 @@ func GetQuickbooksConfig(application, environment string) (parameters *Quickbook
 }
 
 // GetCognitoConfig retrieves all Cognito configurations  from SSM
-func GetCognitoConfig(application, environment string) (parameters *CognitoConfig, soteErr sError.SoteError) {
+func GetCognitoConfig(ctx context.Context, application, environment string) (parameters *CognitoConfig, soteErr sError.SoteError) {
 	var (
 		clientIdKey      = setPath(application, environment) + "/" + COGNITOCLIENTID
 		userKey          = setPath(application, environment) + "/" + COGNITOUSER
@@ -250,8 +279,8 @@ func GetCognitoConfig(application, environment string) (parameters *CognitoConfi
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
-			if pSSMParamsOutput, err = awsService.GetParameters(&ssm.GetParametersInput{
-				Names:          []*string{&clientIdKey, &userKey, &passwordKey},
+			if pSSMParamsOutput, err = awsService.GetParameters(ctx, &ssm.GetParametersInput{
+				Names:          []string{clientIdKey, userKey, passwordKey},
 				WithDecryption: pTrue,
 			}); err == nil {
 				if len(pSSMParamsOutput.Parameters) == 0 {
@@ -281,7 +310,7 @@ func GetCognitoConfig(application, environment string) (parameters *CognitoConfi
 GetSmtpUsername will retrieve the SMTP username parameter that is in AWS System Manager service for the ROOTPATH,
 application and environment.  Application and environment are required.
 */
-func GetSmtpUsername(application, environment string) (smtpUsername string, soteErr sError.SoteError) {
+func GetSmtpUsername(ctx context.Context, application, environment string) (smtpUsername string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -290,7 +319,7 @@ func GetSmtpUsername(application, environment string) (smtpUsername string, sote
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tSmtpUsername, soteErr = getParameter(application, strings.ToLower(environment), SMTPUSERNAME)
+			tSmtpUsername, soteErr = getParameter(ctx, application, strings.ToLower(environment), SMTPUSERNAME)
 			if tSmtpUsername != nil {
 				smtpUsername = tSmtpUsername.(string)
 			}
@@ -304,7 +333,7 @@ func GetSmtpUsername(application, environment string) (smtpUsername string, sote
 GetSmtpPassword will retrieve the SMTP password parameter that is in AWS System Manager service for the ROOTPATH,
 application and environment.  Application and environment are required.
 */
-func GetSmtpPassword(application, environment string) (smtpPassword string, soteErr sError.SoteError) {
+func GetSmtpPassword(ctx context.Context, application, environment string) (smtpPassword string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -313,9 +342,62 @@ func GetSmtpPassword(application, environment string) (smtpPassword string, sote
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tSmtpPassword, soteErr = getParameter(application, strings.ToLower(environment), SMTPPASSWORD)
+			tSmtpPassword, soteErr = getParameter(ctx, application, strings.ToLower(environment), SMTPPASSWORD)
 			if tSmtpPassword != nil {
 				smtpPassword = tSmtpPassword.(string)
+			}
+		}
+	}
+
+	return
+}
+
+func GetAWSParams(ctx context.Context, application, environment string) (parameters *Database, soteErr sError.SoteError) {
+	var (
+		nameKey          = setPath(application, environment) + "/" + DBNAMEKEY
+		userKey          = setPath(application, environment) + "/" + DBUSERKEY
+		passwordKey      = setPath(application, environment) + "/" + DBPASSWORDKEY
+		hostKey          = setPath(application, environment) + "/" + DBHOSTKEY
+		sslModeKey       = setPath(application, environment) + "/" + DBSSLMODEKEY
+		portKey          = setPath(application, environment) + "/" + DBPORTKEY
+		pSSMParamsOutput = &ssm.GetParametersOutput{}
+		err              error
+	)
+
+	parameters = &Database{}
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			environment = strings.ToLower(environment)
+			if pSSMParamsOutput, err = awsService.GetParameters(ctx, &ssm.GetParametersInput{
+				Names:          []string{nameKey, userKey, passwordKey, hostKey, sslModeKey, portKey},
+				WithDecryption: pTrue,
+			}); err == nil {
+				if len(pSSMParamsOutput.Parameters) == 0 {
+					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
+				} else {
+					for _, pParameter := range pSSMParamsOutput.Parameters {
+						switch *pParameter.Name {
+						case nameKey:
+							parameters.Name = *pParameter.Value
+						case userKey:
+							parameters.User = *pParameter.Value
+						case passwordKey:
+							parameters.Password = *pParameter.Value
+						case hostKey:
+							parameters.Host = *pParameter.Value
+						case sslModeKey:
+							parameters.SSLMode = *pParameter.Value
+						case portKey:
+							if parameters.Port, err = strconv.Atoi(*pParameter.Value); err != nil {
+								break
+							}
+						}
+					}
+				}
+			}
+
+			if err != nil {
+				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			}
 		}
 	}
@@ -327,14 +409,14 @@ func GetSmtpPassword(application, environment string) (smtpPassword string, sote
 GetDBPassword will retrieve the database password parameter that is in AWS System Manager service for the ROOTPATH,
 application and environment.  Application and environment are required.
 */
-func GetDBPassword(application, environment string) (dbPassword string, soteErr sError.SoteError) {
+func GetDBPassword(ctx context.Context, application, environment string) (dbPassword string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBPassword interface{}
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tDBPassword, soteErr = getParameter(application, strings.ToLower(environment), DBPASSWORDKEY)
+			tDBPassword, soteErr = getParameter(ctx, application, strings.ToLower(environment), DBPASSWORDKEY)
 			if tDBPassword != nil {
 				dbPassword = tDBPassword.(string)
 			}
@@ -348,14 +430,14 @@ func GetDBPassword(application, environment string) (dbPassword string, soteErr 
 GetDBHost will retrieve the database host parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
-func GetDBHost(application, environment string) (dbHost string, soteErr sError.SoteError) {
+func GetDBHost(ctx context.Context, application, environment string) (dbHost string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBHost interface{}
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tDBHost, soteErr = getParameter(application, strings.ToLower(environment), DBHOSTKEY)
+			tDBHost, soteErr = getParameter(ctx, application, strings.ToLower(environment), DBHOSTKEY)
 			if tDBHost != nil {
 				dbHost = tDBHost.(string)
 			}
@@ -369,14 +451,14 @@ func GetDBHost(application, environment string) (dbHost string, soteErr sError.S
 GetDBUser will retrieve the database user parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
-func GetDBUser(application, environment string) (dbUser string, soteErr sError.SoteError) {
+func GetDBUser(ctx context.Context, application, environment string) (dbUser string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBUser interface{}
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tDBUser, soteErr = getParameter(application, strings.ToLower(environment), DBUSERKEY)
+			tDBUser, soteErr = getParameter(ctx, application, strings.ToLower(environment), DBUSERKEY)
 			if tDBUser != nil {
 				dbUser = tDBUser.(string)
 			}
@@ -390,14 +472,14 @@ func GetDBUser(application, environment string) (dbUser string, soteErr sError.S
 GetDBPort will retrieve the database port parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
-func GetDBPort(application, environment string) (dbPort int, soteErr sError.SoteError) {
+func GetDBPort(ctx context.Context, application, environment string) (dbPort int, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBPort interface{}
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tDBPort, soteErr = getParameter(application, strings.ToLower(environment), DBPORTKEY)
+			tDBPort, soteErr = getParameter(ctx, application, strings.ToLower(environment), DBPORTKEY)
 			if tDBPort != nil {
 				dbPort, _ = strconv.Atoi(tDBPort.(string))
 			} else {
@@ -413,14 +495,14 @@ func GetDBPort(application, environment string) (dbPort int, soteErr sError.Sote
 GetDBName will retrieve the database name parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
-func GetDBName(application, environment string) (dbName string, soteErr sError.SoteError) {
+func GetDBName(ctx context.Context, application, environment string) (dbName string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBName interface{}
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tDBName, soteErr = getParameter(application, strings.ToLower(environment), DBNAMEKEY)
+			tDBName, soteErr = getParameter(ctx, application, strings.ToLower(environment), DBNAMEKEY)
 			if tDBName != nil {
 				dbName = tDBName.(string)
 			}
@@ -434,14 +516,14 @@ func GetDBName(application, environment string) (dbName string, soteErr sError.S
 GetDBSSLMode will retrieve the database SSL mode parameter that is in AWS System Manager service for the ROOTPATH and
 application.  Application and environment are required.
 */
-func GetDBSSLMode(application, environment string) (dbSSLMode string, soteErr sError.SoteError) {
+func GetDBSSLMode(ctx context.Context, application, environment string) (dbSSLMode string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tDBSSLMode interface{}
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tDBSSLMode, soteErr = getParameter(application, strings.ToLower(environment), DBSSLMODEKEY)
+			tDBSSLMode, soteErr = getParameter(ctx, application, strings.ToLower(environment), DBSSLMODEKEY)
 			if tDBSSLMode != nil {
 				dbSSLMode = tDBSSLMode.(string)
 			}
@@ -454,12 +536,12 @@ func GetDBSSLMode(application, environment string) (dbSSLMode string, soteErr sE
 /*
 GetRegion will retrieve the AWS Region parameter that is in AWS System Manager service for the ROOTPATH
 */
-func GetRegion() (region string, soteErr sError.SoteError) {
+func GetRegion(ctx context.Context) (region string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tRegion interface{}
 
-	tRegion, soteErr = getParameter("", "", AWSREGIONIKEY)
+	tRegion, soteErr = getParameter(ctx, "", "", AWSREGIONIKEY)
 	if tRegion != nil {
 		region = tRegion.(string)
 	}
@@ -471,13 +553,13 @@ func GetRegion() (region string, soteErr sError.SoteError) {
 GetUserPoolId will retrieve the cognito user pool id parameter that is in AWS System Manager service for the ROOTPATH and
 environment.  Environment are required.
 */
-func GetUserPoolId(environment string) (userPoolId string, soteErr sError.SoteError) {
+func GetUserPoolId(ctx context.Context, environment string) (userPoolId string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tUserPoolId interface{}
 
 	if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-		tUserPoolId, soteErr = getParameter("", strings.ToLower(environment), USERPOOLIDKEY)
+		tUserPoolId, soteErr = getParameter(ctx, "", strings.ToLower(environment), USERPOOLIDKEY)
 		if tUserPoolId != nil {
 			userPoolId = tUserPoolId.(string)
 		}
@@ -490,13 +572,13 @@ func GetUserPoolId(environment string) (userPoolId string, soteErr sError.SoteEr
 GetClientId will retrieve the cognito client id for the allocation that is in AWS System Manager service for the ROOTPATH and
 environment.  Application and environment are required.
 */
-func GetClientId(clientName, environment string) (clientId string, soteErr sError.SoteError) {
+func GetClientId(ctx context.Context, clientName, environment string) (clientId string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tClientId interface{}
 
 	if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-		tClientId, soteErr = getParameter(clientName, strings.ToLower(environment), CLIENTIDKEY)
+		tClientId, soteErr = getParameter(ctx, clientName, strings.ToLower(environment), CLIENTIDKEY)
 		if tClientId != nil {
 			clientId = tClientId.(string)
 		}
@@ -509,19 +591,19 @@ func GetClientId(clientName, environment string) (clientId string, soteErr sErro
 GetNATSCredentials will retrieve the messaging credentials needed to authenticate that is in AWS System Manager service for the ROOTPATH and
 environment.
 */
-func GetNATSCredentials() (natsCredentials func(string, string) (interface{}, sError.SoteError)) {
+func GetNATSCredentials(ctx context.Context) (natsCredentials func(string, string) (interface{}, sError.SoteError)) {
 	sLogger.DebugMethod()
 
-	natsCredentials = getCreds()
+	natsCredentials = getCreds(ctx)
 
 	return
 }
 
-func getCreds() func(string, string) (interface{}, sError.SoteError) {
+func getCreds(ctx context.Context) func(string, string) (interface{}, sError.SoteError) {
 	return func(application, environment string) (natsCredentials interface{}, soteErr sError.SoteError) {
 		if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 			if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-				natsCredentials, soteErr = getParameter(application, strings.ToLower(environment), CREDENTIALS)
+				natsCredentials, soteErr = getParameter(ctx, application, strings.ToLower(environment), CREDENTIALS)
 			}
 		}
 		return
@@ -532,14 +614,14 @@ func getCreds() func(string, string) (interface{}, sError.SoteError) {
 GetNATSURL will retrieve the messaging server URL needed to connect that is in AWS System Manager service for the ROOTPATH and
 environment.  Application and environment are required.
 */
-func GetNATSURL(application, environment string) (natsURL string, soteErr sError.SoteError) {
+func GetNATSURL(ctx context.Context, application, environment string) (natsURL string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tNatsURL interface{}
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			tNatsURL, soteErr = getParameter(application, strings.ToLower(environment), URL)
+			tNatsURL, soteErr = getParameter(ctx, application, strings.ToLower(environment), URL)
 			if tNatsURL != nil {
 				natsURL = tNatsURL.(string)
 			}
@@ -552,13 +634,13 @@ func GetNATSURL(application, environment string) (natsURL string, soteErr sError
 /*
 GetNATSTLSURLMask will retrieve the messaging server TLS URL mask needed. Application is required.
 */
-func GetNATSTLSURLMask(application string) (natsTLSURLMask string, soteErr sError.SoteError) {
+func GetNATSTLSURLMask(ctx context.Context, application string) (natsTLSURLMask string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tNATSTLSURLMask interface{}
 
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
-		tNATSTLSURLMask, soteErr = getParameter(application, "", TLSURLMASK)
+		tNATSTLSURLMask, soteErr = getParameter(ctx, application, "", TLSURLMASK)
 		if tNATSTLSURLMask != nil {
 			natsTLSURLMask = tNATSTLSURLMask.(string)
 		}
@@ -570,12 +652,12 @@ func GetNATSTLSURLMask(application string) (natsTLSURLMask string, soteErr sErro
 /*
 GetAWSS3Bucket will retrieve the AWS S3 Bucket parameter that is in AWS System Manager service for the ROOTPATH
 */
-func GetAWSS3Bucket(application string) (AWSS3Bucket string, soteErr sError.SoteError) {
+func GetAWSS3Bucket(ctx context.Context, application string) (AWSS3Bucket string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tAWSS3Bucket interface{}
 
-	tAWSS3Bucket, soteErr = getParameter(application, "", AWSS3BUCKETKEY)
+	tAWSS3Bucket, soteErr = getParameter(ctx, application, "", AWSS3BUCKETKEY)
 	if tAWSS3Bucket != nil {
 		AWSS3Bucket = tAWSS3Bucket.(string)
 	}
@@ -586,12 +668,12 @@ func GetAWSS3Bucket(application string) (AWSS3Bucket string, soteErr sError.Sote
 /*
 GetAWSAccountId will retrieve the AWS Client ID parameter that is in AWS System Manager service for the ROOTPATH
 */
-func GetAWSAccountId() (AWSAccountId string, soteErr sError.SoteError) {
+func GetAWSAccountId(ctx context.Context) (AWSAccountId string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tAWSAccountId interface{}
 
-	tAWSAccountId, soteErr = getParameter("", "", AWSACCOUNTIDKEY)
+	tAWSAccountId, soteErr = getParameter(ctx, "", "", AWSACCOUNTIDKEY)
 	if tAWSAccountId != nil {
 		AWSAccountId = tAWSAccountId.(string)
 	}
@@ -604,13 +686,13 @@ func GetAWSAccountId() (AWSAccountId string, soteErr sError.SoteError) {
 	environment. The URL is needed to access Sote's unprocessed/ processed documents.  Application,
 	environment and key are required.
 */
-func SGetS3BucketURL(application, environment, key string) (sS3BucketURL string, soteErr sError.SoteError) {
+func SGetS3BucketURL(ctx context.Context, application, environment, key string) (sS3BucketURL string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var tS3BucketURL interface{}
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
-			if tS3BucketURL, soteErr = getParameter(application, strings.ToLower(environment), key); tS3BucketURL != nil {
+			if tS3BucketURL, soteErr = getParameter(ctx, application, strings.ToLower(environment), key); tS3BucketURL != nil {
 				sS3BucketURL = tS3BucketURL.(string)
 			}
 		}
@@ -640,10 +722,8 @@ func ValidateEnvironment(environment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	switch strings.ToLower(environment) {
-	case DEVELOPMENT:
-	case STAGING:
-	case DEMO:
-	case PRODUCTION:
+	case DEVELOPMENT, STAGING, DEMO, PRODUCTION:
+		return
 	default:
 		soteErr = sError.GetSError(209110, sError.BuildParams([]string{environment}), sError.EmptyMap)
 	}
@@ -705,7 +785,7 @@ func setPath(application, environment string) (path string) {
 listParameters will query up to the first 10 parameters for the ROOTPATH with some combination of application
 and environment variable values.  Application and environment can be empty.
 */
-func listParameters(application, environment string) (pSSMPathOutput *ssm.GetParametersByPathOutput, soteErr sError.SoteError) {
+func listParameters(ctx context.Context, application, environment string) (pSSMPathOutput *ssm.GetParametersByPathOutput, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var err error
@@ -716,12 +796,12 @@ func listParameters(application, environment string) (pSSMPathOutput *ssm.GetPar
 			ssmPathInput ssm.GetParametersByPathInput
 		)
 
-		ssmPathInput.SetPath(path)
+		ssmPathInput.Path = &path
 		ssmPathInput.Recursive = pTrue
 		ssmPathInput.WithDecryption = pTrue
 		ssmPathInput.MaxResults = pMaxResult
 		// If there are any parameters that matches the path, a result set will be return by the GetParametersByPath call.
-		if pSSMPathOutput, err = awsService.GetParametersByPath(&ssmPathInput); len(pSSMPathOutput.Parameters) == 0 {
+		if pSSMPathOutput, err = awsService.GetParametersByPath(ctx, &ssmPathInput); len(pSSMPathOutput.Parameters) == 0 {
 			soteErr = sError.GetSError(109999, sError.BuildParams([]string{path}), sError.EmptyMap)
 		}
 	}
@@ -736,7 +816,7 @@ func listParameters(application, environment string) (pSSMPathOutput *ssm.GetPar
 getParameter will query the first 10 parameters for the ROOTPATH with some combination of application
 and environment variable values.  Application and environment can be empty.
 */
-func getParameter(application, environment, key string) (returnValue interface{}, soteErr sError.SoteError) {
+func getParameter(ctx context.Context, application, environment, key string) (returnValue interface{}, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var ssmParamInput ssm.GetParameterInput
@@ -746,7 +826,7 @@ func getParameter(application, environment, key string) (returnValue interface{}
 	ssmParamInput.Name = &name
 
 	// If there are any parameters that match the path, a result set will be return by the GetParametersByPath call.
-	if pSSMParamOutput, err := awsService.GetParameter(&ssmParamInput); err != nil {
+	if pSSMParamOutput, err := awsService.GetParameter(ctx, &ssmParamInput); err != nil {
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{name}), sError.EmptyMap)
 	} else {
 		returnValue = *pSSMParamOutput.Parameter.Value

@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	mmPtr, soteErr := sMessage.New("synadia", "staging", "", "west.eu.geo.ngs.global", "test", false, 1, 250*time.Millisecond, false)
+	mmPtr, soteErr := sMessage.New(context.Background(), "synadia", "staging", "", "west.eu.geo.ngs.global", "test", false, 1, 250*time.Millisecond,
+		false)
 	if soteErr.ErrCode != nil {
 		panic(soteErr.FmtErrMsg)
 	}

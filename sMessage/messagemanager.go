@@ -4,6 +4,7 @@
 package sMessage
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -37,7 +38,7 @@ type SMsg *nats.Msg
 /*
 	New will create a Sote Message Manager and a connection to the NATS network.
 */
-func New(application, environment, credentialFileName, connectionURL, connectionName string, secure bool, maxReconnect int,
+func New(ctx context.Context, application, environment, credentialFileName, connectionURL, connectionName string, secure bool, maxReconnect int,
 	reconnectWait time.Duration, testMode bool) (MessageManagerPtr *MessageManager, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -66,9 +67,9 @@ func New(application, environment, credentialFileName, connectionURL, connection
 
 	if soteErr.ErrCode == nil {
 		if len(connectionURL) == 0 {
-			connectionURL, soteErr = sConfigParams.GetNATSURL(MessageManagerPtr.application, MessageManagerPtr.environment)
+			connectionURL, soteErr = sConfigParams.GetNATSURL(ctx, MessageManagerPtr.application, MessageManagerPtr.environment)
 		}
-		soteErr = MessageManagerPtr.setURL(connectionURL, secure)
+		soteErr = MessageManagerPtr.setURL(ctx, connectionURL, secure)
 	}
 
 	// Setting connection options
@@ -82,7 +83,7 @@ func New(application, environment, credentialFileName, connectionURL, connection
 			soteErr = MessageManagerPtr.setCredentialsFile(credentialFileName)
 		} else {
 			// This will retrieve value from AWS System Manager Parameter Store
-			getCreds := sConfigParams.GetNATSCredentials()
+			getCreds := sConfigParams.GetNATSCredentials(ctx)
 			tmpCreds, soteErr = getCreds(MessageManagerPtr.application, MessageManagerPtr.environment)
 			MessageManagerPtr.connectionOptions = append(MessageManagerPtr.connectionOptions,
 				MessageManagerPtr.setCredentialFromSystemParameters([]byte(tmpCreds.(string))))
@@ -169,7 +170,7 @@ func (mmPtr *MessageManager) setReconnectOptions(maxReconnect int, reconnectWait
 	return
 }
 
-func (mmPtr *MessageManager) setURL(connectionURL string, secure bool) (soteErr sError.SoteError) {
+func (mmPtr *MessageManager) setURL(ctx context.Context, connectionURL string, secure bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -180,7 +181,7 @@ func (mmPtr *MessageManager) setURL(connectionURL string, secure bool) (soteErr 
 		soteErr = sError.GetSError(210090, sError.BuildParams([]string{connectionURL}), nil)
 	} else {
 		if secure {
-			mask, soteErr = sConfigParams.GetNATSTLSURLMask(mmPtr.application)
+			mask, soteErr = sConfigParams.GetNATSTLSURLMask(ctx, mmPtr.application)
 			connectionURL = mask + connectionURL
 		}
 		mmPtr.connectionURL = connectionURL
@@ -216,62 +217,44 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	sLogger.DebugMethod()
 
 	var (
-		panicError  = true
-		testMode    = false
 		errorDetail = make(map[string]string)
 	)
-
 	switch err.Error() {
-	case "nats: invalid connection":
+	case nats.ErrInvalidConnection.Error():
 		soteErr = sError.GetSError(210499, nil, sError.EmptyMap)
-	case "nats: invalid subject":
+	case nats.ErrBadSubject.Error():
 		soteErr = sError.GetSError(208310, sError.BuildParams([]string{params["Subject"]}), sError.EmptyMap)
-	case "nats: no servers available for connection":
+	case nats.ErrNoServers.Error():
 		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
 	case "no nkey seed found":
 		soteErr = sError.GetSError(209398, nil, sError.EmptyMap)
-	case "nats: no stream matches subject":
+	case nats.ErrNoMatchingStream.Error():
 		soteErr = sError.GetSError(210599, nil, sError.EmptyMap)
-	case "nats: timeout":
+	case nats.ErrTimeout.Error():
 		errorDetail["raw_message"] = "nats: timeout"
 		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), errorDetail)
-		panicError = false
 	case "context deadline exceeded":
 		errorDetail["raw_message"] = "context deadline exceeded"
 		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), errorDetail)
-		panicError = false
-	case "nats: connection closed":
+	case nats.ErrConnectionClosed.Error():
 		errorDetail["raw_message"] = "nats: connection closed"
 		soteErr = sError.GetSError(209499, nil, errorDetail)
-		panicError = false
-	case "nats: invalid subscription":
+	case nats.ErrBadSubscription.Error():
 		errorDetail["raw_message"] = "nats: invalid subscription"
 		soteErr = sError.GetSError(206050, sError.BuildParams([]string{params["Subscription Name"], params["Subject"]}), errorDetail)
-		panicError = false
-	case "stream not found":
+	case nats.ErrStreamNotFound.Error():
 		errorDetail["raw_message"] = "stream not found"
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), errorDetail)
-		panicError = false
 	// 	TODO This should be removed once the NATS bug is resolved.
 	case "too many open files":
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), sError.EmptyMap)
-		panicError = false
 	case "no message found":
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"], params["Message Sequence"]}), sError.EmptyMap)
-		panicError = false
 	default:
 		soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 	}
 	sLogger.Info(fmt.Sprintf("ERROR IN: messagemanager.go err: %v | %v", err.Error(), dumpParams(params)))
 	sLogger.Info(soteErr.FmtErrMsg)
-
-	if testMode, err = strconv.ParseBool(params["testMode"]); err != nil {
-		testMode = false
-	}
-
-	if panicError && !testMode {
-		panic(soteErr.FmtErrMsg)
-	}
 
 	return
 }

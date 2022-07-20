@@ -11,7 +11,7 @@ import (
 	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
-func ValidToken(tEnvironment, rawToken string) (soteErr sError.SoteError) {
+func ValidToken(ctx context.Context, tEnvironment, rawToken string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	if tEnvironment != "" && rawToken != "" {
 		if len(strings.Split(rawToken, ".")) == 3 {
@@ -31,7 +31,7 @@ func ValidToken(tEnvironment, rawToken string) (soteErr sError.SoteError) {
 					}
 
 					if soteErr.ErrCode == nil {
-						if key, soteErr = matchKid(tEnvironment, kid); soteErr.ErrCode == nil {
+						if key, soteErr = matchKid(ctx, tEnvironment, kid); soteErr.ErrCode == nil {
 							var raw interface{}
 							return raw, key.Raw(&raw)
 						}
@@ -55,7 +55,7 @@ func ValidToken(tEnvironment, rawToken string) (soteErr sError.SoteError) {
 
 			if soteErr.ErrCode == nil {
 				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-					soteErr = validateClaims(claims, tEnvironment)
+					soteErr = validateClaims(ctx, claims, tEnvironment)
 				} else {
 					soteErr = sError.GetSError(208355, nil, sError.EmptyMap)
 				}
@@ -72,14 +72,14 @@ func ValidToken(tEnvironment, rawToken string) (soteErr sError.SoteError) {
 	return
 }
 
-func matchKid(tEnvironment, kid string) (key jwk.Key, soteErr sError.SoteError) {
+func matchKid(ctx context.Context, tEnvironment, kid string) (key jwk.Key, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
 		keySet jwk.Set
 		ok     bool
 	)
-	keySet, soteErr = getPublicKey(tEnvironment)
+	keySet, soteErr = getPublicKey(ctx, tEnvironment)
 	key, ok = keySet.LookupKeyID(kid)
 	if !ok {
 		soteErr = sError.GetSError(209521, sError.BuildParams([]string{kid}), sError.EmptyMap)
@@ -94,14 +94,17 @@ This will return the public key needed to validate the jwt token
 NOTE: If the region or user pool id is not found, getPublicKey will default to the 'eu-west-1' region
 and the userPoolId used by development instance of Cognito
 */
-func getPublicKey(tEnvironment string) (keySet jwk.Set, soteErr sError.SoteError) {
+func getPublicKey(ctx context.Context, tEnvironment string) (keySet jwk.Set, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if region, soteErr := sConfigParams.GetRegion(); soteErr.ErrCode == nil {
-		if userPoolId, soteErr := sConfigParams.GetUserPoolId(tEnvironment); soteErr.ErrCode == nil {
+	var (
+		region     string
+		userPoolId string
+	)
+	if region, soteErr = sConfigParams.GetRegion(ctx); soteErr.ErrCode == nil {
+		if userPoolId, soteErr = sConfigParams.GetUserPoolId(ctx, tEnvironment); soteErr.ErrCode == nil {
 			if keySet, soteErr = fetchPublicKey(region, userPoolId, tEnvironment); soteErr.ErrCode != nil {
 				soteErr = sError.GetSError(210030, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
-				panic(soteErr.FmtErrMsg)
 			}
 		}
 	}
@@ -134,7 +137,7 @@ func fetchPublicKey(region, userPoolId, tEnvironment string) (keySet jwk.Set, so
 /*
 This checks if the claim in the token are valid
 */
-func validateClaims(claims jwt.MapClaims, tEnvironment string) (soteErr sError.SoteError) {
+func validateClaims(ctx context.Context, claims jwt.MapClaims, tEnvironment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -163,8 +166,8 @@ func validateClaims(claims jwt.MapClaims, tEnvironment string) (soteErr sError.S
 				}
 			case "iss":
 				claimCount++
-				if region, soteErr = sConfigParams.GetRegion(); soteErr.ErrCode == nil {
-					if userPoolId, soteErr = sConfigParams.GetUserPoolId(tEnvironment); soteErr.ErrCode == nil {
+				if region, soteErr = sConfigParams.GetRegion(ctx); soteErr.ErrCode == nil {
+					if userPoolId, soteErr = sConfigParams.GetUserPoolId(ctx, tEnvironment); soteErr.ErrCode == nil {
 						issuerURL := "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId
 						if claim != issuerURL {
 							soteErr = sError.GetSError(208360, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
@@ -199,12 +202,12 @@ func validateClaims(claims jwt.MapClaims, tEnvironment string) (soteErr sError.S
 	return
 }
 
-func validateClientId(tClientId, tApplication, tEnvironment string) (soteErr sError.SoteError) {
+func validateClientId(ctx context.Context, tClientId, tApplication, tEnvironment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var clientId string
 
-	if clientId, soteErr = sConfigParams.GetClientId(tApplication, tEnvironment); soteErr.ErrCode == nil {
+	if clientId, soteErr = sConfigParams.GetClientId(ctx, tApplication, tEnvironment); soteErr.ErrCode == nil {
 		if tClientId != clientId {
 			soteErr = sError.GetSError(208340, nil, sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)

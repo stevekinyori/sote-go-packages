@@ -1,6 +1,7 @@
 package sAuthentication
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -36,7 +37,7 @@ type RequestHeader struct {
 	Header RequestHeaderSchema `json:"request-header"`
 }
 
-func ValidateHeader(h nats.Header, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
+func ValidateHeader(ctx context.Context, h nats.Header, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
 	rh := RequestHeader{}
 	rh.Header.JsonWebToken = h.Get("json-web-token")
 	rh.Header.MessageId = h.Get("message-id")
@@ -44,23 +45,22 @@ func ValidateHeader(h nats.Header, tEnvironment string, isTestMode bool) (Reques
 	rh.Header.RoleList = strings.Split(regexp.MustCompile(`\[|\]`).ReplaceAllString(h.Get("role-list"), ""), ",")
 	fmt.Sscan(h.Get("organizations-id"), &rh.Header.OrganizationId)
 	fmt.Sscan(h.Get("device-id"), &rh.Header.DeviceId)
-	return Validate(rh, tEnvironment, isTestMode)
+	return Validate(ctx, rh, tEnvironment, isTestMode)
 }
 
-func ValidateBody(data []byte, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
+func ValidateBody(ctx context.Context, data []byte, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
 	sLogger.DebugMethod()
 	rh := RequestHeader{}
 	json.Unmarshal(data, &rh) // flush stream
-
 	if rh.Header.AwsUserName == "" {
 		json.Unmarshal(data, &rh.Header) // suports schema version 0.1
-		return Validate(rh, tEnvironment, isTestMode)
+		return Validate(ctx, rh, tEnvironment, isTestMode)
 	} else {
-		return Validate(rh, tEnvironment, isTestMode)
+		return Validate(ctx, rh, tEnvironment, isTestMode)
 	}
 }
 
-func Validate(rh RequestHeader, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
+func Validate(ctx context.Context, rh RequestHeader, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
 	soteErr := sError.SoteError{}
 	if rh.Header.AwsUserName == "" {
 		soteErr = sError.GetSError(206200, []interface{}{"#/properties/aws-user-name"}, nil)
@@ -69,9 +69,7 @@ func Validate(rh RequestHeader, tEnvironment string, isTestMode bool) (RequestHe
 	}
 
 	if soteErr.ErrCode != nil { // cannot send this error back to the client
-		if isTestMode {
-			panic(soteErr.FmtErrMsg)
-		}
+		return RequestHeaderSchema{}, soteErr
 	}
 
 	if isTestMode {
@@ -90,7 +88,8 @@ func Validate(rh RequestHeader, tEnvironment string, isTestMode bool) (RequestHe
 			if err != nil {
 				return rh.Header, sError.GetSError(209010, []interface{}{DEVICE_FILE, err.Error()}, nil)
 			} else {
-				t, err := strconv.ParseInt(strings.TrimSpace(string(fileData)), 10, 0)
+				var t int64
+				t, err = strconv.ParseInt(strings.TrimSpace(string(fileData)), 10, 0)
 				if err != nil {
 					sLogger.Debug(err.Error())
 					return rh.Header, sError.GetSError(208355, nil, nil)
@@ -102,13 +101,16 @@ func Validate(rh RequestHeader, tEnvironment string, isTestMode bool) (RequestHe
 				}
 			}
 		}
+
 	}
 
 	if rh.Header.JsonWebToken == "" {
 		soteErr = sError.GetSError(208355, nil, nil)
+
 	} else {
 		// https://auth0.com/docs/tokens?_ga=2.253547273.1898510496.1593591557-1741611737.1593591372
-		soteErr = ValidToken(tEnvironment, rh.Header.JsonWebToken)
+		soteErr = ValidToken(ctx, tEnvironment, rh.Header.JsonWebToken)
 	}
+
 	return rh.Header, soteErr
 }

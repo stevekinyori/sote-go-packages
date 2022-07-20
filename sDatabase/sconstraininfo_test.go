@@ -14,7 +14,7 @@ func init() {
 // 		t.Fatal()
 // 	}
 //
-// 	tConnInfo, soteErr := GetConnection(DBName, DBUser, DBPassword, DBHost, DBSSLMode, DBPort, 3)
+// 	tConnInfo, soteErr := GetConnection(Name, User, Password, Host, SSLMode, Port, 3)
 // 	if soteErr.ErrCode != nil {
 // 		tPtr.Errorf("GetConnection Failed: Please investigate")
 // 		tPtr.Fail()

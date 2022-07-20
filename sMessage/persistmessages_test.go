@@ -9,6 +9,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"gitlab.com/soteapps/packages/v2022/sConfigParams"
 	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 var (
@@ -201,13 +202,14 @@ func TestAck(tPtr *testing.T) {
 	cleanUpTest()
 }
 func initPullTest() (soteErr sError.SoteError) {
-	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1, 250*time.Millisecond,
+	if mmPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1, 250*time.Millisecond,
 		false); soteErr.ErrCode == nil {
 		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode == nil || soteErr.ErrCode == 109999 {
 			if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
 				if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
 					true); soteErr.ErrCode != nil {
-					panic("Something failed in initPullTest. Investigate, please.")
+					sLogger.Info("Something failed in initPullTest. Investigate, please.")
+					return
 				}
 			}
 		}
@@ -216,14 +218,15 @@ func initPullTest() (soteErr sError.SoteError) {
 	return
 }
 func initPushTest() (soteErr sError.SoteError) {
-	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1, 250*time.Millisecond,
+	if mmPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1, 250*time.Millisecond,
 		false); soteErr.ErrCode == nil {
 		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode == nil || soteErr.ErrCode == 109999 {
 			if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPushSubjects, 1, false); soteErr.ErrCode == nil {
 				if soteErr = mmPtr.CreatePushReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPUSH, TESTDELIVERYSUBJECT, testPushSubjects[0],
 					1,
 					true); soteErr.ErrCode != nil {
-					panic("Something failed in initPullTest. Investigate, please.")
+					sLogger.Info("Something failed in initPullTest. Investigate, please.")
+					return
 				}
 			}
 		}

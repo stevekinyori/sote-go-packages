@@ -1,6 +1,7 @@
 package sMessage
 
 import (
+	"context"
 	"os"
 	"runtime"
 	"testing"
@@ -14,18 +15,20 @@ const (
 	TESTSYNADIAURL         = "west.eu.geo.ngs.global"
 )
 
+var parentCtx = context.Background()
+
 func TestNew(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
 	)
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
+	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v failed: Expected soteErr to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", true, 1,
+	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", true, 1,
 		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v failed: Expected soteErr to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
@@ -40,39 +43,39 @@ func TestNew(tPtr *testing.T) {
 		homedir = os.Getenv("HOME")
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, homedir+"/.nkeys/creds/synadia/sote-staging/staging-soteadmin.creds",
-		TESTSYNADIAURL, "test", false, 1,
-		250*time.Millisecond, false); soteErr.ErrCode != nil {
+	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT,
+		homedir+"/.nkeys/creds/synadia/sote-staging/staging-soteadmin."+
+			"creds", TESTSYNADIAURL, "test", false, 1, 250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v failed: Expected soteErr to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, homedir+"/.nkeys/creds/synadia/sote-staging/staging-soteadmin."+
-		"creds",
-		TESTSYNADIAURL, "test", true, 1,
-		250*time.Millisecond, false); soteErr.ErrCode != nil {
+	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT,
+		homedir+"/.nkeys/creds/synadia/sote-staging/staging-soteadmin."+
+			"creds", TESTSYNADIAURL, "test", true, 1, 250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v failed: Expected soteErr to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "/XXXX/syacko/.nkeys/creds/synadia/sote-staging/staging-soteadmin.creds",
+	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT,
+		"/XXXX/syacko/.nkeys/creds/synadia/sote-staging/staging-soteadmin.creds",
 		TESTSYNADIAURL, "test", true, 1, 250*time.Millisecond, false); soteErr.ErrCode != 209010 {
 		tPtr.Errorf("%v failed: Expected error code of 209010 got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, "INVALID", "", TESTSYNADIAURL, "test", true, 1,
+	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, "INVALID", "", TESTSYNADIAURL, "test", true, 1,
 		250*time.Millisecond, false); soteErr.ErrCode != 209110 {
 		tPtr.Errorf("%v failed: Expected error code of 209110 got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := New("XXXX", sConfigParams.STAGING, "", TESTSYNADIAURL, "test", true, 1,
+	if _, soteErr := New(parentCtx, "XXXX", sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", true, 1,
 		250*time.Millisecond, false); soteErr.ErrCode != 109999 {
 		tPtr.Errorf("%v failed: Expected error code of 109999 got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", true, -1,
+	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", true, -1,
 		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr := New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", true, 6,
+	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", true, 6,
 		250*time.Millisecond, false); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 	}

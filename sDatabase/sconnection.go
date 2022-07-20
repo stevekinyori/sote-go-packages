@@ -63,7 +63,9 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 	sLogger.DebugMethod()
 
 	if dbConnInfo.DSConnValues, soteErr = setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
-		panic("Invalid connection parameters for database: " + soteErr.FmtErrMsg)
+		sLogger.Info("Invalid connection parameters for database: " + soteErr.FmtErrMsg)
+
+		return
 	} else {
 		var err error
 		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.DSConnValues.DBName, dbConnInfo.DSConnValues.User, dbConnInfo.DSConnValues.Password,
@@ -78,12 +80,16 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 				errDetails, soteErr = sError.ConvertErr(err)
 				if soteErr.ErrCode != nil {
 					sLogger.Info(soteErr.FmtErrMsg)
-					panic("sError.ConvertErr Failed")
+					sLogger.Info("sError.ConvertErr Failed")
+					return
 				}
+
 				sLogger.Info(sError.GetSError(210200, nil, errDetails).FmtErrMsg)
-				panic("sDatabase.sconnection.GetConnection Failed")
+				sLogger.Info("sDatabase.sconnection.GetConnection Failed")
+				return
 			}
 		}
+
 		dbConnInfo.DBContext = context.Background()
 	}
 	return

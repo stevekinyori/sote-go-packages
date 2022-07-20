@@ -39,21 +39,21 @@ func TestPullReplayInstantConsumer(tPtr *testing.T) {
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
 		soteErr           sError.SoteError
-		mmPtr             *MessageManager
+		tMMPtr            *MessageManager
 	)
 
-	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
+	if tMMPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 		}
-		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
+		if _, soteErr = tMMPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
+			if soteErr = tMMPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
 				false); soteErr.ErrCode != nil {
 				tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 			}
 		}
-		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
@@ -63,21 +63,21 @@ func TestPushReplayInstantConsumer(tPtr *testing.T) {
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
 		soteErr           sError.SoteError
-		mmPtr             *MessageManager
+		tMMPtr            *MessageManager
 	)
 
-	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
+	if tMMPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 		}
-		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPushSubjects, 1, false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.CreatePushReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPUSH, TESTDELIVERYSUBJECT, testPushSubjects[0], 1,
+		if _, soteErr = tMMPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPushSubjects, 1, false); soteErr.ErrCode == nil {
+			if soteErr = tMMPtr.CreatePushReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPUSH, TESTDELIVERYSUBJECT, testPushSubjects[0], 1,
 				false); soteErr.ErrCode != nil {
 				tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 			}
 		}
-		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
@@ -87,22 +87,22 @@ func TestGetConsumerInfo(tPtr *testing.T) {
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
 		soteErr           sError.SoteError
-		mmPtr             *MessageManager
+		tMMPtr            *MessageManager
 	)
 
-	if mmPtr, soteErr = New(TESTAPPLICATIONSYNADIA, sConfigParams.STAGING, "", TESTSYNADIAURL, "test", false, 1,
+	if tMMPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 		}
-		if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
+		if _, soteErr = tMMPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
+			if soteErr = tMMPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
 				false); soteErr.ErrCode == nil {
-				if _, soteErr = mmPtr.GetConsumerInfo(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
+				if _, soteErr = tMMPtr.GetConsumerInfo(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
 					tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 				}
 			}
-			if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
+			if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
 				tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
 			}
 		}

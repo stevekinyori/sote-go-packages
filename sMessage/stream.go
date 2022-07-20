@@ -100,6 +100,7 @@ func (mmPtr *MessageManager) createStream(streamType, streamName string, subject
 
 	var (
 		sStreamConfig *nats.StreamConfig
+		memStorage    = nats.MemoryStorage
 	)
 
 	params := make(map[string]string)
@@ -111,6 +112,10 @@ func (mmPtr *MessageManager) createStream(streamType, streamName string, subject
 	js, err := mmPtr.NatsConnectionPtr.JetStream()
 	if err != nil {
 		soteErr = mmPtr.natsErrorHandle(err, params)
+	}
+
+	if testMode {
+		memStorage = 0
 	}
 	// The default sote setting will change over time, so they are called out here.
 	switch streamType {
@@ -145,7 +150,7 @@ func (mmPtr *MessageManager) createStream(streamType, streamName string, subject
 			Discard:      nats.DiscardOld,
 			MaxAge:       1209600000000000,
 			MaxMsgSize:   102400,
-			Storage:      nats.MemoryStorage,
+			Storage:      memStorage,
 			Replicas:     replicas,
 			NoAck:        false,
 			Template:     "",
@@ -185,7 +190,7 @@ func (mmPtr *MessageManager) createStream(streamType, streamName string, subject
 			Discard:      nats.DiscardOld,
 			MaxAge:       1209600000000000,
 			MaxMsgSize:   102400,
-			Storage:      nats.MemoryStorage,
+			Storage:      memStorage,
 			Replicas:     replicas,
 			NoAck:        false,
 			Template:     "",

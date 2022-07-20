@@ -75,9 +75,5 @@ func GetTableGroupInfo(fileName string, testMode bool) (tableGroupTableInfo Tabl
 		}
 	}
 
-	if soteErr.ErrCode != nil && testMode == false {
-		panic(soteErr.FmtErrMsg)
-	}
-
 	return
 }

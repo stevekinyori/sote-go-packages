@@ -1,9 +1,12 @@
 package packages
 
 import (
+	"context"
 	"testing"
 
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
 	"gitlab.com/soteapps/packages/v2022/sDatabase"
+	"gitlab.com/soteapps/packages/v2022/sError"
 )
 
 const (
@@ -21,20 +24,26 @@ const (
 //
 // sconnection
 //
+
 func TestVerifyConnection(tPtr *testing.T) {
-	var tConnInfo sDatabase.ConnInfo
-	soteErr := sDatabase.VerifyConnection(tConnInfo)
+	var (
+		tConnInfo sDatabase.ConnInfo
+		config    = &sConfigParams.Database{}
+		soteErr   sError.SoteError
+	)
+
+	soteErr = sDatabase.VerifyConnection(tConnInfo)
 	if soteErr.ErrCode != 209299 {
 		tPtr.Errorf("VerifyConnection Failed: Expected 209299 error code.")
 		tPtr.Fail()
 	}
 
-	if soteErr = sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+	if config, soteErr = sConfigParams.GetAWSParams(context.Background(), sConfigParams.API, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 	}
 
-	tConnInfo, soteErr = sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode,
-		sDatabase.DBPort, 3)
+	tConnInfo, soteErr = sDatabase.GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode,
+		config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
 	}
@@ -45,12 +54,16 @@ func TestVerifyConnection(tPtr *testing.T) {
 	}
 }
 func TestToJSONString(tPtr *testing.T) {
-	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+	var (
+		config  = &sConfigParams.Database{}
+		soteErr sError.SoteError
+	)
+
+	if config, soteErr = sConfigParams.GetAWSParams(context.Background(), sConfigParams.API, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 	}
 
-	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode,
-		sDatabase.DBPort, 3)
+	tConnInfo, soteErr := sDatabase.GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("GetConnection Failed: Please Investigate")
 	}
@@ -65,12 +78,17 @@ func TestToJSONString(tPtr *testing.T) {
 	}
 }
 func TestContext(tPtr *testing.T) {
-	if soteErr := sDatabase.GetAWSParams(); soteErr.ErrCode != nil {
+	var (
+		config  = &sConfigParams.Database{}
+		soteErr sError.SoteError
+	)
+
+	if config, soteErr = sConfigParams.GetAWSParams(context.Background(), sConfigParams.API, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 	}
 
-	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode,
-		sDatabase.DBPort, 3)
+	tConnInfo, soteErr := sDatabase.GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode,
+		config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
 	}
@@ -101,7 +119,7 @@ func TestSRows(tPtr *testing.T) {
 // 	t.Fatal()
 // }
 //
-// tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
+// tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.Name, sDatabase.User, sDatabase.Password, sDatabase.Host, sDatabase.SSLMode, sDatabase.Port, 3)
 // if soteErr.ErrCode != nil {
 // 	tPtr.Errorf("GetConnection Failed: Please investigate")
 // 	tPtr.Fail()
@@ -139,7 +157,7 @@ func TestSRows(tPtr *testing.T) {
 // 	t.Fatal()
 // }
 //
-// tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 1)
+// tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.Name, sDatabase.User, sDatabase.Password, sDatabase.Host, sDatabase.SSLMode, sDatabase.Port, 1)
 // if soteErr.ErrCode != nil {
 // 	tPtr.Errorf("Get Connection Failed: Please Investigate")
 // 	tPtr.Fail()
@@ -172,7 +190,7 @@ func TestSRows(tPtr *testing.T) {
 // 	t.Fatal()
 // }
 //
-// tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 1)
+// tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.Name, sDatabase.User, sDatabase.Password, sDatabase.Host, sDatabase.SSLMode, sDatabase.Port, 1)
 // if soteErr.ErrCode != nil {
 // 	tPtr.Errorf("GetConnection Failed: Please Investigate")
 // 	tPtr.Fail()
@@ -204,7 +222,7 @@ func TestSRows(tPtr *testing.T) {
 // 		t.Fatal()
 // 	}
 //
-// 	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
+// 	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.Name, sDatabase.User, sDatabase.Password, sDatabase.Host, sDatabase.SSLMode, sDatabase.Port, 3)
 // 	if soteErr.ErrCode != nil {
 // 		tPtr.Errorf("GetConnection Failed: Please investigate")
 // 		tPtr.Fail()
@@ -224,7 +242,7 @@ func TestSRows(tPtr *testing.T) {
 // 		t.Fatal()
 // 	}
 //
-// 	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.DBName, sDatabase.DBUser, sDatabase.DBPassword, sDatabase.DBHost, sDatabase.DBSSLMode, sDatabase.DBPort, 3)
+// 	tConnInfo, soteErr := sDatabase.GetConnection(sDatabase.Name, sDatabase.User, sDatabase.Password, sDatabase.Host, sDatabase.SSLMode, sDatabase.Port, 3)
 // 	if soteErr.ErrCode != nil {
 // 		tPtr.Errorf("GetConnection Failed: Please investigate")
 // 		tPtr.Fail()

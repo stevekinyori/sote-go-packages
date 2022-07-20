@@ -204,7 +204,8 @@ func (httpm *HTTPManager) readHTTPResponse() (soteErr sError.SoteError) {
 
 	err = httpm.sHTTPResponse.Body.Close()
 	if err != nil {
-		panic(err.Error())
+		sLogger.Info(err.Error())
+		return
 	}
 
 	return
