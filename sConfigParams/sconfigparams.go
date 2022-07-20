@@ -184,11 +184,12 @@ func GetSMTPConfig(ctx context.Context, application, environment string) (parame
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
-			if pSSMParamsOutput, err = awsService.GetParameters(ctx, &ssm.GetParametersInput{
+			pSSMParamsInput := &ssm.GetParametersInput{
 				Names:          []string{smtpUserNameKey, smtpPasswordKey, smtpHostKey, smtpPortKey},
 				WithDecryption: pTrue,
-			}); err == nil {
-				if len(pSSMParamsOutput.Parameters) == 0 {
+			}
+			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
+				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
 					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"smtp configuration"}), sError.EmptyMap)
 				} else {
 					for _, pParameter := range pSSMParamsOutput.Parameters {
@@ -231,12 +232,13 @@ func GetQuickbooksConfig(ctx context.Context, application, environment string) (
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
-			if pSSMParamsOutput, err = awsService.GetParameters(ctx, &ssm.GetParametersInput{
-				Names:          []string{clientIdKey, clientSecretKey, hostKey, configURLKey, webhookToken},
+			pSSMParamsInput := &ssm.GetParametersInput{
+				Names:          []string{clientIdKey, clientSecretKey, hostKey, configURLKey, webhookToken, refreshToken, refreshTokenExpiry},
 				WithDecryption: pTrue,
-			}); err == nil {
-				if len(pSSMParamsOutput.Parameters) == 0 {
-					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"webhook configuration"}), sError.EmptyMap)
+			}
+			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
+				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
+					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"quickbooks configuration"}), sError.EmptyMap)
 				} else {
 					for _, pParameter := range pSSMParamsOutput.Parameters {
 						switch *pParameter.Name {
@@ -280,11 +282,12 @@ func GetCognitoConfig(ctx context.Context, application, environment string) (par
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
-			if pSSMParamsOutput, err = awsService.GetParameters(ctx, &ssm.GetParametersInput{
+			pSSMParamsInput := &ssm.GetParametersInput{
 				Names:          []string{clientIdKey, userKey, passwordKey},
 				WithDecryption: pTrue,
-			}); err == nil {
-				if len(pSSMParamsOutput.Parameters) == 0 {
+			}
+			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
+				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
 					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
 				} else {
 					for _, pParameter := range pSSMParamsOutput.Parameters {
@@ -369,11 +372,12 @@ func GetAWSParams(ctx context.Context, application, environment string) (paramet
 	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
-			if pSSMParamsOutput, err = awsService.GetParameters(ctx, &ssm.GetParametersInput{
+			pSSMParamsInput := &ssm.GetParametersInput{
 				Names:          []string{nameKey, userKey, passwordKey, hostKey, sslModeKey, portKey},
 				WithDecryption: pTrue,
-			}); err == nil {
-				if len(pSSMParamsOutput.Parameters) == 0 {
+			}
+			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
+				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
 					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
 				} else {
 					for _, pParameter := range pSSMParamsOutput.Parameters {
