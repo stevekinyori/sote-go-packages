@@ -5,18 +5,19 @@ import (
 )
 
 const (
-	ORGGANIZATIONSBSID        = "5"
-	USERMANAGEMENTBSID        = "6"
-	SHIPMENTSBSID             = "7"
-	TRIPSBSID                 = "8"
-	SHIPMENTSFINTRANSBSID     = "9"
-	TRIPFINTRANSBSID          = "10"
-	DOCUMENTSBSID             = "11"
-	NOTESBSID                 = "12"
-	LISTOFVALUESBSID          = "13"
-	COGNITOBSID               = "14"
-	COGNITOUSERMANAGEMENTBSID = "15"
-	QUICKBOOKSBSID            = "16"
+	ORGGANIZATIONSBSID         = "5"
+	USERMANAGEMENTBSID         = "6"
+	SHIPMENTSBSID              = "7"
+	TRIPSBSID                  = "8"
+	SHIPMENTSFINTRANSBSID      = "9"
+	TRIPFINTRANSBSID           = "10"
+	DOCUMENTSBSID              = "11"
+	NOTESBSID                  = "12"
+	LISTOFVALUESBSID           = "13"
+	COGNITOBSID                = "14"
+	COGNITOUSERMANAGEMENTBSID  = "15"
+	QUICKBOOKSBSID             = "16"
+	DOCUMENTSNOTIFICATIONSBSID = "17"
 )
 
 func GetBusinessServiceIds() []string {
@@ -35,5 +36,6 @@ func GetBusinessServiceIds() []string {
 		COGNITOBSID,
 		COGNITOUSERMANAGEMENTBSID,
 		QUICKBOOKSBSID,
+		DOCUMENTSNOTIFICATIONSBSID,
 	}
 }

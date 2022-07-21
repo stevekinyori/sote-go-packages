@@ -1,3 +1,5 @@
+package sConfigParams
+
 /*
 This will retrieve any configuration parameter that is used by Sote.  Areas are environment
 variables and System Manager Parameters. For System Manager Parameter they must be stored in
@@ -13,7 +15,6 @@ NOTES:
     When the filter is not found in the result set from the GetParametersByPath call, the whole result
     set is returned.
 */
-package sConfigParams
 
 import (
 	"context"
