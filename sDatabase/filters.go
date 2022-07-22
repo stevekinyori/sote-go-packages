@@ -179,48 +179,51 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 		for operand, filterValues := range fmtConditionParams.Filters {
 			tQueryStr += "("
 			for _, field := range filterValues {
-				if field.Operator == "IN" || field.Operator == "NOT IN" {
-					if arrFilterResp, soteErr = formatArrayFilterCondition(ctx, fmtConditionParams.SortOrderKeysMap, &ArrFilterParam{
-						FieldName:         field.FieldName,
-						FilterCommon:      FilterCommon{Operator: field.Operator, Value: field.Value},
-						Prefix:            prefix,
-						InitialParamCount: paramCount,
-						CaseInsensitive:   fmtConditionParams.SortOrderKeysMap[field.FieldName].CaseInsensitive,
-					}); soteErr.ErrCode == nil {
-						tQueryStr += arrFilterResp.QueryStr + " " + operand
-						params = append(params, arrFilterResp.Params...)
-						paramCount = arrFilterResp.ParamCount
+				if column, ok := fmtConditionParams.SortOrderKeysMap[field.FieldName]; ok {
+					if field.Operator == "IN" || field.Operator == "NOT IN" {
+						if arrFilterResp, soteErr = formatArrayFilterCondition(ctx, fmtConditionParams.SortOrderKeysMap, &ArrFilterParam{
+							FieldName:         field.FieldName,
+							FilterCommon:      FilterCommon{Operator: field.Operator, Value: field.Value},
+							Prefix:            prefix,
+							InitialParamCount: paramCount,
+							CaseInsensitive:   column.CaseInsensitive,
+						}); soteErr.ErrCode == nil {
+							tQueryStr += arrFilterResp.QueryStr + " " + operand
+							params = append(params, arrFilterResp.Params...)
+							paramCount = arrFilterResp.ParamCount
+						} else {
+							break firstLoop
+						}
 					} else {
-						break firstLoop
-					}
-				} else {
-					paramCount++
-					if fmtConditionParams.SortOrderKeysMap[field.FieldName].CaseInsensitive {
-						col = fmt.Sprintf("UPPER(%v%v)", fmtConditionParams.TblPrefixes,
-							fmtConditionParams.SortOrderKeysMap[field.FieldName].ColumnName)
-						val = fmt.Sprintf("UPPER($%v)", paramCount)
-					} else {
-						col = prefix + fmtConditionParams.SortOrderKeysMap[field.FieldName].ColumnName
-						val = fmt.Sprintf("$%v", paramCount)
-					}
-
-					// filter by is not null or is null
-					if field.Value == nil {
-						subQuery := "NULL"
-						switch field.Operator {
-						case "=":
-							subQuery = "IS " + subQuery
-						case "!=":
-							subQuery = "IS NOT " + subQuery
+						paramCount++
+						if column.CaseInsensitive {
+							col = fmt.Sprintf("UPPER(%v%v)", fmtConditionParams.TblPrefixes,
+								fmtConditionParams.SortOrderKeysMap[field.FieldName].ColumnName)
+							val = fmt.Sprintf("UPPER($%v)", paramCount)
+						} else {
+							col = prefix + column.ColumnName
+							val = fmt.Sprintf("$%v", paramCount)
 						}
 
-						tQueryStr += fmt.Sprintf(" %v %v %v", col, subQuery, operand)
-					} else {
-						tQueryStr += fmt.Sprintf(" %v %v %v %v", col, field.Operator, val, operand)
-						params = append(params, field.Value)
+						// filter by is not null or is null
+						if field.Value == nil {
+							subQuery := "NULL"
+							switch field.Operator {
+							case "=":
+								subQuery = "IS " + subQuery
+							case "!=":
+								subQuery = "IS NOT " + subQuery
+							}
+
+							tQueryStr += fmt.Sprintf(" %v %v %v", col, subQuery, operand)
+						} else {
+							tQueryStr += fmt.Sprintf(" %v %v %v %v", col, field.Operator, val, operand)
+							params = append(params, field.Value)
+						}
 					}
 				}
 			}
+
 			tQueryStr = fmt.Sprintf("%v)%v", strings.TrimSuffix(tQueryStr, operand), join)
 		}
 
