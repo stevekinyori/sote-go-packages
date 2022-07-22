@@ -13,7 +13,7 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 	)
 
 	tPtr.Run("multiple prefixes", func(tPtr *testing.T) {
-		if _, soteErr := FormatFilterCondition(context.Background(), &FormatConditionParams{
+		if _, soteErr := FormatListQueryConditions(context.Background(), &FormatConditionParams{
 			InitialParamCount: 1,
 			RecordLimitCount:  0,
 			TblPrefixes:       []string{"table1.", "table2.", "table3."},
@@ -46,6 +46,10 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 					ColumnName:      "column_id",
 					CaseInsensitive: false,
 				},
+			},
+			SortOrder: SortOrder{
+				TblPrefix: "table.",
+				Fields:    map[string]string{"column-name": "DESC", "column-id": "DESC"},
 			},
 		}); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
