@@ -2,6 +2,8 @@ package packages
 
 import (
 	"context"
+	"fmt"
+	"runtime"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2022/sConfigParams"
@@ -108,6 +110,60 @@ func TestSRows(tPtr *testing.T) {
 	if tRows != nil {
 		tPtr.Errorf("TestSRows testing creation of SRows variable Failed: Expected error code to be nil.")
 	}
+}
+
+// filters
+
+func TestFormatArrayFilterCondition(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+	)
+
+	tPtr.Run("multiple prefixes", func(tPtr *testing.T) {
+		if x, soteErr := sDatabase.FormatListQueryConditions(context.Background(), &sDatabase.FormatConditionParams{
+			InitialParamCount: 1,
+			RecordLimitCount:  0,
+			TblPrefixes:       []string{"table1.", "table2.", "table3."},
+			Filters: map[string][]sDatabase.FilterFields{
+				"AND": {
+					sDatabase.FilterFields{
+						FilterCommon: sDatabase.FilterCommon{
+							Operator: "IN",
+							Value:    []string{"name1", "name2"},
+						},
+						FieldName: "column-name",
+					},
+					sDatabase.FilterFields{
+						FilterCommon: sDatabase.FilterCommon{
+							Operator: "=",
+							Value:    1,
+						},
+						FieldName: "column-id",
+					},
+				},
+			},
+			SortOrderKeysMap: map[string]sDatabase.TableColumn{
+				"column-name": {
+					ColumnName:      "column_name",
+					CaseInsensitive: true,
+				},
+				"column-id": {
+					ColumnName:      "column_id",
+					CaseInsensitive: false,
+				},
+			},
+			SortOrder: sDatabase.SortOrder{
+				TblPrefix: "table.",
+				Fields:    map[string]string{"column-name": "DESC", "column-id": "DESC"},
+			},
+		}); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
+		} else {
+			fmt.Println(x.Where)
+		}
+	})
+
 }
 
 //

@@ -2,7 +2,6 @@ package sDatabase
 
 import (
 	"context"
-	"fmt"
 	"runtime"
 	"testing"
 )
@@ -14,7 +13,7 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 	)
 
 	tPtr.Run("multiple prefixes", func(tPtr *testing.T) {
-		if x, soteErr := FormatListQueryConditions(context.Background(), &FormatConditionParams{
+		if _, soteErr := FormatListQueryConditions(context.Background(), &FormatConditionParams{
 			InitialParamCount: 1,
 			RecordLimitCount:  0,
 			TblPrefixes:       []string{"table1.", "table2.", "table3."},
@@ -52,14 +51,12 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 			},
 		}); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
-		} else {
-			fmt.Println(x.Where)
 		}
 	})
 
 }
 
-func TestMapSortOrderKeys(tPtr *testing.T) {
+func TestSetSortOrder(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
 		testName          = runtime.FuncForPC(function).Name()
