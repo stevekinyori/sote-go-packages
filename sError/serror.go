@@ -81,7 +81,7 @@ var (
 			EmptyMap, "", nil},
 		200260: {200260, PROCESSERROR, 3, "Other parameter name, Parameter name, Parameter value", ": %v must be provided when %v is set to (%v)",
 			EmptyMap, "", nil},
-		200510: {200510, PROCESSERROR, 3, "Parameter name, Field name, Field value", ": %v can't be updated because %v is set to %v", EmptyMap, "",
+		200510: {200510, PROCESSERROR, 3, "Parameter name, Fields name, Fields value", ": %v can't be updated because %v is set to %v", EmptyMap, "",
 			nil},
 		200511: {200511, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated or null", EmptyMap, "", nil},
 		200512: {200512, PROCESSERROR, 2, "Parameter name, Another parameter name", ": %v and %v must both be populated", EmptyMap, "", nil},
@@ -118,23 +118,23 @@ var (
 		206700: {206700, NATSERROR, 2, "Stream Name, Consumer Subject Filter",
 			": The consumer subject filter must be a subset of the stream subject. " +
 				"Stream Name: %v Consumer Subject Filter: %v", EmptyMap, "", nil},
-		207000: {207000, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not numeric", EmptyMap, "", nil},
-		207005: {207005, CONTENTERROR, 2, "Field name, Minimal length", ": %v must have a value greater than %v", EmptyMap, "", nil},
-		207010: {207010, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a string", EmptyMap, "", nil},
-		207020: {207020, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a float", EmptyMap, "", nil},
-		207030: {207030, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a array", EmptyMap, "", nil},
-		207040: {207040, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a json string", EmptyMap, "", nil},
-		207050: {207050, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid email address", EmptyMap, "", nil},
-		207060: {207060, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters which are not allowed", EmptyMap, "",
+		207000: {207000, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) is not numeric", EmptyMap, "", nil},
+		207005: {207005, CONTENTERROR, 2, "Fields name, Minimal length", ": %v must have a value greater than %v", EmptyMap, "", nil},
+		207010: {207010, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) is not a string", EmptyMap, "", nil},
+		207020: {207020, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) is not a float", EmptyMap, "", nil},
+		207030: {207030, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) is not a array", EmptyMap, "", nil},
+		207040: {207040, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) is not a json string", EmptyMap, "", nil},
+		207050: {207050, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) is not a valid email address", EmptyMap, "", nil},
+		207060: {207060, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) contains special characters which are not allowed", EmptyMap, "",
 			nil},
-		207065: {207065, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) contains special characters other than underscore", EmptyMap, "",
+		207065: {207065, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) contains special characters other than underscore", EmptyMap, "",
 			nil},
-		207070: {207070, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid date", EmptyMap, "", nil},
-		207080: {207080, CONTENTERROR, 2, "Field name, Field value", ": %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap,
+		207070: {207070, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) is not a valid date", EmptyMap, "", nil},
+		207080: {207080, CONTENTERROR, 2, "Fields name, Fields value", ": %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu", EmptyMap,
 			"", nil},
-		207090: {207090, CONTENTERROR, 6, "Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size",
+		207090: {207090, CONTENTERROR, 6, "Fields name, Fields value, 'small' or 'large', 'Min' or 'Max', expected size, actual size",
 			": %v (%v) is too %v. %v size: %v Actual size: %v", EmptyMap, "", nil},
-		207095: {207095, CONTENTERROR, 4, "Field name, Field value, greater than value, less than value",
+		207095: {207095, CONTENTERROR, 4, "Fields name, Fields value, greater than value, less than value",
 			": %v (%v) must be greater than %v and less than %v", EmptyMap, "", nil},
 		207100: {207100, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v - JSON conversion error",
 			EmptyMap, "", nil},
@@ -229,7 +229,7 @@ func (e *SoteError) Unwrap() error { return e.Err }
 		200200	Parameter name, Data type of parameter > : %v must be of type %v
 		200250	Parameter name, Parameter value, List of values allowed > : %v (%v) must contain one of these values: %v
 		200260	Other parameter name, Parameter name, Parameter value > : %v must be provided when %v is set to (%v)
-		200510	Parameter name, Field name, Field value > : %v can't be updated because %v is set to %v
+		200510	Parameter name, Fields name, Fields value > : %v can't be updated because %v is set to %v
 		200511	Parameter name, Another parameter name > : %v and %v must both be populated or null
 		200512	Parameter name, Another parameter name > : %v and %v must both be populated
 		200513	Parameter name > : %v must be populated
@@ -255,19 +255,19 @@ func (e *SoteError) Unwrap() error { return e.Err }
 		206400	Stream Name > : Stream creation encountered an error that is not expected. Stream Name: %v
 		206600	Stream Name, Consumer Name > : Consumer creation encountered an error that is not expected. Stream Name: %v Consumer Name: %v
 		206700	Stream Name, Consumer Subject Filter > : The consumer subject filter must be a subset of the stream subject. Stream Name: %v Consumer Subject Filter: %v
-		207000	Field name, Field value > : %v (%v) is not numeric
-		207005	Field name, Minimal length > : %v must have a value greater than %v
-		207010	Field name, Field value > : %v (%v) is not a string
-		207020	Field name, Field value > : %v (%v) is not a float
-		207030	Field name, Field value > : %v (%v) is not a array
-		207040	Field name, Field value > : %v (%v) is not a json string
-		207050	Field name, Field value > : %v (%v) is not a valid email address
-		207060	Field name, Field value > : %v (%v) contains special characters which are not allowed
-		207065	Field name, Field value > : %v (%v) contains special characters other than underscore
-		207070	Field name, Field value > : %v (%v) is not a valid date
-		207080	Field name, Field value > : %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu
-		207090	Field name, Field value, 'small' or 'large', 'Min' or 'Max', expected size, actual size > : %v (%v) is too %v. %v size: %v Actual size: %v
-		207095	Field name, Field value, greater than value, less than value > : %v (%v) must be greater than %v and less than %v
+		207000	Fields name, Fields value > : %v (%v) is not numeric
+		207005	Fields name, Minimal length > : %v must have a value greater than %v
+		207010	Fields name, Fields value > : %v (%v) is not a string
+		207020	Fields name, Fields value > : %v (%v) is not a float
+		207030	Fields name, Fields value > : %v (%v) is not a array
+		207040	Fields name, Fields value > : %v (%v) is not a json string
+		207050	Fields name, Fields value > : %v (%v) is not a valid email address
+		207060	Fields name, Fields value > : %v (%v) contains special characters which are not allowed
+		207065	Fields name, Fields value > : %v (%v) contains special characters other than underscore
+		207070	Fields name, Fields value > : %v (%v) is not a valid date
+		207080	Fields name, Fields value > : %v (%v) is not a valid timestamp. Format's are UTC, GMT or Zulu
+		207090	Fields name, Fields value, 'small' or 'large', 'Min' or 'Max', expected size, actual size > : %v (%v) is too %v. %v size: %v Actual size: %v
+		207095	Fields name, Fields value, greater than value, less than value > : %v (%v) must be greater than %v and less than %v
 		207100	Parameter name, Data Structure Type > : %v couldn't be converted to an %v - JSON conversion error
 		207105	Data Structure Name, Data Structure Type > : %v (%v) couldn't be converted to JSON - JSON conversion error
 		207110	Parameter name > : %v couldn't be parsed - Invalid JSON error

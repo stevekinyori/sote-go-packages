@@ -2,7 +2,6 @@ package sDatabase
 
 import (
 	"context"
-	"fmt"
 	"runtime"
 	"testing"
 )
@@ -10,15 +9,14 @@ import (
 func TestFormatArrayFilterCondition(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
-		testName          = runtime.FuncForPC(function)
+		testName          = runtime.FuncForPC(function).Name()
 	)
 
 	tPtr.Run("multiple prefixes", func(tPtr *testing.T) {
-		if resp, soteErr := FormatFilterCondition(context.Background(), &FormatConditionParams{
+		if _, soteErr := FormatFilterCondition(context.Background(), &FormatConditionParams{
 			InitialParamCount: 1,
 			RecordLimitCount:  0,
 			TblPrefixes:       []string{"table1.", "table2.", "table3."},
-			SortOrderStr:      "",
 			ColName:           "",
 			Operator:          "=",
 			Filters: map[string][]FilterFields{
@@ -39,7 +37,7 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 					},
 				},
 			},
-			SortOrderKeysMap: map[string]SortOrder{
+			SortOrderKeysMap: map[string]TableColumn{
 				"column-name": {
 					ColumnName:      "column_name",
 					CaseInsensitive: true,
@@ -51,9 +49,31 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 			},
 		}); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
-		} else {
-			fmt.Println(resp.Where)
 		}
 	})
 
+}
+
+func TestMapSortOrderKeys(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+	)
+	tPtr.Run("order by", func(tPtr *testing.T) {
+		if sortOrderStr := setSortOrder(SortOrder{
+			TblPrefix: "table.",
+			Fields:    map[string]string{"column-name": "DESC", "column-id": "DESC"},
+		}, map[string]TableColumn{
+			"column-name": {
+				ColumnName:      "column_name",
+				CaseInsensitive: true,
+			},
+			"column-id": {
+				ColumnName:      "column_id",
+				CaseInsensitive: false,
+			},
+		}); sortOrderStr == "" {
+			tPtr.Errorf("%v Failed: Expected sort order string not to be empty", testName)
+		}
+	})
 }

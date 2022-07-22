@@ -43,16 +43,21 @@ type FormatConditionParams struct {
 	InitialParamCount int
 	RecordLimitCount  int
 	TblPrefixes       []string // e.g. tbl.'the prefix must have a dot at the end'
-	SortOrderStr      string
+	SortOrder         SortOrder
 	ColName           string
 	Operator          string
 	Filters           map[string][]FilterFields
-	SortOrderKeysMap  map[string]SortOrder
+	SortOrderKeysMap  map[string]TableColumn
+}
+
+type TableColumn struct {
+	ColumnName      string
+	CaseInsensitive bool
 }
 
 type SortOrder struct {
-	ColumnName      string
-	CaseInsensitive bool
+	TblPrefix string
+	Fields    map[string]string
 }
 
 type FormatConditionsResp struct {
@@ -63,43 +68,81 @@ type FormatConditionsResp struct {
 	ParamCount int
 }
 
-// formatArrayFilterCondition formats slice/array filter conditions for a get/list request
-func formatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]SortOrder,
-	reqParams *ArrFilterParam) (arrFilterResp *ArrFilterResponse, soteErr sError.SoteError) {
+// FormatListQueryConditions parses the query list for a /list endpoints and list nats action types to form relevant sql queries
+func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatConditionParams) (fmtConditionResp FormatConditionsResp,
+	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
-		paramStart string
-		paramEnd   string
+		wg             sync.WaitGroup
+		limitChan      = make(chan string)
+		whereChan      = make(chan string)
+		orderChan      = make(chan string)
+		paramsChan     = make(chan []interface{})
+		paramCountChan = make(chan int, 1)
+		soteErrChan    = make(chan sError.SoteError, 1)
 	)
 
-	arrFilterResp = &ArrFilterResponse{}
-	s := reflect.ValueOf(reqParams.Value)
-	if kind := s.Kind(); kind == reflect.Slice || kind == reflect.Array {
-		reqParamLen := s.Len()
-		if reqParamLen > 0 {
-			arrFilterResp.ParamCount = reqParams.InitialParamCount
-			if reqParams.CaseInsensitive {
-				paramStart = "UPPER("
-				paramEnd = ")"
-			}
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	wg.Add(3)
 
-			arrFilterResp.QueryStr = fmt.Sprintf(" %v%v%v%v %v (", paramStart, reqParams.Prefix, sortOrderKeysMap[reqParams.FieldName].ColumnName,
-				paramEnd,
-				reqParams.Operator)
-			arrFilterResp.Params = make([]interface{}, reqParamLen)
+	go func() {
+		wg.Wait()
+		close(limitChan)
+		close(orderChan)
+		close(whereChan)
+		close(paramsChan)
+		close(paramCountChan)
+	}()
 
-			for i := 0; i < reqParamLen; i++ {
-				arrFilterResp.ParamCount++
-				arrFilterResp.QueryStr += fmt.Sprintf("%v$%v%v,", paramStart, arrFilterResp.ParamCount, paramEnd)
-				arrFilterResp.Params[i] = s.Index(i).Interface()
-			}
-
-			arrFilterResp.QueryStr = strings.TrimSuffix(arrFilterResp.QueryStr, ",") + ")"
+	go func() {
+		defer wg.Done()
+		if fmtConditionParams.RecordLimitCount > 0 {
+			limitChan <- fmt.Sprintf("LIMIT %v ", fmtConditionParams.RecordLimitCount)
+		} else {
+			limitChan <- ""
 		}
-	} else {
-		soteErr = sError.GetSError(207030, sError.BuildParams([]string{reqParams.FieldName, fmt.Sprint(reqParams.Value)}), sError.EmptyMap)
-	}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		orderChan <- setSortOrder(fmtConditionParams.SortOrder, fmtConditionParams.SortOrderKeysMap)
+	}()
+
+	go func() {
+		defer wg.Done()
+		var (
+			tSoteErr          sError.SoteError
+			tFmtConditionResp FormatConditionsResp
+		)
+
+		if len(fmtConditionParams.Filters) > 0 {
+			if tFmtConditionResp, tSoteErr = FormatFilterCondition(ctx, fmtConditionParams); tSoteErr.ErrCode != nil {
+				soteErrChan <- tSoteErr
+				whereChan <- tFmtConditionResp.Where // where clause string
+				paramsChan <- tFmtConditionResp.Params
+				paramCountChan <- tFmtConditionResp.ParamCount
+				return
+			}
+			soteErrChan <- tSoteErr
+			whereChan <- tFmtConditionResp.Where // where clause string
+			paramsChan <- tFmtConditionResp.Params
+			paramCountChan <- tFmtConditionResp.ParamCount
+		} else {
+			soteErrChan <- tSoteErr
+			whereChan <- ""
+			paramsChan <- []interface{}{}
+			paramCountChan <- fmtConditionParams.InitialParamCount
+		}
+	}()
+
+	fmtConditionResp.Limit = <-limitChan
+	fmtConditionResp.Where = <-whereChan
+	fmtConditionResp.Order = <-orderChan
+	fmtConditionResp.Params = <-paramsChan
+	fmtConditionResp.ParamCount = <-paramCountChan
+	soteErr = <-soteErrChan
 
 	return
 }
@@ -198,89 +241,6 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 	return
 }
 
-// FormatListQueryConditions parses the query list for a /list endpoints and list nats action types to form relevant sql queries
-func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatConditionParams) (fmtConditionResp FormatConditionsResp,
-	soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	var (
-		wg             sync.WaitGroup
-		limitChan      = make(chan string)
-		whereChan      = make(chan string)
-		orderChan      = make(chan string)
-		paramsChan     = make(chan []interface{})
-		paramCountChan = make(chan int, 1)
-		soteErrChan    = make(chan sError.SoteError, 1)
-	)
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	wg.Add(3)
-
-	go func() {
-		wg.Wait()
-		close(limitChan)
-		close(orderChan)
-		close(whereChan)
-		close(paramsChan)
-		close(paramCountChan)
-	}()
-
-	go func() {
-		defer wg.Done()
-		if fmtConditionParams.RecordLimitCount > 0 {
-			limitChan <- fmt.Sprintf("LIMIT %v ", fmtConditionParams.RecordLimitCount)
-		} else {
-			limitChan <- ""
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-
-		if fmtConditionParams.SortOrderStr == "" {
-			orderChan <- ""
-		} else {
-			orderChan <- fmt.Sprintf("ORDER BY %v%v ", fmtConditionParams.TblPrefixes, fmtConditionParams.SortOrderStr)
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		var (
-			tSoteErr          sError.SoteError
-			tFmtConditionResp FormatConditionsResp
-		)
-
-		if len(fmtConditionParams.Filters) > 0 {
-			if tFmtConditionResp, tSoteErr = FormatFilterCondition(ctx, fmtConditionParams); tSoteErr.ErrCode != nil {
-				soteErrChan <- tSoteErr
-				whereChan <- tFmtConditionResp.Where // where clause string
-				paramsChan <- tFmtConditionResp.Params
-				paramCountChan <- tFmtConditionResp.ParamCount
-				return
-			}
-			soteErrChan <- tSoteErr
-			whereChan <- tFmtConditionResp.Where // where clause string
-			paramsChan <- tFmtConditionResp.Params
-			paramCountChan <- tFmtConditionResp.ParamCount
-		} else {
-			soteErrChan <- tSoteErr
-			whereChan <- ""
-			paramsChan <- []interface{}{}
-			paramCountChan <- fmtConditionParams.InitialParamCount
-		}
-	}()
-
-	fmtConditionResp.Limit = <-limitChan
-	fmtConditionResp.Where = <-whereChan
-	fmtConditionResp.Order = <-orderChan
-	fmtConditionResp.Params = <-paramsChan
-	fmtConditionResp.ParamCount = <-paramCountChan
-	soteErr = <-soteErrChan
-
-	return
-}
-
 // FormatGenericFilterArray formats params from slice/array for additional filters that are not supported by the filters list. (i.e for summary endpoints)
 func FormatGenericFilterArray(ctx context.Context, fmtConditionParams *FormatConditionParams, args []string) (queryStr string, params []interface{},
 	paramCount int) {
@@ -303,5 +263,69 @@ func FormatGenericFilterArray(ctx context.Context, fmtConditionParams *FormatCon
 		}
 		queryStr = strings.TrimSuffix(queryStr, ",") + ")"
 	}
+	return
+}
+
+func SetFilters(customFilterStruct interface{}) FilterFields {
+	sLogger.DebugMethod()
+
+	return customFilterStruct.(FilterFields)
+}
+
+// formatArrayFilterCondition formats slice/array filter conditions for a get/list request
+func formatArrayFilterCondition(ctx context.Context, tblColumnKeysMap map[string]TableColumn,
+	reqParams *ArrFilterParam) (arrFilterResp *ArrFilterResponse, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		paramStart string
+		paramEnd   string
+	)
+
+	arrFilterResp = &ArrFilterResponse{}
+	s := reflect.ValueOf(reqParams.Value)
+	if kind := s.Kind(); kind == reflect.Slice || kind == reflect.Array {
+		reqParamLen := s.Len()
+		if reqParamLen > 0 {
+			arrFilterResp.ParamCount = reqParams.InitialParamCount
+			if reqParams.CaseInsensitive {
+				paramStart = "UPPER("
+				paramEnd = ")"
+			}
+
+			arrFilterResp.QueryStr = fmt.Sprintf(" %v%v%v%v %v (", paramStart, reqParams.Prefix, tblColumnKeysMap[reqParams.FieldName].ColumnName,
+				paramEnd,
+				reqParams.Operator)
+			arrFilterResp.Params = make([]interface{}, reqParamLen)
+
+			for i := 0; i < reqParamLen; i++ {
+				arrFilterResp.ParamCount++
+				arrFilterResp.QueryStr += fmt.Sprintf("%v$%v%v,", paramStart, arrFilterResp.ParamCount, paramEnd)
+				arrFilterResp.Params[i] = s.Index(i).Interface()
+			}
+
+			arrFilterResp.QueryStr = strings.TrimSuffix(arrFilterResp.QueryStr, ",") + ")"
+		}
+	} else {
+		soteErr = sError.GetSError(207030, sError.BuildParams([]string{reqParams.FieldName, fmt.Sprint(reqParams.Value)}), sError.EmptyMap)
+	}
+
+	return
+}
+
+// setSortOrder creates a sort order string
+func setSortOrder(sortOrder SortOrder, fieldColumnMap map[string]TableColumn) (sortOrderStr string) {
+	sLogger.DebugMethod()
+
+	if sortOrderCount := len(sortOrder.Fields); sortOrderCount > 0 {
+		for key, value := range sortOrder.Fields {
+			if _, ok := fieldColumnMap[key]; ok {
+				sortOrderStr += fmt.Sprintf("%v%v %v,", sortOrder.TblPrefix, fieldColumnMap[key].ColumnName, value)
+			}
+		}
+
+		sortOrderStr = " ORDER BY " + strings.TrimSuffix(sortOrderStr, ",")
+	}
+
 	return
 }
