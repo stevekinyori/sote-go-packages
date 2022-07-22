@@ -197,7 +197,7 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 					} else {
 						paramCount++
 						if column.CaseInsensitive {
-							col = fmt.Sprintf("UPPER(%v%v)", fmtConditionParams.TblPrefixes,
+							col = fmt.Sprintf("UPPER(%v%v)", prefix,
 								fmtConditionParams.SortOrderKeysMap[field.FieldName].ColumnName)
 							val = fmt.Sprintf("UPPER($%v)", paramCount)
 						} else {

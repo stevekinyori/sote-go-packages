@@ -2,7 +2,6 @@ package packages
 
 import (
 	"context"
-	"fmt"
 	"runtime"
 	"testing"
 
@@ -113,7 +112,6 @@ func TestSRows(tPtr *testing.T) {
 }
 
 // filters
-
 func TestFormatArrayFilterCondition(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
@@ -121,8 +119,8 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 	)
 
 	tPtr.Run("multiple prefixes", func(tPtr *testing.T) {
-		if x, soteErr := sDatabase.FormatListQueryConditions(context.Background(), &sDatabase.FormatConditionParams{
-			InitialParamCount: 1,
+		if _, soteErr := sDatabase.FormatListQueryConditions(context.Background(), &sDatabase.FormatConditionParams{
+			InitialParamCount: 0,
 			RecordLimitCount:  0,
 			TblPrefixes:       []string{"table1.", "table2.", "table3."},
 			Filters: map[string][]sDatabase.FilterFields{
@@ -159,11 +157,8 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 			},
 		}); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
-		} else {
-			fmt.Println(x.Where)
 		}
 	})
-
 }
 
 //
