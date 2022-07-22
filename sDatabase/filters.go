@@ -47,12 +47,12 @@ type FormatConditionParams struct {
 	ColName           string
 	Operator          string
 	Filters           map[string][]FilterFields
-	SortOrderKeysMap  map[string]sortOrder
+	SortOrderKeysMap  map[string]SortOrder
 }
 
-type sortOrder struct {
-	ColumnName    string
-	CaseSensitive bool
+type SortOrder struct {
+	ColumnName      string
+	CaseInsensitive bool
 }
 
 type FormatConditionsResp struct {
@@ -64,7 +64,7 @@ type FormatConditionsResp struct {
 }
 
 // FormatArrayFilterCondition formats slice/array filter conditions for a get/list request
-func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]sortOrder,
+func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]SortOrder,
 	reqParams *ArrFilterParam) (arrFilterResp *ArrFilterResponse, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -142,7 +142,7 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 						FilterCommon:      FilterCommon{Operator: field.Operator, Value: field.Value},
 						Prefix:            prefix,
 						InitialParamCount: paramCount,
-						CaseInsensitive:   fmtConditionParams.SortOrderKeysMap[field.FieldName].CaseSensitive,
+						CaseInsensitive:   fmtConditionParams.SortOrderKeysMap[field.FieldName].CaseInsensitive,
 					}); soteErr.ErrCode == nil {
 						tQueryStr += arrFilterResp.QueryStr + " " + operand
 						params = append(params, arrFilterResp.Params...)
@@ -152,7 +152,7 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 					}
 				} else {
 					paramCount++
-					if fmtConditionParams.SortOrderKeysMap[field.FieldName].CaseSensitive {
+					if fmtConditionParams.SortOrderKeysMap[field.FieldName].CaseInsensitive {
 						col = fmt.Sprintf("UPPER(%v%v)", fmtConditionParams.TblPrefixes,
 							fmtConditionParams.SortOrderKeysMap[field.FieldName].ColumnName)
 						val = fmt.Sprintf("UPPER($%v)", paramCount)

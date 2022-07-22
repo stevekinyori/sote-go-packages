@@ -39,14 +39,14 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 					},
 				},
 			},
-			SortOrderKeysMap: map[string]sortOrder{
+			SortOrderKeysMap: map[string]SortOrder{
 				"column-name": {
-					ColumnName:    "column_name",
-					CaseSensitive: true,
+					ColumnName:      "column_name",
+					CaseInsensitive: true,
 				},
 				"column-id": {
-					ColumnName:    "column_id",
-					CaseSensitive: false,
+					ColumnName:      "column_id",
+					CaseInsensitive: false,
 				},
 			},
 		}); soteErr.ErrCode != nil {
