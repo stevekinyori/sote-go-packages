@@ -63,8 +63,8 @@ type FormatConditionsResp struct {
 	ParamCount int
 }
 
-// FormatArrayFilterCondition formats slice/array filter conditions for a get/list request
-func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]SortOrder,
+// formatArrayFilterCondition formats slice/array filter conditions for a get/list request
+func formatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string]SortOrder,
 	reqParams *ArrFilterParam) (arrFilterResp *ArrFilterResponse, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -104,7 +104,7 @@ func FormatArrayFilterCondition(ctx context.Context, sortOrderKeysMap map[string
 	return
 }
 
-func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatConditionParams) (fmtConditionResp FormatConditionsResp,
+func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatConditionParams) (fmtConditionResp FormatConditionsResp,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -137,7 +137,7 @@ func formatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 			tQueryStr += "("
 			for _, field := range filterValues {
 				if field.Operator == "IN" || field.Operator == "NOT IN" {
-					if arrFilterResp, soteErr = FormatArrayFilterCondition(ctx, fmtConditionParams.SortOrderKeysMap, &ArrFilterParam{
+					if arrFilterResp, soteErr = formatArrayFilterCondition(ctx, fmtConditionParams.SortOrderKeysMap, &ArrFilterParam{
 						FieldName:         field.FieldName,
 						FilterCommon:      FilterCommon{Operator: field.Operator, Value: field.Value},
 						Prefix:            prefix,
@@ -252,7 +252,7 @@ func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatCo
 		)
 
 		if len(fmtConditionParams.Filters) > 0 {
-			if tFmtConditionResp, tSoteErr = formatFilterCondition(ctx, fmtConditionParams); tSoteErr.ErrCode != nil {
+			if tFmtConditionResp, tSoteErr = FormatFilterCondition(ctx, fmtConditionParams); tSoteErr.ErrCode != nil {
 				soteErrChan <- tSoteErr
 				whereChan <- tFmtConditionResp.Where // where clause string
 				paramsChan <- tFmtConditionResp.Params

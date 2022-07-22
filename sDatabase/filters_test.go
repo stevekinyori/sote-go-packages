@@ -14,7 +14,7 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 	)
 
 	tPtr.Run("multiple prefixes", func(tPtr *testing.T) {
-		if resp, soteErr := formatFilterCondition(context.Background(), &FormatConditionParams{
+		if resp, soteErr := FormatFilterCondition(context.Background(), &FormatConditionParams{
 			InitialParamCount: 1,
 			RecordLimitCount:  0,
 			TblPrefixes:       []string{"table1.", "table2.", "table3."},
