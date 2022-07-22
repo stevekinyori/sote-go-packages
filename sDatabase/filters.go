@@ -316,7 +316,6 @@ func formatArrayFilterCondition(ctx context.Context, tblColumnKeysMap map[string
 // setSortOrder creates a sort order string
 func setSortOrder(sortOrder SortOrder, fieldColumnMap map[string]TableColumn) (sortOrderStr string) {
 	sLogger.DebugMethod()
-	fmt.Println(sortOrder.Fields)
 	if sortOrderCount := len(sortOrder.Fields); sortOrderCount > 0 {
 		for key, value := range sortOrder.Fields {
 			if _, ok := fieldColumnMap[key]; ok {
