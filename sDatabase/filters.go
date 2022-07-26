@@ -117,24 +117,18 @@ func FormatListQueryConditions(ctx context.Context, fmtConditionParams *FormatCo
 			tFmtConditionResp FormatConditionsResp
 		)
 
-		if len(fmtConditionParams.Filters) > 0 {
-			if tFmtConditionResp, tSoteErr = FormatFilterCondition(ctx, fmtConditionParams); tSoteErr.ErrCode != nil {
-				soteErrChan <- tSoteErr
-				whereChan <- tFmtConditionResp.Where // where clause string
-				paramsChan <- tFmtConditionResp.Params
-				paramCountChan <- tFmtConditionResp.ParamCount
-				return
-			}
+		if tFmtConditionResp, tSoteErr = FormatFilterCondition(ctx, fmtConditionParams); tSoteErr.ErrCode != nil {
 			soteErrChan <- tSoteErr
 			whereChan <- tFmtConditionResp.Where // where clause string
 			paramsChan <- tFmtConditionResp.Params
 			paramCountChan <- tFmtConditionResp.ParamCount
-		} else {
-			soteErrChan <- tSoteErr
-			whereChan <- ""
-			paramsChan <- []interface{}{}
-			paramCountChan <- fmtConditionParams.InitialParamCount
+			return
 		}
+
+		soteErrChan <- tSoteErr
+		whereChan <- tFmtConditionResp.Where // where clause string
+		paramsChan <- tFmtConditionResp.Params
+		paramCountChan <- tFmtConditionResp.ParamCount
 	}()
 
 	fmtConditionResp.Limit = <-limitChan
@@ -162,8 +156,8 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 		arrFilterResp = &ArrFilterResponse{}
 		prefix        string
 	)
+	paramCount = fmtConditionParams.InitialParamCount // return the parameter count that was initially passed when there are no filters
 	if len(fmtConditionParams.Filters) > 0 {
-		paramCount = fmtConditionParams.InitialParamCount
 		join = " AND "
 		if fmtConditionParams.InitialParamCount > 0 {
 			queryStr = join
@@ -238,8 +232,9 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 
 		fmtConditionResp.Where = queryStr
 		fmtConditionResp.Params = params
-		fmtConditionResp.ParamCount = paramCount
 	}
+
+	fmtConditionResp.ParamCount = paramCount
 
 	return
 }
