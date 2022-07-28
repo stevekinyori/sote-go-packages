@@ -67,6 +67,7 @@ rm sDatabase/coverage.out 2>/dev/null
 go test sDatabase/*.go -coverprofile sDatabase/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sConfigParams ' 1>>/tmp/tmp_$$.out
+rm sConfigParams/coverage.out 2>/dev/null
 go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sAuthentication ' 1>>/tmp/tmp_$$.out
@@ -74,15 +75,20 @@ rm sAuthentication/coverage.out 2>/dev/null
 GOARCH=amd64 go test sAuthentication/*.go -coverprofile sAuthentication/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sMessage ' 1>>/tmp/tmp_$$.out
+rm sMessage/coverage.out 2>/dev/null
 go test sMessage/*.go -coverprofile sMessage/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
 echo -n 'sHTTPClient ' 1>>/tmp/tmp_$$.out
+rm sHTTPClient/coverage.out 2>/dev/null
 go test sHTTPClient/*.go -coverprofile sHTTPClient/coverage.out 1>>/tmp/tmp_$$.out
 echo -n '.'
-echo -n 'sHelper ' 1>>/tmp/tmp_$$.out
-GOARCH=amd64 go test sHelper/*.go -coverprofile sHelper/coverage.out 1>>/tmp/tmp_$$.out
 echo -n 'sCustom ' 1>>/tmp/tmp_$$.out
+rm sCustom/coverage.out 2>/dev/null
 go test sCustom/*.go -coverprofile sCustom/coverage.out 1>>/tmp/tmp_$$.out
+echo -n '.'
+echo -n 'sDocument ' 1>>/tmp/tmp_$$.out
+rm sDocument/coverage.out 2>/dev/null
+go test sDocument/*.go -coverprofile sDocument/coverage.out 1>>/tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<<"$(grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}')"
@@ -122,6 +128,9 @@ echo -n '.'
 echo -n 'sCustom_external_test ' 1>>/tmp/tmp_$$.out
 go test sCustom_external_test.go 1>>/tmp/tmp_$$.out
 echo -n '.'
+echo -n 'sDocument_external_test ' 1>>/tmp/tmp_$$.out
+go test sDocument_external_test.go 1>>/tmp/tmp_$$.out
+echo -n '.'
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<<"$(grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}')"
@@ -143,7 +152,7 @@ go tool cover -func=sConfigParams/coverage.out >>coverage_review.out
 go tool cover -func=sAuthentication/coverage.out >>coverage_review.out
 go tool cover -func=sMessage/coverage.out >>coverage_review.out
 go tool cover -func=sHTTPClient/coverage.out >>coverage_review.out
-go tool cover -func=sHelper/coverage.out >>coverage_review.out
+go tool cover -func=sDocument/coverage.out >>coverage_review.out
 go tool cover -func=sCustom/coverage.out >>coverage_review.out
 echo "Done"
 #
