@@ -26,7 +26,7 @@ import (
 
 const (
 	// Add Constants here
-	LOGMESSAGEPREFIX        = "sCustom_external_test.go"
+	LOGMESSAGEPREFIX        = "packages"
 	PREFIX           string = ""
 	INDENT           string = "  "
 )
