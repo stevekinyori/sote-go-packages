@@ -19,7 +19,7 @@ func InitiateAuth(ctx context.Context, environment string) (authResp *cognitoide
 		username         string
 		password         string
 		clientId         string
-		params           map[string]string
+		params           = make(map[string]string)
 		cognitoClientPtr *cognitoidentityprovider.Client
 	)
 
@@ -30,18 +30,18 @@ func InitiateAuth(ctx context.Context, environment string) (authResp *cognitoide
 				params["USERNAME"] = username
 				if password, soteErr = sConfigParams.GetDataLoadPassword(ctx, environment); soteErr.ErrCode == nil {
 					params["PASSWORD"] = password
+
+					authTry := &cognitoidentityprovider.InitiateAuthInput{
+						AuthFlow:       "USER_PASSWORD_AUTH",
+						ClientId:       aws.String(clientId),
+						AuthParameters: params,
+					}
+
+					if authResp, err = cognitoClientPtr.InitiateAuth(ctx, authTry); err != nil {
+						sLogger.Info(err.Error())
+						soteErr = sError.GetSError(201999, sError.BuildParams([]string{}), sError.EmptyMap)
+					}
 				}
-			}
-
-			authTry := &cognitoidentityprovider.InitiateAuthInput{
-				AuthFlow:       "USER_PASSWORD_AUTH",
-				ClientId:       aws.String(clientId),
-				AuthParameters: params,
-			}
-
-			if authResp, err = cognitoClientPtr.InitiateAuth(ctx, authTry); err != nil {
-				sLogger.Info(err.Error())
-				soteErr = sError.GetSError(201999, sError.BuildParams([]string{}), sError.EmptyMap)
 			}
 		}
 	} else {
