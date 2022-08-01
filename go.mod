@@ -6,6 +6,7 @@ require (
 	bou.ke/monkey v1.0.2
 	github.com/aws/aws-sdk-go-v2 v1.16.7
 	github.com/aws/aws-sdk-go-v2/config v1.15.14
+	github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider v1.17.3
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.1
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.27.4
 	github.com/ddliu/go-httpclient v0.6.9
@@ -16,7 +17,6 @@ require (
 	github.com/lestrrat-go/jwx v1.1.7
 	github.com/nats-io/nats.go v1.16.0
 	github.com/nats-io/nkeys v0.3.0
-	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
 )
 
 require (

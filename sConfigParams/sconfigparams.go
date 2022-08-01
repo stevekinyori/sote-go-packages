@@ -48,6 +48,8 @@ const (
 	COGNITOCLIENTID              = "CLIENT_ID"
 	COGNITOPASSWORD              = "DATA_LOAD_PASSWORD"
 	CREDENTIALS                  = "credentials"
+	DATALOADUSER                 = "DATA_LOAD_USER"
+	DATALOADPASSWORD             = "DATA_LOAD_PASSWORD"
 	DBHOSTKEY                    = "DB_HOST"
 	DBNAMEKEY                    = "DB_NAME"
 	DBPASSWORDKEY                = "DATABASE_PASSWORD"
@@ -59,6 +61,7 @@ const (
 	UNPROCESSEDDOCUMENTSKEY      = "inbound/name"
 	PROCESSEDDOCUMENTSKEY        = "processed/name"
 	USERPOOLIDKEY                = "COGNITO_USER_POOL_ID"
+	SDCCCLIENTID                 = "SDCC_CLIENT_ID"
 	SMTPUSERNAME                 = "USERNAME"
 	SMTPPASSWORD                 = "PASSWORD"
 	SMTPPORT                     = "PORT"
@@ -587,6 +590,63 @@ func GetClientId(ctx context.Context, clientName, environment string) (clientId 
 		tClientId, soteErr = getParameter(ctx, clientName, strings.ToLower(environment), CLIENTIDKEY)
 		if tClientId != nil {
 			clientId = tClientId.(string)
+		}
+	}
+
+	return
+}
+
+/*
+GetSdccClientId will retrieve the cognito sdcc client id parameter that is in AWS System Manager service for the ROOTPATH and
+environment.  Environment are required.
+*/
+func GetSdccClientId(ctx context.Context, environment string) (userPoolId string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tUserPoolId interface{}
+
+	if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+		tUserPoolId, soteErr = getParameter(ctx, "", strings.ToLower(environment), SDCCCLIENTID)
+		if tUserPoolId != nil {
+			userPoolId = tUserPoolId.(string)
+		}
+	}
+
+	return
+}
+
+/*
+GetDataLoadUser will retrieve the data load user parameter that is in AWS System Manager service for the ROOTPATH and
+application.  Application and environment are required.
+*/
+func GetDataLoadUser(ctx context.Context, environment string) (dlUser string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tDLUser interface{}
+
+	if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+		tDLUser, soteErr = getParameter(ctx, "", strings.ToLower(environment), DATALOADUSER)
+		if tDLUser != nil {
+			dlUser = tDLUser.(string)
+		}
+	}
+
+	return
+}
+
+/*
+GetDataLoadPassword will retrieve the data load password parameter that is in AWS System Manager service for the ROOTPATH and
+application.  Application and environment are required.
+*/
+func GetDataLoadPassword(ctx context.Context, environment string) (dlPass string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tDLPass interface{}
+
+	if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+		tDLPass, soteErr = getParameter(ctx, "", strings.ToLower(environment), DATALOADPASSWORD)
+		if tDLPass != nil {
+			dlPass = tDLPass.(string)
 		}
 	}
 
