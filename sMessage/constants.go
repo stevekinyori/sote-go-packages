@@ -19,6 +19,7 @@ const (
 	QUICKBOOKSBSID             = "16"
 	DOCUMENTSNOTIFICATIONSBSID = "17"
 	NOTIFICATIONSBSID          = "18"
+	CRONNOTIFICATIONSBSID      = "19"
 )
 
 func GetBusinessServiceIds() []string {
@@ -39,5 +40,6 @@ func GetBusinessServiceIds() []string {
 		QUICKBOOKSBSID,
 		DOCUMENTSNOTIFICATIONSBSID,
 		NOTIFICATIONSBSID,
+		CRONNOTIFICATIONSBSID,
 	}
 }
