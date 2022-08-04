@@ -41,14 +41,15 @@ const (
 	TESTCOMPANYSUPPLIERNAMEONE = "ExxonMobil Petroleum & Chemical BV"
 	TESTCLIENTCOMPANYID        = 1
 	TESTCLIENTCOMPANYIDSTR     = "1"
-	// TESTFILENAMEONE            = "test-invoice.jpeg"
-	// TESTS3BUCKETNAME           = "sote-internal-technology-data"
-	TESTAPPENVIRONMENT    = "staging"
-	TESTMOUNTPOINTENVNAME = MOUNTPOINTENVIRONMENTVARNAME
-	TESTFILESFOLDER       = "test-files"
-	TESTLOCALFILENAME     = "invoice.jpeg"
-	TESTLOCALPDFFILENAME  = "invoice-two.pdf"
-	TESTINVALIDFILEPATH   = "INVALID PATH"
+	TESTFILENAMEONE            = "test-invoice.jpeg"
+	TESTS3BUCKETNAME           = "sote-internal-technology-data"
+	TESTAPPENVIRONMENT         = "staging"
+	TESTMOUNTPOINTENVNAME      = MOUNTPOINTENVIRONMENTVARNAME
+	TESTFILESFOLDER            = "test-files"
+	TESTLOCALFILENAME          = "invoice.jpeg"
+	TESTLOCALPDFFILENAME       = "invoice-two.pdf"
+	TESTINVALIDFILEPATH        = "INVALID PATH"
+	TESTOBJECTKEYONE           = INBOUNDFOLDER + "/" + TESTAPPENVIRONMENT + "/" + TESTCLIENTCOMPANYIDSTR + "/" + TESTFILENAMEONE
 )
 
 // List type's here
@@ -321,7 +322,7 @@ func copyTestDocument(tPtr *testing.T, filename string, useProcessedFolder, useP
 		TestMode:             testMode,
 	}); soteErr.ErrCode == nil {
 		keys = GetObjectKeys(filename, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
-		inboundFilepath, processedFilepath, _ = s3ClientServerPtr.getMountPointFilepath(keys)
+		inboundFilepath, processedFilepath, _ = s3ClientServerPtr.GetMountPointFilepath(keys)
 
 		switch usePDF {
 		case true:

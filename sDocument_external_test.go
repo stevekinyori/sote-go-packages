@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
@@ -42,6 +43,7 @@ const (
 	TESTMOUNTPOINTENVNAME = sDocument.MOUNTPOINTENVIRONMENTVARNAME
 	TESTFILESFOLDER       = "test-files"
 	TESTLOCALFILENAME     = "invoice.jpeg"
+	TESTINVALIDFILEPATH   = "INVALID PATH"
 )
 
 type formDataTest struct {
@@ -217,6 +219,56 @@ func TestDocumentUpload(tPtr *testing.T) {
 			}
 		}
 	})
+}
+func TestDocumentPreSignedURL(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+		s3ClientServerPtr *sDocument.S3ClientServer
+		keys              *sDocument.ObjectKeys
+		documentLinks     *sDocument.DocumentLinks
+		sourceFilepath    string
+		targetFilepath    string
+		filename          = "test-presigned-url.jpeg"
+	)
+
+	tPtr.Cleanup(func() {
+		if keys != nil {
+			s3ClientServerPtr.DocumentDelete(sDocumentCtx, keys.ProcessedObjectKey)
+		}
+	})
+
+	if s3ClientServerPtr, soteErr = sDocument.NewS3ClientServer(sDocumentCtx, &sDocument.DocumentParams{
+		AppConfigName:        sConfigParams.DOCUMENTS,
+		MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+		ClientCompanyId:      TESTCLIENTCOMPANYID,
+		AppEnvironment:       TESTAPPENVIRONMENT,
+		TestMode:             TESTMODE,
+	}); soteErr.ErrCode == nil {
+		tPtr.Run("Generate presigned URL using valid document-link", func(tPtr *testing.T) {
+			// 	Copy Test File
+			sourceFilepath = strings.Join([]string{sDocument.GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALFILENAME}, "/")
+			keys = sDocument.GetObjectKeys(filename, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
+			_, targetFilepath, _ = s3ClientServerPtr.GetMountPointFilepath(keys)
+			sLogger.Info(fmt.Sprintf("Uploading test file to %v", targetFilepath))
+
+			if _, soteErr = s3ClientServerPtr.DocumentCopy(sDocumentCtx, sourceFilepath, targetFilepath); soteErr.ErrCode == nil {
+				if documentLinks, soteErr = sDocument.GetDocumentLinks(sDocumentCtx, s3ClientServerPtr.BucketName, keys); soteErr.ErrCode == nil {
+					s3ClientServerPtr.DocumentParamsPtr.DocumentsLink = documentLinks.ProcessedDocumentLink
+					if _, soteErr = s3ClientServerPtr.DocumentPreSignedURL(sDocumentCtx, 6); soteErr.ErrCode != nil {
+						tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+					}
+				}
+			}
+		})
+
+		tPtr.Run("Check Invalid Pre-Signed Document URL", func(tPtr *testing.T) {
+			if _, soteErr = sDocument.ValidatePreSignedDocumentURL(TESTINVALIDFILEPATH); soteErr.ErrCode != 109999 {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, 109999, soteErr.FmtErrMsg)
+			}
+		})
+	}
 }
 
 /**
