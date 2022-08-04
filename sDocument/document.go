@@ -24,14 +24,18 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"mime/multipart"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -47,6 +51,7 @@ const (
 
 // DocumentParams Holds params used for extracting metadata from a document
 type DocumentParams struct {
+	DocumentsLink        string
 	ClientCompanyId      int
 	ClientCompanyName    string
 	MountPointEnvVarName string
@@ -81,6 +86,15 @@ type UploadResponse struct {
 	DocumentLinks         *DocumentLinks `json:"document-links"`
 	ObjKeys               *ObjectKeys    `json:"object-keys"`
 	ProcessedDocumentLink string         `json:"processed-document-link"`
+}
+
+// S3PresignGetObjectAPI defines the interface for the PreSignGetObject function.
+// We use this interface to test the function using a mocked service.
+type S3PresignGetObjectAPI interface {
+	PresignGetObject(
+		ctx context.Context,
+		params *s3.GetObjectInput,
+		optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error)
 }
 
 var (
@@ -262,7 +276,7 @@ func (s3sPtr *S3ClientServer) SingleDocumentUpload(ctx context.Context, file mul
 
 	if contents, err = ioutil.ReadAll(file); err == nil {
 		tObjectKeys = GetObjectKeys(filename, fmt.Sprint(s3sPtr.DocumentParamsPtr.ClientCompanyId))
-		inboundFilepath, processedFilepath, _ = s3sPtr.getMountPointFilepath(tObjectKeys)
+		inboundFilepath, processedFilepath, _ = s3sPtr.GetMountPointFilepath(tObjectKeys)
 		go func() {
 			if _, soteErr = WriteFile(ctx, inboundFilepath, contents); soteErr.ErrCode == nil {
 				soteErrChan <- map[string]sError.SoteError{}
@@ -328,8 +342,8 @@ func (s3sPtr *S3ClientServer) SingleDocumentUpload(ctx context.Context, file mul
 	return
 }
 
-/*getMountPointFilepath Will return display name,source document filepath and target document filepath from the mount point*/
-func (s3sPtr *S3ClientServer) getMountPointFilepath(objectKeys *ObjectKeys) (sourceFilepath, targetFilepath, displayName string) {
+/*GetMountPointFilepath Will return display name,source document filepath and target document filepath from the mount point*/
+func (s3sPtr *S3ClientServer) GetMountPointFilepath(objectKeys *ObjectKeys) (sourceFilepath, targetFilepath, displayName string) {
 	sLogger.DebugMethod()
 
 	displayName = GetDocumentName(objectKeys.InboundObjectKey)
@@ -473,6 +487,127 @@ func (s3sPtr *S3ClientServer) DocumentDelete(ctx context.Context, objectKey stri
 		}
 	} else {
 		soteErr = AmazonTextractErrorHandler(ctx, err)
+	}
+
+	return
+}
+
+// DocumentPreSignedURL Will return a pre-signed document URL
+func (s3sPtr *S3ClientServer) DocumentPreSignedURL(ctx context.Context, expiryDuration time.Duration) (preSignedDocumentURL string,
+	soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		keys *ObjectKeys
+	)
+
+	keys = GetObjectKeys(GetDocumentName(s3sPtr.DocumentParamsPtr.DocumentsLink), fmt.Sprint(s3sPtr.DocumentParamsPtr.ClientCompanyId))
+	preSignedDocumentURL, soteErr = s3sPtr.getDocumentPreSignedURL(ctx, keys.ProcessedObjectKey, expiryDuration)
+
+	return
+}
+
+// getDocumentPreSignedURL will return a pre-signed document URL
+func (s3sPtr *S3ClientServer) getDocumentPreSignedURL(ctx context.Context, objectKey string,
+	expiryDuration time.Duration) (preSignedDocumentURL string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		presignedClient *s3.PresignClient
+		err             error
+		preSignedReq    *v4.PresignedHTTPRequest
+	)
+
+	presignedClient = s3.NewPresignClient(s3sPtr.S3ClientPtr, s3.WithPresignExpires(expiryDuration*time.Second))
+
+	if preSignedReq, err = GetPresignedURL(ctx, presignedClient, &s3.GetObjectInput{
+		Bucket: aws.String(s3sPtr.BucketName),
+		Key:    aws.String(objectKey),
+	}); err == nil {
+		preSignedDocumentURL = preSignedReq.URL
+	} else {
+		soteErr = AmazonTextractErrorHandler(ctx, err)
+	}
+
+	return
+}
+
+// GetEmbeddedDocumentMetadata Will return embedded document metadata
+func (s3sPtr *S3ClientServer) GetEmbeddedDocumentMetadata(ctx context.Context, keys *ObjectKeys) (metadata map[string]string,
+	soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		headObjOutput *s3.HeadObjectOutput
+		err           error
+		found         bool
+		tFilepath     = strings.Join([]string{s3sPtr.S3BucketMountPoint, keys.MountPointInboundObjectKey}, "/")
+	)
+
+	if found, soteErr = ValidateFilepath(tFilepath); found && soteErr.ErrCode == nil {
+		if headObjOutput, err = s3sPtr.S3ClientPtr.HeadObject(ctx, &s3.HeadObjectInput{
+			Bucket: aws.String(s3sPtr.BucketName),
+			Key:    aws.String(keys.InboundObjectKey),
+		}); err == nil {
+			metadata = headObjOutput.Metadata
+		} else {
+			soteErr = AmazonTextractErrorHandler(ctx, err)
+		}
+	}
+
+	return
+}
+
+// GetPresignedURL retrieves a presigned URL for an Amazon S3 bucket object.
+// Inputs:
+//     ctx is the context of the method call, which includes the AWS Region.
+//     api is the interface that defines the method call.
+//     input defines the input arguments to the service call.
+// Output:
+//     If successful, the pre-signed URL for the object and nil.
+//     Otherwise, nil and an error from the call to PreSignGetObject.
+func GetPresignedURL(ctx context.Context, api S3PresignGetObjectAPI, input *s3.GetObjectInput) (*v4.PresignedHTTPRequest, error) {
+	return api.PresignGetObject(ctx, input)
+}
+
+// ValidatePreSignedDocumentURL Will return a pre-signed document URL
+func ValidatePreSignedDocumentURL(preSignedDocURL string) (isPreSignedDocumentURLExpired bool,
+	soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		req             *http.Request
+		err             error
+		urlVals         url.Values
+		createdDateStr  string
+		expiresIn       string
+		createdDatetime time.Time
+		expiryDuration  time.Duration
+		currentDatetime = time.Now().UTC()
+		expiryDatetime  time.Time
+	)
+
+	if req, err = http.NewRequest("GET", preSignedDocURL, nil); err == nil {
+		if urlVals = req.URL.Query(); len(urlVals) > 0 {
+			createdDateStr = urlVals.Get("X-Amz-Date")
+			expiresIn = urlVals.Get("X-Amz-Expires")
+			// 	Get document creation date in Unix Date format
+			if createdDatetime, err = time.Parse(strings.ReplaceAll(strings.ReplaceAll(time.RFC3339, "-", ""), ":", ""), createdDateStr); err == nil {
+				// 	Parse expiry str to time.Duration format
+				if expiryDuration, err = time.ParseDuration(expiresIn + "s"); err == nil {
+					// Get expiry date
+					expiryDatetime = createdDatetime.Add(expiryDuration)
+					// Check if pre-signed document URL is expired
+					isPreSignedDocumentURLExpired = currentDatetime.After(expiryDatetime)
+				} else {
+					soteErr = sError.GetSError(207110, sError.BuildParams([]string{"expires-in"}), sError.EmptyMap)
+				}
+			} else {
+				soteErr = sError.GetSError(207110, sError.BuildParams([]string{"created-date string"}), sError.EmptyMap)
+			}
+		} else {
+			soteErr = sError.GetSError(109999, sError.BuildParams([]string{"document"}), sError.EmptyMap)
+		}
 	}
 
 	return

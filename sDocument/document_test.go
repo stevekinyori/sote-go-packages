@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -264,6 +265,51 @@ func TestDocumentDelete(tPtr *testing.T) {
 		})
 	}
 }
+func TestDocumentPreSignedURL(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+		s3ClientServerPtr *S3ClientServer
+		keys              *ObjectKeys
+		documentLinks     *DocumentLinks
+		sourceFilepath    string
+		targetFilepath    string
+		filename          = "test-presigned-url.jpeg"
+	)
+
+	if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
+		AppConfigName:        sConfigParams.DOCUMENTS,
+		MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+		ClientCompanyId:      TESTCLIENTCOMPANYID,
+		AppEnvironment:       TESTAPPENVIRONMENT,
+		TestMode:             testMode,
+	}); soteErr.ErrCode == nil {
+
+		tPtr.Run("Generate presigned URL using valid document-link", func(tPtr *testing.T) {
+			// 	Copy Test File
+			sourceFilepath = strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALFILENAME}, "/")
+			keys = GetObjectKeys(filename, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
+			_, targetFilepath, _ = s3ClientServerPtr.GetMountPointFilepath(keys)
+			sLogger.Info(fmt.Sprintf("Uploading test file to %v", targetFilepath))
+
+			if _, soteErr = s3ClientServerPtr.DocumentCopy(parentCtx, sourceFilepath, targetFilepath); soteErr.ErrCode == nil {
+				if documentLinks, soteErr = GetDocumentLinks(parentCtx, s3ClientServerPtr.BucketName, keys); soteErr.ErrCode == nil {
+					s3ClientServerPtr.DocumentParamsPtr.DocumentsLink = documentLinks.ProcessedDocumentLink
+					if _, soteErr = s3ClientServerPtr.DocumentPreSignedURL(parentCtx, 6); soteErr.ErrCode != nil {
+						tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+					}
+				}
+			}
+		})
+
+		tPtr.Run("Check Invalid Pre-Signed Document URL", func(tPtr *testing.T) {
+			if _, soteErr = ValidatePreSignedDocumentURL(TESTINVALIDFILEPATH); soteErr.ErrCode != 109999 {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, 109999, soteErr.FmtErrMsg)
+			}
+		})
+	}
+}
 func TestDocumentCopy(tPtr *testing.T) {
 	var (
 		function, _, _, _ = runtime.Caller(0)
@@ -292,7 +338,7 @@ func TestDocumentCopy(tPtr *testing.T) {
 		}); soteErr.ErrCode == nil {
 			sourceFilepath = strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALFILENAME}, "/")
 			keys = GetObjectKeys(filename, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
-			_, targetFilepath, _ = s3ClientServerPtr.getMountPointFilepath(keys)
+			_, targetFilepath, _ = s3ClientServerPtr.GetMountPointFilepath(keys)
 
 			if _, soteErr = s3ClientServerPtr.DocumentCopy(parentCtx, sourceFilepath, targetFilepath); soteErr.ErrCode != nil {
 				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
@@ -313,11 +359,28 @@ func TestEmbedMetadata(tPtr *testing.T) {
 			"invoice-number":   "0223BE726355",
 			"convert-test":     map[string]string{"convert-interface": "test"},
 		}
+		keysOne     *ObjectKeys
+		keysTwo     *ObjectKeys
+		filenameOne = "test-get-embed.jpeg"
+		filenameTwo = "test-invalid-get-embed.jpeg"
+		metadataTwo = map[string]interface{}{
+			"inbound-object-key": fmt.Sprintf(strings.Join([]string{filepath.Dir(TESTOBJECTKEYONE), filenameOne}, "/")),
+		}
 	)
 
 	tPtr.Cleanup(func() {
+		s3ClientServerPtr.BucketName = TESTS3BUCKETNAME
+
 		if keys != nil {
 			s3ClientServerPtr.DocumentDelete(parentCtx, keys.InboundObjectKey)
+		}
+
+		if keysOne != nil {
+			s3ClientServerPtr.DocumentDelete(parentCtx, keysOne.InboundObjectKey)
+		}
+
+		if keysTwo != nil {
+			s3ClientServerPtr.DocumentDelete(parentCtx, keysTwo.InboundObjectKey)
 		}
 	})
 
@@ -342,6 +405,27 @@ func TestEmbedMetadata(tPtr *testing.T) {
 					if soteErr = s3ClientServerPtr.EmbedMetadata(parentCtx, keys.InboundObjectKey,
 						metadata); soteErr.ErrCode != nil {
 						tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+					}
+				}
+			})
+
+			tPtr.Run("Get Embedded Metadata Using Valid Bucket Name", func(tPtr *testing.T) {
+				if _, _, keysOne, soteErr = copyTestDocument(tPtr, filenameOne, false, false); soteErr.ErrCode == nil {
+					if soteErr = s3ClientServerPtr.EmbedMetadata(parentCtx, keysOne.InboundObjectKey, metadataTwo); soteErr.ErrCode == nil {
+						if _, soteErr = s3ClientServerPtr.GetEmbeddedDocumentMetadata(parentCtx, keysOne); soteErr.ErrCode != nil {
+							tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+						}
+					}
+				}
+			})
+
+			tPtr.Run("Get Embedded Metadata Using Invalid Bucket Name", func(tPtr *testing.T) {
+				if _, _, keysTwo, soteErr = copyTestDocument(tPtr, filenameTwo, false, false); soteErr.ErrCode == nil {
+					if soteErr = s3ClientServerPtr.EmbedMetadata(parentCtx, keysTwo.InboundObjectKey, metadataTwo); soteErr.ErrCode == nil {
+						s3ClientServerPtr.BucketName = ""
+						if _, soteErr = s3ClientServerPtr.GetEmbeddedDocumentMetadata(parentCtx, keysTwo); soteErr.ErrCode != 200513 {
+							tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "200513", soteErr.FmtErrMsg)
+						}
 					}
 				}
 			})
