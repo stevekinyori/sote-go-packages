@@ -40,19 +40,21 @@ type ArrFilterResponse struct {
 }
 
 type FormatConditionParams struct {
-	InitialParamCount int
-	RecordLimitCount  int
-	TblPrefixes       []string // e.g. tbl.'the prefix must have a dot at the end'
-	SortOrder         SortOrder
-	ColName           string
-	Operator          string
-	Filters           map[string][]FilterFields
-	SortOrderKeysMap  map[string]TableColumn
+	InitialParamCount     int
+	RecordLimitCount      int
+	TblPrefixes           []string // e.g. tbl.'the prefix must have a dot at the end'
+	SortOrder             SortOrder
+	ColName               string
+	Operator              string
+	Filters               map[string][]FilterFields
+	SortOrderKeysMap      map[string]TableColumn
+	IgnoreFirstFilterJoin bool
 }
 
 type TableColumn struct {
 	ColumnName      string
 	CaseInsensitive bool
+	IgnorePrefix    bool
 }
 
 type SortOrder struct {
@@ -155,15 +157,19 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 		params        []interface{}
 		arrFilterResp = &ArrFilterResponse{}
 		prefix        string
+		tPrefix       string
 	)
 	paramCount = fmtConditionParams.InitialParamCount // return the parameter count that was initially passed when there are no filters
 	if len(fmtConditionParams.Filters) > 0 {
 		join = " AND "
-		if fmtConditionParams.InitialParamCount > 0 {
+		if fmtConditionParams.IgnoreFirstFilterJoin {
+			queryStr = " "
+		} else if fmtConditionParams.InitialParamCount > 0 {
 			queryStr = join
 		} else {
 			queryStr = " WHERE "
 		}
+
 		if len(fmtConditionParams.TblPrefixes) > 0 {
 			prefix = fmtConditionParams.TblPrefixes[0]
 			fmtConditionParams.TblPrefixes = fmtConditionParams.TblPrefixes[1:]
@@ -174,11 +180,17 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 			tQueryStr += "("
 			for _, field := range filterValues {
 				if column, ok := fmtConditionParams.SortOrderKeysMap[field.FieldName]; ok {
+					if column.IgnorePrefix {
+						tPrefix = ""
+					} else {
+						tPrefix = prefix
+					}
+
 					if field.Operator == "IN" || field.Operator == "NOT IN" {
 						if arrFilterResp, soteErr = formatArrayFilterCondition(ctx, fmtConditionParams.SortOrderKeysMap, &ArrFilterParam{
 							FieldName:         field.FieldName,
 							FilterCommon:      FilterCommon{Operator: field.Operator, Value: field.Value},
-							Prefix:            prefix,
+							Prefix:            tPrefix,
 							InitialParamCount: paramCount,
 							CaseInsensitive:   column.CaseInsensitive,
 						}); soteErr.ErrCode == nil {
@@ -191,11 +203,11 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 					} else {
 						paramCount++
 						if column.CaseInsensitive {
-							col = fmt.Sprintf("UPPER(%v%v)", prefix,
+							col = fmt.Sprintf("UPPER(%v%v)", tPrefix,
 								fmtConditionParams.SortOrderKeysMap[field.FieldName].ColumnName)
 							val = fmt.Sprintf("UPPER($%v)", paramCount)
 						} else {
-							col = prefix + column.ColumnName
+							col = tPrefix + column.ColumnName
 							val = fmt.Sprintf("$%v", paramCount)
 						}
 
