@@ -239,31 +239,6 @@ func FormatFilterCondition(ctx context.Context, fmtConditionParams *FormatCondit
 	return
 }
 
-// FormatGenericFilterArray formats params from slice/array for additional filters that are not supported by the filters list. (i.e for summary endpoints)
-func FormatGenericFilterArray(ctx context.Context, fmtConditionParams *FormatConditionParams, args []string) (queryStr string, params []interface{},
-	paramCount int) {
-	paramStart := "UPPER("
-	paramEnd := ")"
-
-	reqParamLen := len(args)
-
-	// we are being paranoid here! We already know that this function will never be called with an empty slice:-)
-	if reqParamLen > 0 {
-		paramCount = fmtConditionParams.InitialParamCount
-		queryStr = fmt.Sprintf(" %v%v%v%v %v (", paramStart, fmtConditionParams.TblPrefixes, fmtConditionParams.ColName, paramEnd,
-			fmtConditionParams.Operator)
-
-		params = make([]interface{}, reqParamLen)
-		for i := 0; i < reqParamLen; i++ {
-			paramCount++
-			queryStr += fmt.Sprintf("%v$%v%v,", paramStart, paramCount, paramEnd)
-			params[i] = args[i]
-		}
-		queryStr = strings.TrimSuffix(queryStr, ",") + ")"
-	}
-	return
-}
-
 func SetFilters(customFilterStruct interface{}) FilterFields {
 	sLogger.DebugMethod()
 
