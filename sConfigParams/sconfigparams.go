@@ -237,7 +237,8 @@ func GetQuickbooksConfig(ctx context.Context, application, environment string) (
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
 			pSSMParamsInput := &ssm.GetParametersInput{
-				Names:          []string{clientIdKey, clientSecretKey, hostKey, configURLKey, webhookToken, refreshToken, refreshTokenExpiry},
+				Names: []string{clientIdKey, clientSecretKey, hostKey, configURLKey, webhookToken, refreshToken, refreshTokenExpiry,
+					refreshTokenRealmId},
 				WithDecryption: pTrue,
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
