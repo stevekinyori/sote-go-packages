@@ -20,6 +20,7 @@ NOTES:
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -59,6 +60,21 @@ type DocumentParams struct {
 	AppEnvironment       string
 	TestMode             bool
 	FormFiles            map[string][]*multipart.FileHeader
+}
+
+// FileParams Holds params used in file operations i.e. write, delete, read
+type FileParams struct {
+	Wg                 *sync.WaitGroup
+	ErrChan            chan sError.SoteError
+	DocumentLinksChan  chan *DocumentLinks
+	UploadResponseChan chan *UploadResponse
+	Contents           []byte
+	TargetFilepath     string
+	BucketName         string
+	ObjectKey          string
+	ObjectKeys         *ObjectKeys
+	File               multipart.File
+	Filename           string
 }
 
 // S3ClientServer  Holds params used by AWS S3 Service
@@ -150,6 +166,7 @@ func NewS3ClientServer(ctx context.Context, documentParamsPtr *DocumentParams,
 	return
 }
 
+// MultipleDocumentsUpload Uploads multiple documents
 func (s3sPtr *S3ClientServer) MultipleDocumentsUpload(ctx context.Context) (uploadResponse map[string][]*UploadResponse,
 	attachment []string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -166,30 +183,40 @@ func (s3sPtr *S3ClientServer) MultipleDocumentsUpload(ctx context.Context) (uplo
 		supportingDocsChan            = make(chan []*UploadResponse)
 		supportingDocsAttachmentsChan = make(chan []string)
 		parentDocAttachmentsChan      = make(chan []string)
+		errChan                       = make(chan sError.SoteError)
+		uploadResChan                 = make(chan *UploadResponse)
+		parentSoteErr                 sError.SoteError
+		// supportingSoteErr             sError.SoteError
 	)
 	uploadResponse = make(map[string][]*UploadResponse)
-	wg.Add(2)
-
-	go func() {
-		wg.Wait()
-		close(parentDocChan)
-		close(supportingDocsChan)
-		close(supportingDocsAttachmentsChan)
-		close(parentDocAttachmentsChan)
-	}()
-
+	wgCtx, cancel := context.WithCancel(ctx)
+	defer cancel() // Make sure cancel is called to release resources even if no errors
+	defer close(parentDocChan)
+	defer close(supportingDocsChan)
+	defer close(supportingDocsAttachmentsChan)
+	defer close(parentDocAttachmentsChan)
+	// todo: Change Sote error chan to a slice being overwritten
 	go func() {
 		var (
 			tUploadRes *UploadResponse
 			uploadsRes []*UploadResponse
 		)
+		wg.Add(1)
 
 		sLogger.Info("starting parent-document upload...")
 		for _, file := range formFiles[ParentDocumentKey.String()] {
 			if openedFile, err := file.Open(); err != nil {
 				break
 			} else {
-				if tUploadRes, soteErr = s3sPtr.SingleDocumentUpload(ctx, openedFile, file.Filename); soteErr.ErrCode == nil {
+				go s3sPtr.UploadDocuments(wgCtx, &FileParams{
+					Wg:                 &wg,
+					ErrChan:            errChan,
+					UploadResponseChan: uploadResChan,
+					File:               openedFile,
+					Filename:           file.Filename,
+				})
+				if parentSoteErr = <-errChan; parentSoteErr.ErrCode == nil {
+					tUploadRes = <-uploadResChan
 					uploadsRes = append(uploadsRes, tUploadRes)
 					parentDocChan <- uploadsRes
 					parentDocAttachmentsChan <- []string{uploadsRes[0].ProcessedDocumentLink}
@@ -199,8 +226,6 @@ func (s3sPtr *S3ClientServer) MultipleDocumentsUpload(ctx context.Context) (uplo
 				}
 			}
 		}
-
-		wg.Done()
 	}()
 
 	go func() {
@@ -213,11 +238,20 @@ func (s3sPtr *S3ClientServer) MultipleDocumentsUpload(ctx context.Context) (uplo
 		if files, found := formFiles[SupportingDocumentsKey.String()]; found {
 			sLogger.Info("starting supporting-documents upload...")
 			for _, file := range files {
+				wg.Add(1)
 
 				if openedFile, err := file.Open(); err != nil {
 					break
 				} else {
-					if tUploadRes, soteErr = s3sPtr.SingleDocumentUpload(ctx, openedFile, file.Filename); soteErr.ErrCode == nil {
+					go s3sPtr.UploadDocuments(wgCtx, &FileParams{
+						Wg:                 &wg,
+						ErrChan:            errChan,
+						UploadResponseChan: uploadResChan,
+						File:               openedFile,
+						Filename:           file.Filename,
+					})
+					if soteErr = <-errChan; soteErr.ErrCode == nil {
+						tUploadRes = <-uploadResChan
 						uploadsRes = append(uploadsRes, tUploadRes)
 						attachments = append(attachments, tUploadRes.ProcessedDocumentLink)
 					}
@@ -229,8 +263,6 @@ func (s3sPtr *S3ClientServer) MultipleDocumentsUpload(ctx context.Context) (uplo
 			supportingDocsChan <- []*UploadResponse{}
 			supportingDocsAttachmentsChan <- []string{}
 		}
-
-		wg.Done()
 	}()
 
 	tParentDocResponse = <-parentDocChan
@@ -243,101 +275,230 @@ func (s3sPtr *S3ClientServer) MultipleDocumentsUpload(ctx context.Context) (uplo
 	if len(tSupportingDocsResponse) > 0 {
 		uploadResponse[SupportingDocumentsKey.String()] = tSupportingDocsResponse
 	}
+	if parentSoteErr.ErrCode != nil {
+		soteErr = parentSoteErr
+	}
+
+	wg.Wait()
 
 	return
 }
 
+// UploadDocuments Uploads document to inbound and processed folders
+func (s3sPtr *S3ClientServer) UploadDocuments(ctx context.Context, params *FileParams) {
+
+	defer params.Wg.Done()
+	wgCtx, cancel := context.WithCancel(ctx)
+	defer cancel() // Make sure cancel is called to release resources even if no errors
+
+	var (
+		soteErr        sError.SoteError
+		uploadResponse = new(UploadResponse)
+	)
+
+	checkContextCancel(wgCtx)
+	uploadResponse, soteErr = s3sPtr.SingleDocumentUpload(wgCtx, params.File, params.Filename)
+	if soteErr.ErrCode != nil {
+		params.ErrChan <- soteErr
+		params.UploadResponseChan <- &UploadResponse{}
+		cancel()
+
+		return
+	}
+
+	if errors.Is(ctx.Err(), context.Canceled) {
+		params.ErrChan <- sError.GetSError(100500,
+			sError.BuildParams([]string{fmt.Sprintf("document couldn't be created in specified path %v", params.TargetFilepath)}),
+			sError.EmptyMap)
+		params.UploadResponseChan <- &UploadResponse{}
+		cancel()
+
+		return
+	}
+
+	params.ErrChan <- sError.SoteError{}
+	params.UploadResponseChan <- uploadResponse
+
+	return
+}
+
+// SingleDocumentUpload Uploads a document to inbound and processed folders
 func (s3sPtr *S3ClientServer) SingleDocumentUpload(ctx context.Context, file multipart.File, filename string) (uploadResponse *UploadResponse,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	var (
-		err      error
-		contents []byte
-
+		err               error
+		contents          []byte
 		inboundFilepath   string
 		processedFilepath string
-		documentLinks     = new(DocumentLinks)
 		tDocumentLinks    = new(DocumentLinks)
+		documentLinks     = new(DocumentLinks)
 		metadata          = make(map[string]interface{})
 		tObjectKeys       = new(ObjectKeys)
 		wg                sync.WaitGroup
+		errChan           = make(chan sError.SoteError, 2)
+		docLinkChan       = make(chan *DocumentLinks)
 	)
 	wg.Add(3)
-	soteErrChan := make(chan map[string]sError.SoteError)
-	docLinkChan := make(chan *DocumentLinks)
+	wgCtx, cancel := context.WithCancel(ctx)
+	defer cancel() // Make sure cancel is called to release resources even if no errors
+	defer close(errChan)
+	defer close(docLinkChan)
 
-	go func() {
-		wg.Wait()
-		close(soteErrChan)
-		close(docLinkChan)
-	}()
-
-	if contents, err = ioutil.ReadAll(file); err == nil {
-		tObjectKeys = GetObjectKeys(filename, fmt.Sprint(s3sPtr.DocumentParamsPtr.ClientCompanyId))
-		inboundFilepath, processedFilepath, _ = s3sPtr.GetMountPointFilepath(tObjectKeys)
-		go func() {
-			if _, soteErr = WriteFile(ctx, inboundFilepath, contents); soteErr.ErrCode == nil {
-				soteErrChan <- map[string]sError.SoteError{}
-			} else {
-				soteErrChan <- map[string]sError.SoteError{INBOUNDLINKKEY: soteErr}
-			}
-
-			wg.Done()
-		}()
-
-		go func() {
-			if _, soteErr = WriteFile(ctx, processedFilepath, contents); soteErr.ErrCode == nil {
-				// Add inbound object key to metadata to enable inbound document to be deleted
-				metadata[InboundObjectKeyFieldName.String()] = tObjectKeys.InboundObjectKey
-				if soteErr = s3sPtr.EmbedMetadata(ctx, tObjectKeys.ProcessedObjectKey, metadata); soteErr.ErrCode != nil {
-					soteErrChan <- map[string]sError.SoteError{PROCESSEDLINKKEY: soteErr}
-				}
-				soteErrChan <- map[string]sError.SoteError{}
-			} else {
-				soteErrChan <- map[string]sError.SoteError{PROCESSEDLINKKEY: soteErr}
-			}
-
-			wg.Done()
-		}()
-
-		go func() {
-			if tDocumentLinks, soteErr = GetDocumentLinks(ctx, s3sPtr.BucketName, tObjectKeys); soteErr.ErrCode == nil {
-				docLinkChan <- tDocumentLinks
-			} else {
-				docLinkChan <- &DocumentLinks{}
-				soteErrChan <- map[string]sError.SoteError{"document-links": soteErr}
-			}
-
-			wg.Done()
-		}()
-
-		documentLinks = <-docLinkChan
-		soteError := <-soteErrChan
-
-		for _, v := range soteError {
-			if v.ErrCode != nil {
-				soteErr = v
-				break
-			}
-		}
-
-		if soteErr.ErrCode == nil {
-			uploadResponse = &UploadResponse{
-				FileName:              filename,
-				DocumentLinks:         documentLinks,
-				ObjKeys:               tObjectKeys,
-				ProcessedDocumentLink: documentLinks.ProcessedDocumentLink,
-			}
-
-			sLogger.Info(fmt.Sprintf("successfully uploaded document %v", filename))
-		}
-	}
-
-	if err != nil {
+	checkContextCancel(wgCtx)
+	if contents, err = ioutil.ReadAll(file); err != nil {
 		soteErr = AmazonTextractErrorHandler(ctx, err)
+		return
 	}
+
+	tObjectKeys = GetObjectKeys(filename, fmt.Sprint(s3sPtr.DocumentParamsPtr.ClientCompanyId))
+	inboundFilepath, processedFilepath, _ = s3sPtr.GetMountPointFilepath(tObjectKeys)
+	// Upload document to inbound folder
+	go WriteFiles(wgCtx, &FileParams{
+		Wg:             &wg,
+		ErrChan:        errChan,
+		Contents:       contents,
+		TargetFilepath: inboundFilepath,
+	})
+	if soteErr = <-errChan; soteErr.ErrCode != nil {
+		cancel()
+		return
+	}
+	// Upload document to processed folder
+	go WriteFiles(wgCtx, &FileParams{
+		Wg:             &wg,
+		ErrChan:        errChan,
+		Contents:       contents,
+		TargetFilepath: processedFilepath,
+	})
+	if soteErr = <-errChan; soteErr.ErrCode != nil {
+		cancel()
+		return
+	}
+	// Get the document links
+	go GetDocumentsLinks(wgCtx, &FileParams{
+		Wg:                &wg,
+		ErrChan:           errChan,
+		DocumentLinksChan: docLinkChan,
+		BucketName:        s3sPtr.BucketName,
+		ObjectKeys:        tObjectKeys,
+	})
+	if soteErr = <-errChan; soteErr.ErrCode != nil {
+		cancel()
+		return
+	}
+
+	// Add inbound object key to metadata to enable inbound document to be deleted
+	metadata[InboundObjectKeyFieldName.String()] = tObjectKeys.InboundObjectKey
+	soteErr = s3sPtr.EmbedMetadata(ctx, tObjectKeys.ProcessedObjectKey, metadata)
+	if soteErr.ErrCode != nil {
+		cancel()
+		return
+	}
+
+	if errors.Is(ctx.Err(), context.Canceled) {
+		errChan <- sError.GetSError(100500,
+			sError.BuildParams([]string{fmt.Sprintf("%v document couldn't be created", filename)}),
+			sError.EmptyMap)
+		cancel()
+
+		return
+	}
+
+	if tDocumentLinks = <-docLinkChan; tDocumentLinks != nil {
+		documentLinks = tDocumentLinks
+	}
+
+	if soteErr.ErrCode == nil {
+		uploadResponse = &UploadResponse{
+			FileName:              filename,
+			DocumentLinks:         documentLinks,
+			ObjKeys:               tObjectKeys,
+			ProcessedDocumentLink: documentLinks.ProcessedDocumentLink,
+		}
+
+		sLogger.Info(fmt.Sprintf("successfully uploaded document %v", filename))
+	}
+
+	wg.Wait()
+
+	return
+}
+
+// WriteFiles Will create a file with specified content
+func WriteFiles(ctx context.Context, params *FileParams) {
+
+	defer params.Wg.Done()
+	wgCtx, cancel := context.WithCancel(ctx)
+	defer cancel() // Make sure cancel is called to release resources even if no errors
+	sLogger.Info(fmt.Sprintf("started creating document in path: %v", params.TargetFilepath))
+
+	var (
+		soteErr sError.SoteError
+	)
+
+	checkContextCancel(wgCtx)
+	_, soteErr = WriteFile(wgCtx, params.TargetFilepath, params.Contents)
+	if soteErr.ErrCode != nil {
+		params.ErrChan <- soteErr
+		cancel()
+
+		return
+	}
+
+	if errors.Is(ctx.Err(), context.Canceled) {
+		params.ErrChan <- sError.GetSError(100500,
+			sError.BuildParams([]string{fmt.Sprintf("document couldn't be created in specified path %v", params.TargetFilepath)}),
+			sError.EmptyMap)
+		cancel()
+
+		return
+	}
+
+	params.ErrChan <- sError.SoteError{}
+
+	return
+}
+
+func GetDocumentsLinks(ctx context.Context, params *FileParams) {
+	sLogger.DebugMethod()
+
+	defer params.Wg.Done()
+	wgCtx, cancel := context.WithCancel(ctx)
+	defer cancel() // Make sure cancel is called to release resources even if no errors
+	sLogger.Info(fmt.Sprintf("started generating document links for %v", filepath.Base(params.ObjectKeys.InboundObjectKey)))
+
+	var (
+		documentLinks = new(DocumentLinks)
+		soteErr       sError.SoteError
+	)
+
+	checkContextCancel(wgCtx)
+	documentLinks, soteErr = GetDocumentLinks(wgCtx, params.BucketName, params.ObjectKeys)
+	if soteErr.ErrCode != nil {
+		params.ErrChan <- soteErr
+		params.DocumentLinksChan <- &DocumentLinks{}
+		cancel()
+
+		return
+	}
+
+	if errors.Is(ctx.Err(), context.Canceled) {
+		params.ErrChan <- sError.GetSError(100500,
+			sError.BuildParams([]string{fmt.Sprintf("Document links couldn't be created")}),
+			sError.EmptyMap)
+		params.DocumentLinksChan <- &DocumentLinks{}
+
+		cancel()
+
+		return
+	}
+
+	params.ErrChan <- sError.SoteError{}
+	params.DocumentLinksChan <- documentLinks
+	sLogger.Info(fmt.Sprintf("finished generating document links for %v", filepath.Base(params.ObjectKeys.InboundObjectKey)))
 
 	return
 }
@@ -764,4 +925,14 @@ func WriteFile(ctx context.Context, targetFilepath string, contents []byte) (des
 	}
 
 	return
+}
+
+// checkContextCancel checks if an error has happened during the context then terminates all processes using the context(
+// only if context is started with a cancel signal)
+func checkContextCancel(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		return // Error somewhere? then terminate
+	default: // avoid blocking
+	}
 }
