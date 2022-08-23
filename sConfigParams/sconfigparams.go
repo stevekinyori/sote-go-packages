@@ -40,36 +40,37 @@ const (
 	DEMO        = "demo"
 	PRODUCTION  = "production"
 	// System Manager Parameter Keys
-	AWSACCOUNTIDKEY              = "AWS_ACCOUNT_ID"
-	AWSREGIONIKEY                = "AWS_REGION"
-	AWSS3BUCKETKEY               = "AWS_S3_BUCKET"
-	CLIENTIDKEY                  = "COGNITO_CLIENT_ID"
-	COGNITOUSER                  = "USER"
-	COGNITOCLIENTID              = "CLIENT_ID"
-	COGNITOPASSWORD              = "DATA_LOAD_PASSWORD"
-	CREDENTIALS                  = "credentials"
-	DBHOSTKEY                    = "DB_HOST"
-	DBNAMEKEY                    = "DB_NAME"
-	DBPASSWORDKEY                = "DATABASE_PASSWORD"
-	DBPORTKEY                    = "DB_PORT"
-	DBSSLMODEKEY                 = "DB_SSL_MODE"
-	DBUSERKEY                    = "DB_USERNAME"
-	URL                          = "url"
-	TLSURLMASK                   = "tls-urlmask"
-	UNPROCESSEDDOCUMENTSKEY      = "inbound/name"
-	PROCESSEDDOCUMENTSKEY        = "processed/name"
-	USERPOOLIDKEY                = "COGNITO_USER_POOL_ID"
-	SMTPUSERNAME                 = "USERNAME"
-	SMTPPASSWORD                 = "PASSWORD"
-	SMTPPORT                     = "PORT"
-	SMTPHOST                     = "HOST"
-	QUICKBOOKSCLIENTID           = "CLIENT_ID"
-	QUICKBOOKSCLIENTSECRET       = "CLIENT_SECRET"
-	QUICKBOOKSWEBHOOKTOKEN       = "WEBHOOK_TOKEN"
-	QUICKBOOKSHOST               = "HOST"
-	QUICKBOOKSCONFIGURL          = "CONFIG_URL"
-	QUICKBOOKSREFRESHTOKEN       = "REFRESH_TOKEN"
-	QUICKBOOKSREFRESHTOKENEXPIRY = "REFRESH_TOKEN_EXPIRY"
+	AWSACCOUNTIDKEY               = "AWS_ACCOUNT_ID"
+	AWSREGIONIKEY                 = "AWS_REGION"
+	AWSS3BUCKETKEY                = "AWS_S3_BUCKET"
+	CLIENTIDKEY                   = "COGNITO_CLIENT_ID"
+	COGNITOUSER                   = "USER"
+	COGNITOCLIENTID               = "CLIENT_ID"
+	COGNITOPASSWORD               = "DATA_LOAD_PASSWORD"
+	CREDENTIALS                   = "credentials"
+	DBHOSTKEY                     = "DB_HOST"
+	DBNAMEKEY                     = "DB_NAME"
+	DBPASSWORDKEY                 = "DATABASE_PASSWORD"
+	DBPORTKEY                     = "DB_PORT"
+	DBSSLMODEKEY                  = "DB_SSL_MODE"
+	DBUSERKEY                     = "DB_USERNAME"
+	URL                           = "url"
+	TLSURLMASK                    = "tls-urlmask"
+	UNPROCESSEDDOCUMENTSKEY       = "inbound/name"
+	PROCESSEDDOCUMENTSKEY         = "processed/name"
+	USERPOOLIDKEY                 = "COGNITO_USER_POOL_ID"
+	SMTPUSERNAME                  = "USERNAME"
+	SMTPPASSWORD                  = "PASSWORD"
+	SMTPPORT                      = "PORT"
+	SMTPHOST                      = "HOST"
+	QUICKBOOKSCLIENTID            = "CLIENT_ID"
+	QUICKBOOKSCLIENTSECRET        = "CLIENT_SECRET"
+	QUICKBOOKSWEBHOOKTOKEN        = "WEBHOOK_TOKEN"
+	QUICKBOOKSHOST                = "HOST"
+	QUICKBOOKSCONFIGURL           = "CONFIG_URL"
+	QUICKBOOKSREFRESHTOKEN        = "REFRESH_TOKEN"
+	QUICKBOOKSREFRESHTOKENEXPIRY  = "REFRESH_TOKEN_EXPIRY"
+	QUICKBOOKSREFRESHTOKENREALMID = "REFRESH_TOKEN_REALM_ID"
 
 	// Application values
 	API        string = "api"
@@ -97,13 +98,14 @@ type SMTPConfig struct {
 }
 
 type QuickbooksConfig struct {
-	Host               string
-	ClientId           string
-	ClientSecret       string
-	WebhookToken       string
-	ConfigURL          string
-	RefreshToken       string
-	RefreshTokenExpiry string
+	Host                string
+	ClientId            string
+	ClientSecret        string
+	WebhookToken        string
+	ConfigURL           string
+	RefreshToken        string
+	RefreshTokenExpiry  string
+	RefreshTokenRealmId string
 }
 
 type QuickBooksRefreshToken struct {
@@ -218,15 +220,16 @@ func GetSMTPConfig(ctx context.Context, application, environment string) (parame
 // GetQuickbooksConfig retrieves all Quickbooks configurations  from SSM
 func GetQuickbooksConfig(ctx context.Context, application, environment string) (parameters *QuickbooksConfig, soteErr sError.SoteError) {
 	var (
-		clientIdKey        = setPath(application, environment) + "/" + QUICKBOOKSCLIENTID
-		clientSecretKey    = setPath(application, environment) + "/" + QUICKBOOKSCLIENTSECRET
-		hostKey            = setPath(application, environment) + "/" + QUICKBOOKSHOST
-		configURLKey       = setPath(application, environment) + "/" + QUICKBOOKSCONFIGURL
-		webhookToken       = setPath(application, environment) + "/" + QUICKBOOKSWEBHOOKTOKEN
-		refreshToken       = setPath(application, environment) + "/" + QUICKBOOKSREFRESHTOKEN
-		refreshTokenExpiry = setPath(application, environment) + "/" + QUICKBOOKSREFRESHTOKENEXPIRY
-		pSSMParamsOutput   = &ssm.GetParametersOutput{}
-		err                error
+		clientIdKey         = setPath(application, environment) + "/" + QUICKBOOKSCLIENTID
+		clientSecretKey     = setPath(application, environment) + "/" + QUICKBOOKSCLIENTSECRET
+		hostKey             = setPath(application, environment) + "/" + QUICKBOOKSHOST
+		configURLKey        = setPath(application, environment) + "/" + QUICKBOOKSCONFIGURL
+		webhookToken        = setPath(application, environment) + "/" + QUICKBOOKSWEBHOOKTOKEN
+		refreshToken        = setPath(application, environment) + "/" + QUICKBOOKSREFRESHTOKEN
+		refreshTokenExpiry  = setPath(application, environment) + "/" + QUICKBOOKSREFRESHTOKENEXPIRY
+		refreshTokenRealmId = setPath(application, environment) + "/" + QUICKBOOKSREFRESHTOKENREALMID
+		pSSMParamsOutput    = &ssm.GetParametersOutput{}
+		err                 error
 	)
 
 	parameters = &QuickbooksConfig{}
@@ -257,6 +260,8 @@ func GetQuickbooksConfig(ctx context.Context, application, environment string) (
 							parameters.RefreshToken = *pParameter.Value
 						case refreshTokenExpiry:
 							parameters.RefreshTokenExpiry = *pParameter.Value
+						case refreshTokenRealmId:
+							parameters.RefreshTokenRealmId = *pParameter.Value
 						}
 					}
 				}
