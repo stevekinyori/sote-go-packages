@@ -189,7 +189,7 @@ func GetSMTPConfig(ctx context.Context, application, environment string) (parame
 			environment = strings.ToLower(environment)
 			pSSMParamsInput := &ssm.GetParametersInput{
 				Names:          []string{smtpUserNameKey, smtpPasswordKey, smtpHostKey, smtpPortKey},
-				WithDecryption: pTrue,
+				WithDecryption: &pTrue,
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
@@ -239,7 +239,7 @@ func GetQuickbooksConfig(ctx context.Context, application, environment string) (
 			pSSMParamsInput := &ssm.GetParametersInput{
 				Names: []string{clientIdKey, clientSecretKey, hostKey, configURLKey, webhookToken, refreshToken, refreshTokenExpiry,
 					refreshTokenRealmId},
-				WithDecryption: pTrue,
+				WithDecryption: &pTrue,
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
@@ -291,7 +291,7 @@ func GetCognitoConfig(ctx context.Context, application, environment string) (par
 			environment = strings.ToLower(environment)
 			pSSMParamsInput := &ssm.GetParametersInput{
 				Names:          []string{clientIdKey, userKey, passwordKey},
-				WithDecryption: pTrue,
+				WithDecryption: &pTrue,
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
@@ -381,7 +381,7 @@ func GetAWSParams(ctx context.Context, application, environment string) (paramet
 			environment = strings.ToLower(environment)
 			pSSMParamsInput := &ssm.GetParametersInput{
 				Names:          []string{nameKey, userKey, passwordKey, hostKey, sslModeKey, portKey},
-				WithDecryption: pTrue,
+				WithDecryption: &pTrue,
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
@@ -838,9 +838,9 @@ func listParameters(ctx context.Context, application, environment string) (pSSMP
 		)
 
 		ssmPathInput.Path = &path
-		ssmPathInput.Recursive = pTrue
-		ssmPathInput.WithDecryption = pTrue
-		ssmPathInput.MaxResults = pMaxResult
+		ssmPathInput.Recursive = &pTrue
+		ssmPathInput.WithDecryption = &pTrue
+		ssmPathInput.MaxResults = &pMaxResult
 		// If there are any parameters that matches the path, a result set will be return by the GetParametersByPath call.
 		if pSSMPathOutput, err = awsService.GetParametersByPath(ctx, &ssmPathInput); len(pSSMPathOutput.Parameters) == 0 {
 			soteErr = sError.GetSError(109999, sError.BuildParams([]string{path}), sError.EmptyMap)
@@ -862,7 +862,7 @@ func getParameter(ctx context.Context, application, environment, key string) (re
 
 	var ssmParamInput ssm.GetParameterInput
 
-	ssmParamInput.WithDecryption = pTrue
+	ssmParamInput.WithDecryption = &pTrue
 	name := setPath(application, environment) + "/" + key
 	ssmParamInput.Name = &name
 
@@ -886,11 +886,12 @@ func updateParameter(ctx context.Context, application, environment string, param
 		}
 
 		name := setPath(application, environment) + "/" + parameter.Key
+		overwrite := true
 		pSSMParamInput := &ssm.PutParameterInput{
 			Name:      &name,
 			Value:     &parameter.Content,
 			Type:      parameter.TargetType,
-			Overwrite: true,
+			Overwrite: &overwrite,
 		}
 
 		if _, err := awsService.PutParameter(ctx, pSSMParamInput); err != nil {
