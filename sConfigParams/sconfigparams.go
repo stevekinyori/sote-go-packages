@@ -868,6 +868,8 @@ func getParameter(ctx context.Context, application, environment, key string) (re
 
 	// If there are any parameters that match the path, a result set will be return by the GetParametersByPath call.
 	if pSSMParamOutput, err := awsService.GetParameter(ctx, &ssmParamInput); err != nil {
+		sLogger.Info("error" + err.Error())
+		sLogger.Info("name" + name)
 		soteErr = sError.GetSError(109999, sError.BuildParams([]string{name}), sError.EmptyMap)
 	} else {
 		returnValue = *pSSMParamOutput.Parameter.Value
