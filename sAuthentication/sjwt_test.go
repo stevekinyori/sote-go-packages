@@ -32,52 +32,91 @@ const (
 	SDCC = "sdcc"
 )
 
-var parentCtx = context.Background()
+var (
+	parentCtx     = context.Background()
+	awsRegion, _  = sConfigParams.GetRegion(parentCtx)
+	userPoolId, _ = sConfigParams.GetUserPoolId(parentCtx, sConfigParams.DEVELOPMENT)
+)
 
 func init() {
 	sLogger.SetLogMessagePrefix("sjwt_test.go")
+
 }
 
 func TestValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(parentCtx, sConfigParams.DEVELOPMENT, TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
+	if soteErr = ValidToken(parentCtx, TOKENEXPIRED, &Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidMissingSegmentToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(parentCtx, sConfigParams.DEVELOPMENT, TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+	if soteErr = ValidToken(parentCtx, TOKENMISSINGSEGMENT, &Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidFakeToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(parentCtx, sConfigParams.DEVELOPMENT, FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+	if soteErr = ValidToken(parentCtx, FAKETOKEN, &Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(parentCtx, sConfigParams.DEVELOPMENT,
-		TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
+	if soteErr = ValidToken(parentCtx, TOKENINVALIDSIG, &Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.FmtErrMsg)
 	}
 }
 
 func TestValidTokenMissingParams(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(parentCtx, sConfigParams.DEVELOPMENT, ""); soteErr.ErrCode != 200512 {
+	if soteErr = ValidToken(parentCtx, "", &Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 200512 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 200512 %v", soteErr.FmtErrMsg)
 	}
 }
 func TestInValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = ValidToken(parentCtx, sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
+	if soteErr = ValidToken(parentCtx, TOKENINVALID, &Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208355 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestMatchKid(tPtr *testing.T) {
-	if key, soteErr := matchKid(parentCtx, sConfigParams.DEVELOPMENT, KIDGOOD); soteErr.ErrCode == nil {
+	if key, soteErr := matchKid(parentCtx, KIDGOOD, &Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode == nil {
 		if len(key.KeyID()) == 0 {
 			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", len(key.KeyID()))
 		}
@@ -86,7 +125,12 @@ func TestMatchKid(tPtr *testing.T) {
 	}
 }
 func TestGetPublicKey(tPtr *testing.T) {
-	if keySet, soteErr := getPublicKey(parentCtx, sConfigParams.DEVELOPMENT); soteErr.ErrCode == nil {
+	if keySet, soteErr := getPublicKey(parentCtx, &Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode == nil {
 		if keySet.Len() == 0 {
 			tPtr.Errorf("matchKid failed: Expected keys count to be greater than zero: %v", keySet.Len())
 		}

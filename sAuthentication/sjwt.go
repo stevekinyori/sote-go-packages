@@ -11,9 +11,16 @@ import (
 	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
-func ValidToken(ctx context.Context, tEnvironment, rawToken string) (soteErr sError.SoteError) {
+type Config struct {
+	AppEnvironment string
+	AwsRegion      string
+	UserPoolId     string
+	ClientId       string
+}
+
+func ValidToken(ctx context.Context, rawToken string, config *Config) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
-	if tEnvironment != "" && rawToken != "" {
+	if config != nil && config.AppEnvironment != "" && rawToken != "" {
 		if len(strings.Split(rawToken, ".")) == 3 {
 			token, err := jwt.Parse(rawToken, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
@@ -31,7 +38,7 @@ func ValidToken(ctx context.Context, tEnvironment, rawToken string) (soteErr sEr
 					}
 
 					if soteErr.ErrCode == nil {
-						if key, soteErr = matchKid(ctx, tEnvironment, kid); soteErr.ErrCode == nil {
+						if key, soteErr = matchKid(ctx, kid, config); soteErr.ErrCode == nil {
 							var raw interface{}
 							return raw, key.Raw(&raw)
 						}
@@ -55,7 +62,7 @@ func ValidToken(ctx context.Context, tEnvironment, rawToken string) (soteErr sEr
 
 			if soteErr.ErrCode == nil {
 				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-					soteErr = validateClaims(ctx, claims, tEnvironment)
+					soteErr = validateClaims(ctx, claims, config.AppEnvironment)
 				} else {
 					soteErr = sError.GetSError(208355, nil, sError.EmptyMap)
 				}
@@ -72,14 +79,18 @@ func ValidToken(ctx context.Context, tEnvironment, rawToken string) (soteErr sEr
 	return
 }
 
-func matchKid(ctx context.Context, tEnvironment, kid string) (key jwk.Key, soteErr sError.SoteError) {
+func matchKid(ctx context.Context, kid string, config *Config) (key jwk.Key, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
 		keySet jwk.Set
 		ok     bool
 	)
-	keySet, soteErr = getPublicKey(ctx, tEnvironment)
+
+	if keySet, soteErr = getPublicKey(ctx, config); soteErr.ErrCode != nil {
+		return
+	}
+
 	key, ok = keySet.LookupKeyID(kid)
 	if !ok {
 		soteErr = sError.GetSError(209521, sError.BuildParams([]string{kid}), sError.EmptyMap)
@@ -94,19 +105,17 @@ This will return the public key needed to validate the jwt token
 NOTE: If the region or user pool id is not found, getPublicKey will default to the 'eu-west-1' region
 and the userPoolId used by development instance of Cognito
 */
-func getPublicKey(ctx context.Context, tEnvironment string) (keySet jwk.Set, soteErr sError.SoteError) {
+func getPublicKey(ctx context.Context, config *Config) (keySet jwk.Set, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	var (
-		region     string
-		userPoolId string
-	)
-	if region, soteErr = sConfigParams.GetRegion(ctx); soteErr.ErrCode == nil {
-		if userPoolId, soteErr = sConfigParams.GetUserPoolId(ctx, tEnvironment); soteErr.ErrCode == nil {
-			if keySet, soteErr = fetchPublicKey(region, userPoolId, tEnvironment); soteErr.ErrCode != nil {
-				soteErr = sError.GetSError(210030, sError.BuildParams([]string{tEnvironment}), sError.EmptyMap)
-			}
-		}
+	if config == nil {
+		soteErr = sError.GetSError(200512, sError.BuildParams([]string{"Aws Region", "UserPoolId"}), sError.EmptyMap)
+		sLogger.Info(soteErr.FmtErrMsg)
+		return
+	}
+
+	if keySet, soteErr = fetchPublicKey(config.AwsRegion, config.UserPoolId, config.AppEnvironment); soteErr.ErrCode != nil {
+		soteErr = sError.GetSError(210030, sError.BuildParams([]string{config.AppEnvironment}), sError.EmptyMap)
 	}
 
 	return

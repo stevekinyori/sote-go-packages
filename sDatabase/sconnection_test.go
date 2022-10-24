@@ -46,6 +46,13 @@ func TestVerifyConnection(tPtr *testing.T) {
 		tPtr.Fail()
 	}
 
+	tPtr.Run("test", func(tPtr *testing.T) {
+		if config, soteErr = sConfigParams.GetAWSParams(parentCtx, sConfigParams.API, sConfigParams.DEMO); soteErr.ErrCode != nil {
+			tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
+			tPtr.Fatal()
+		}
+	})
+
 	if config, soteErr = sConfigParams.GetAWSParams(parentCtx, sConfigParams.API, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 		tPtr.Fatal()

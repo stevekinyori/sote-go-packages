@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/nats-io/nats.go"
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
 	"gitlab.com/soteapps/packages/v2022/sError"
 	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
@@ -109,7 +110,25 @@ func Validate(ctx context.Context, rh RequestHeader, tEnvironment string, isTest
 
 	} else {
 		// https://auth0.com/docs/tokens?_ga=2.253547273.1898510496.1593591557-1741611737.1593591372
-		soteErr = ValidToken(ctx, tEnvironment, rh.Header.JsonWebToken)
+		var (
+			awsRegion  string
+			userPoolId string
+		)
+
+		if awsRegion, soteErr = sConfigParams.GetRegion(ctx); soteErr.ErrCode != nil {
+			return rh.Header, soteErr
+		}
+
+		if userPoolId, soteErr = sConfigParams.GetUserPoolId(ctx, tEnvironment); soteErr.ErrCode != nil {
+			return rh.Header, soteErr
+		}
+
+		soteErr = ValidToken(ctx, rh.Header.JsonWebToken, &Config{
+			AppEnvironment: tEnvironment,
+			AwsRegion:      awsRegion,
+			UserPoolId:     userPoolId,
+			ClientId:       "",
+		})
 	}
 
 	return rh.Header, soteErr
