@@ -39,7 +39,7 @@ type TableGroup struct {
 
 type TableColumnInfo struct {
 	TableName  string
-	ColumnInfo []SColumnInfo
+	ColumnInfo []ColumnInfo
 }
 
 var (

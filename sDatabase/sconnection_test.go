@@ -10,10 +10,14 @@ import (
 	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
-var parentCtx = context.Background()
+var (
+	parentCtx    = context.Background()
+	testConnInfo = ConnInfo{}
+)
 
 func init() {
 	sLogger.SetLogMessagePrefix("sconnection_test.go")
+	testConnInfo, _ = New(parentCtx, sConfigParams.DEVELOPMENT)
 }
 
 func TestSetConnectionValue(tPtr *testing.T) {
