@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -39,6 +38,7 @@ const (
 	MigrationsPackageName          = "migrations"
 	ExternalDefaultStackTraceSkips = 3 // when you call functions/methods from outside this file
 	internalDefaultStackTraceSkips = 2 // when you call functions/methods from within this file
+	DefaultSetupDir                = ""
 )
 
 type Config struct{ DBConnInfo sDatabase.ConnInfo }
@@ -66,7 +66,8 @@ func init() {
 
 // New sets up the migration and seeding info .
 // setupType either sMigration.SeedingType or sMigration.MigrationType
-func New(ctx context.Context, environment string, setupType string, stackSkips int) (mDir string, dbConnInfo sDatabase.ConnInfo,
+// if setupDir is empty, then it takes the directory of the calling file
+func New(ctx context.Context, environment string, setupType string, stackSkips int, setupDir string) (mDir string, dbConnInfo sDatabase.ConnInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -126,24 +127,27 @@ func New(ctx context.Context, environment string, setupType string, stackSkips i
 	}
 
 	// set up the migration directory
-	_, file, _, _ := runtime.Caller(stackSkips)
-	sLogger.Info(fmt.Sprintf("Caller File %v", file))
-	basePath := filepath.Dir(path.Join(path.Dir(file)))
-	mDir = basePath + mSubDir
-	if err = os.MkdirAll(basePath+MigrationsSubDir, os.ModePerm); err == nil { // migration dir
-		_ = os.WriteFile(basePath+MigrationsSubDir+"/init.go",
+	if setupDir == DefaultSetupDir {
+		_, file, _, _ := runtime.Caller(stackSkips)
+		sLogger.Info(fmt.Sprintf("Caller File %v", file))
+		setupDir = filepath.Dir(file)
+	}
+
+	mDir = setupDir + mSubDir
+	if err = os.MkdirAll(setupDir+MigrationsSubDir, os.ModePerm); err == nil { // migration dir
+		_ = os.WriteFile(setupDir+MigrationsSubDir+"/init.go",
 			[]byte(fmt.Sprintf("package %v\n", MigrationsPackageName)+
 				"import \"gitlab.com/soteapps/packages/v2022/sDatabase\"\n"+
 				"type Config struct{DBConnInfo sDatabase.ConnInfo}"),
 			os.ModePerm)
-		_ = exec.Command("go", "fmt", basePath+MigrationsSubDir+"/init.go").Run()
+		_ = exec.Command("go", "fmt", setupDir+MigrationsSubDir+"/init.go").Run()
 	}
-	if err = os.MkdirAll(basePath+SeedsSubDir, os.ModePerm); err == nil { // seeding dir
-		_ = os.WriteFile(basePath+SeedsSubDir+"/init.go",
+	if err = os.MkdirAll(setupDir+SeedsSubDir, os.ModePerm); err == nil { // seeding dir
+		_ = os.WriteFile(setupDir+SeedsSubDir+"/init.go",
 			[]byte(fmt.Sprintf("package %v\n", SeedsPackageName)+
 				"import \"gitlab.com/soteapps/packages/v2022/sDatabase\"\n"+
 				"type Config struct{DBConnInfo sDatabase.ConnInfo}"), os.ModePerm)
-		_ = exec.Command("go", "fmt", basePath+SeedsSubDir+"/init.go").Run()
+		_ = exec.Command("go", "fmt", setupDir+SeedsSubDir+"/init.go").Run()
 	}
 
 	return
@@ -151,7 +155,8 @@ func New(ctx context.Context, environment string, setupType string, stackSkips i
 
 // Run  runs either MigrationType| SeedingAction based on the action run|setup.
 // This is purposely setup to be used by command line e.g. go run main.go -e development -s MigrationType -a setup
-func Run(ctx context.Context, environment string, service string, action string) (soteErr sError.SoteError) {
+// if setupDir is empty, then it takes the directory of the calling file
+func Run(ctx context.Context, environment string, service string, action string, setupDir string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -161,24 +166,24 @@ func Run(ctx context.Context, environment string, service string, action string)
 	switch service {
 	case MigrationType:
 		if action == "setup" {
-			if mDir, _, soteErr = New(ctx, environment, MigrationType, internalDefaultStackTraceSkips); soteErr.ErrCode == nil {
+			if mDir, _, soteErr = New(ctx, environment, MigrationType, internalDefaultStackTraceSkips, setupDir); soteErr.ErrCode == nil {
 				sLogger.Info(mDir)
 			}
 
 		} else if action == "run" {
-			soteErr = Migrate(ctx, environment)
+			soteErr = Migrate(ctx, environment, setupDir)
 		} else {
 			isAction = true
 		}
 
 	case SeedingAction:
 		if action == "setup" {
-			if mDir, _, soteErr = New(ctx, environment, SeedingType, internalDefaultStackTraceSkips); soteErr.ErrCode == nil {
+			if mDir, _, soteErr = New(ctx, environment, SeedingType, internalDefaultStackTraceSkips, setupDir); soteErr.ErrCode == nil {
 				sLogger.Info(mDir)
 			}
 
 		} else if action == "run" {
-			soteErr = Seed(ctx, environment)
+			soteErr = Seed(ctx, environment, setupDir)
 		} else {
 			isAction = true
 		}
@@ -197,7 +202,8 @@ func Run(ctx context.Context, environment string, service string, action string)
 
 //  By default, this function migrates|seeds all .go & .sql files withing MigrationsSubDir | SeedsSubDir folder
 // setupType either sMigration.SeedingType or sMigration.MigrationType
-func migrationAndSeeding(ctx context.Context, environment string, setupType string, stackSkips int) (soteErr sError.SoteError) {
+// if setupDir is empty, then it takes the directory of the calling file
+func migrationAndSeeding(ctx context.Context, environment string, setupType string, stackSkips int, setupDir string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -207,7 +213,7 @@ func migrationAndSeeding(ctx context.Context, environment string, setupType stri
 		dbConnInfo     = sDatabase.ConnInfo{}
 	)
 
-	if migrationDir, dbConnInfo, soteErr = New(ctx, environment, setupType, stackSkips); soteErr.ErrCode != nil {
+	if migrationDir, dbConnInfo, soteErr = New(ctx, environment, setupType, stackSkips, setupDir); soteErr.ErrCode != nil {
 		return
 	}
 

@@ -17,10 +17,11 @@ func init() {
 }
 
 // Migrate migrates all .go & .sql files withing MigrationsSubDir
-func Migrate(ctx context.Context, environment string) (soteErr sError.SoteError) {
+// if setupDir is empty, then it takes the directory of the calling file
+func Migrate(ctx context.Context, environment string, setupDir string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	soteErr = migrationAndSeeding(ctx, environment, MigrationType, ExternalDefaultStackTraceSkips)
+	soteErr = migrationAndSeeding(ctx, environment, MigrationType, ExternalDefaultStackTraceSkips, setupDir)
 
 	return
 }

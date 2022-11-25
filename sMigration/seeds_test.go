@@ -16,6 +16,7 @@ func TestSeed(tPtr *testing.T) {
 		testName          = runtime.FuncForPC(function).Name()
 		testConnInfo, _   = sDatabase.New(parentCtx, sConfigParams.DEVELOPMENT)
 		tableName         = "sote_student_test"
+		setupDir          = ""
 	)
 
 	tPtr.Cleanup(func() {
@@ -56,7 +57,7 @@ func TestSeed(tPtr *testing.T) {
 		tPtr.Errorf("%v Failed: Expected error code %v got %v", testName, "nil", soteErr.FmtErrMsg)
 	}
 
-	if soteErr = Seed(parentCtx, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
+	if soteErr = Seed(parentCtx, sConfigParams.DEVELOPMENT, setupDir); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v Failed: Expected error code %v got %v", testName, "nil", soteErr.FmtErrMsg)
 	}
 }
