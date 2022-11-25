@@ -21,7 +21,7 @@ func init() {
 func Migrate(ctx context.Context, environment string, setupDir string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	soteErr = migrationAndSeeding(ctx, environment, MigrationType, ExternalDefaultStackTraceSkips, setupDir)
+	soteErr = run(ctx, environment, MigrationType, ExternalDefaultStackTraceSkips, setupDir)
 
 	return
 }

@@ -20,7 +20,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"reflect"
+	"runtime"
+	"strings"
+	"time"
 
 	"github.com/nats-io/nats.go"
 
@@ -172,6 +179,76 @@ func UserFuncExists(funcName string, receiver any) (soteErr sError.SoteError) {
 	}
 
 	soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{errMsg}), nil)
+
+	return
+}
+
+// CopyDir copies all files from a specific director to another
+// empty ext means all files
+func CopyDir(source, destination string, ext string) (soteErr sError.SoteError) {
+	if err := filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		var relPath = strings.Replace(path, source, "", 1)
+		if relPath == "" {
+			fmt.Println(source, destination)
+
+			return nil
+		}
+		if info.IsDir() {
+			return os.MkdirAll(filepath.Join(destination, relPath), os.ModePerm)
+		} else if ext == "" || filepath.Ext(info.Name()) == ext {
+			var data, err1 = ioutil.ReadFile(filepath.Join(source, relPath))
+			if err1 != nil {
+				return err1
+			}
+
+			if err2 := ioutil.WriteFile(filepath.Join(destination, relPath), data, os.ModePerm); err2 != nil {
+				return err2
+			}
+
+			for start := time.Now(); ; {
+				if _, err3 := os.Stat(filepath.Join(destination, relPath)); err3 == nil || time.Since(start) >= time.Second {
+					return nil
+				}
+			}
+
+		} else {
+			return nil
+		}
+	}); err != nil {
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+	}
+
+	return
+}
+
+// CopyFile copies a files from a specific director to another
+func CopyFile(source, destination string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+	var err error
+
+	if runtime.GOOS == "windows" {
+		var (
+			data []byte
+		)
+
+		if data, err = ioutil.ReadFile(source); err == nil {
+			err = ioutil.WriteFile(destination, data, os.ModePerm)
+		}
+	} else {
+		err = exec.Command("cp", source, destination).Run()
+	}
+
+	if err == nil {
+		for start := time.Now(); ; {
+			if _, err = os.Stat(destination); err == nil || time.Since(start) >= time.Second {
+				return
+			}
+
+		}
+
+	} else {
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+	}
 
 	return
 }
