@@ -23,7 +23,15 @@ func TestMigration(tPtr *testing.T) {
 	tPtr.Cleanup(func() {
 	})
 
-	if soteErr = Migrate(parentCtx, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
-		tPtr.Errorf("%v Failed: Expected error code %v got %v", testName, "nil", soteErr.FmtErrMsg)
-	}
+	tPtr.Run("test migrate", func(tPtr *testing.T) {
+		if soteErr = Migrate(parentCtx, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code %v got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
+
+	tPtr.Run("test run", func(tPtr *testing.T) {
+		if soteErr = Run(parentCtx, sConfigParams.DEVELOPMENT, MigrationType, "setup"); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code %v got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
 }
