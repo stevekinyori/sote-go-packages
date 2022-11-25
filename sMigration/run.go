@@ -239,7 +239,6 @@ func setup(ctx context.Context, environment string, setupType string, stackSkips
 	if migrationDir, migrationSubDir, dbConnInfo, soteErr = New(ctx, environment, setupType, stackSkips, setupDir); soteErr.ErrCode != nil {
 		return
 	}
-
 	config := Config{DBConnInfo: dbConnInfo}
 	if migrationFiles, migrationQInfo, soteErr = config.getMigrationAndSeedsFiles(migrationDir, setupType); soteErr.ErrCode != nil {
 		return
@@ -506,25 +505,27 @@ func (config Config) copyFiles(ctx context.Context, migrationFiles []MigrationFi
 		existingMigrations = make([]MigrationFiles, 0)
 	)
 
-	qStmt := fmt.Sprintf("SELECT version::TEXT AS version,migration_name FROM %v WHERE version IN (%v)", MigrationTableName,
-		migrationQInfo.VersionPreparedSubQuery)
-	tRows, soteErr = config.DBConnInfo.QueryDBStmt(ctx, qStmt, migrationQInfo.SetupType, migrationQInfo.Params...)
-	if soteErr.ErrCode != nil {
-		return
-	}
-
-	defer tRows.Close()
-	for tRows.Next() {
-		existingMigration := new(MigrationFiles)
-		if err = tRows.Scan(
-			&existingMigration.MigrationVersion,
-			&existingMigration.MigrationName,
-		); err != nil {
-			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+	if len(migrationFiles) > 0 {
+		qStmt := fmt.Sprintf("SELECT version::TEXT AS version,migration_name FROM %v WHERE version IN (%v)", MigrationTableName,
+			migrationQInfo.VersionPreparedSubQuery)
+		tRows, soteErr = config.DBConnInfo.QueryDBStmt(ctx, qStmt, migrationQInfo.SetupType, migrationQInfo.Params...)
+		if soteErr.ErrCode != nil {
 			return
 		}
 
-		existingMigrations = append(existingMigrations, *existingMigration)
+		defer tRows.Close()
+		for tRows.Next() {
+			existingMigration := new(MigrationFiles)
+			if err = tRows.Scan(
+				&existingMigration.MigrationVersion,
+				&existingMigration.MigrationName,
+			); err != nil {
+				soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+				return
+			}
+
+			existingMigrations = append(existingMigrations, *existingMigration)
+		}
 	}
 
 	for _, file := range migrationFiles {
@@ -570,25 +571,27 @@ func (config Config) removeFiles(ctx context.Context, migrationFiles []Migration
 		existingMigrations = make([]MigrationFiles, 0)
 	)
 
-	qStmt := fmt.Sprintf("SELECT version::TEXT AS version,migration_name FROM %v WHERE version IN (%v)", MigrationTableName,
-		migrationQInfo.VersionPreparedSubQuery)
-	tRows, soteErr = config.DBConnInfo.QueryDBStmt(ctx, qStmt, migrationQInfo.SetupType, migrationQInfo.Params...)
-	if soteErr.ErrCode != nil {
-		return
-	}
-
-	defer tRows.Close()
-	for tRows.Next() {
-		existingMigration := new(MigrationFiles)
-		if err = tRows.Scan(
-			&existingMigration.MigrationVersion,
-			&existingMigration.MigrationName,
-		); err != nil {
-			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+	if len(migrationFiles) > 0 {
+		qStmt := fmt.Sprintf("SELECT version::TEXT AS version,migration_name FROM %v WHERE version IN (%v)", MigrationTableName,
+			migrationQInfo.VersionPreparedSubQuery)
+		tRows, soteErr = config.DBConnInfo.QueryDBStmt(ctx, qStmt, migrationQInfo.SetupType, migrationQInfo.Params...)
+		if soteErr.ErrCode != nil {
 			return
 		}
 
-		existingMigrations = append(existingMigrations, *existingMigration)
+		defer tRows.Close()
+		for tRows.Next() {
+			existingMigration := new(MigrationFiles)
+			if err = tRows.Scan(
+				&existingMigration.MigrationVersion,
+				&existingMigration.MigrationName,
+			); err != nil {
+				soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+				return
+			}
+
+			existingMigrations = append(existingMigrations, *existingMigration)
+		}
 	}
 
 	for _, file := range migrationFiles {
