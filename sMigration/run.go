@@ -27,16 +27,18 @@ import (
 )
 
 const (
-	MigrationTableName    = "sote_db_log"
-	MigrationType         = "migration"
-	SeedingType           = "seeding"
-	SeedingAction         = "seed"
-	goFileType            = ".go"
-	sqlFileType           = ".sql"
-	SeedsSubDir           = "/db/seeds"
-	MigrationsSubDir      = "/db/migrations"
-	SeedsPackageName      = "seeds"
-	MigrationsPackageName = "migrations"
+	MigrationTableName             = "sote_db_log"
+	MigrationType                  = "migration"
+	SeedingType                    = "seeding"
+	SeedingAction                  = "seed"
+	goFileType                     = ".go"
+	sqlFileType                    = ".sql"
+	SeedsSubDir                    = "/db/seeds"
+	MigrationsSubDir               = "/db/migrations"
+	SeedsPackageName               = "seeds"
+	MigrationsPackageName          = "migrations"
+	ExternalDefaultStackTraceSkips = 3 // when you call functions/methods from outside this file
+	internalDefaultStackTraceSkips = 2 // when you call functions/methods from within this file
 )
 
 type Config struct{ DBConnInfo sDatabase.ConnInfo }
@@ -64,7 +66,7 @@ func init() {
 
 // New sets up the migration and seeding info .
 // setupType either sMigration.SeedingType or sMigration.MigrationType
-func New(ctx context.Context, environment string, setupType string) (mDir string, dbConnInfo sDatabase.ConnInfo,
+func New(ctx context.Context, environment string, setupType string, stackSkips int) (mDir string, dbConnInfo sDatabase.ConnInfo,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -124,7 +126,8 @@ func New(ctx context.Context, environment string, setupType string) (mDir string
 	}
 
 	// set up the migration directory
-	_, file, _, _ := runtime.Caller(0)
+	_, file, _, _ := runtime.Caller(stackSkips)
+	sLogger.Info(fmt.Sprintf("Caller File %v", file))
 	basePath := filepath.Dir(path.Join(path.Dir(file)))
 	mDir = basePath + mSubDir
 	if err = os.MkdirAll(basePath+MigrationsSubDir, os.ModePerm); err == nil { // migration dir
@@ -158,7 +161,7 @@ func Run(ctx context.Context, environment string, service string, action string)
 	switch service {
 	case MigrationType:
 		if action == "setup" {
-			if mDir, _, soteErr = New(ctx, environment, MigrationType); soteErr.ErrCode == nil {
+			if mDir, _, soteErr = New(ctx, environment, MigrationType, internalDefaultStackTraceSkips); soteErr.ErrCode == nil {
 				sLogger.Info(mDir)
 			}
 
@@ -170,7 +173,7 @@ func Run(ctx context.Context, environment string, service string, action string)
 
 	case SeedingAction:
 		if action == "setup" {
-			if mDir, _, soteErr = New(ctx, environment, SeedingType); soteErr.ErrCode == nil {
+			if mDir, _, soteErr = New(ctx, environment, SeedingType, internalDefaultStackTraceSkips); soteErr.ErrCode == nil {
 				sLogger.Info(mDir)
 			}
 
@@ -194,7 +197,7 @@ func Run(ctx context.Context, environment string, service string, action string)
 
 //  By default, this function migrates|seeds all .go & .sql files withing MigrationsSubDir | SeedsSubDir folder
 // setupType either sMigration.SeedingType or sMigration.MigrationType
-func migrationAndSeeding(ctx context.Context, environment string, setupType string) (soteErr sError.SoteError) {
+func migrationAndSeeding(ctx context.Context, environment string, setupType string, stackSkips int) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -204,7 +207,7 @@ func migrationAndSeeding(ctx context.Context, environment string, setupType stri
 		dbConnInfo     = sDatabase.ConnInfo{}
 	)
 
-	if migrationDir, dbConnInfo, soteErr = New(ctx, environment, setupType); soteErr.ErrCode != nil {
+	if migrationDir, dbConnInfo, soteErr = New(ctx, environment, setupType, stackSkips); soteErr.ErrCode != nil {
 		return
 	}
 

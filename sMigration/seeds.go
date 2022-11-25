@@ -16,7 +16,7 @@ func init() {
 func Seed(ctx context.Context, environment string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	soteErr = migrationAndSeeding(ctx, environment, SeedingType)
+	soteErr = migrationAndSeeding(ctx, environment, SeedingType, ExternalDefaultStackTraceSkips)
 
 	return
 }
