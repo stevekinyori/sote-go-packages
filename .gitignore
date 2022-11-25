@@ -123,3 +123,11 @@ fabric.properties
 !.vscode/*.code-snippets
 
 # End of https://www.toptal.com/developers/gitignore/api/go,goland,visualstudiocode
+
+## others
+.DS_Store
+**/.DS_Store
+.idea/*
+**/.idea/*
+**/.vscode/*
+**/build/*

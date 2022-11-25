@@ -13,7 +13,7 @@ RESTRICTIONS:
 NOTES:
     {Enter any additional notes that you believe will help the next developer.}
 */
-package packages
+package tests
 
 import (
 	// Add imports here

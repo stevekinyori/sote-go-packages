@@ -1,4 +1,4 @@
-package packages
+package tests
 
 import (
 	"gitlab.com/soteapps/packages/v2022/sError"

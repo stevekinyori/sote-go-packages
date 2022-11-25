@@ -1,7 +1,6 @@
-package packages
+package tests
 
 import (
-	"context"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2022/sAuthentication"
@@ -28,37 +27,63 @@ const (
 	SDCC = "sdcc"
 )
 
+var (
+	awsRegion, _  = sConfigParams.GetRegion(parentCtx)
+	userPoolId, _ = sConfigParams.GetUserPoolId(parentCtx, sConfigParams.DEVELOPMENT)
+)
+
 func TestValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(context.Background(), sConfigParams.DEVELOPMENT,
-		TOKENEXPIRED); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
+	if soteErr = sAuthentication.ValidToken(parentCtx, TOKENEXPIRED, &sAuthentication.Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.ErrCode)
 	}
 }
 func TestValidFakeToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(context.Background(), sConfigParams.DEVELOPMENT,
-		TOKENMISSINGSEGMENT); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+	if soteErr = sAuthentication.ValidToken(parentCtx, TOKENMISSINGSEGMENT, &sAuthentication.Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidMissingSegmentToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(context.Background(), sConfigParams.DEVELOPMENT,
-		FAKETOKEN); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
+	if soteErr = sAuthentication.ValidToken(parentCtx, FAKETOKEN, &sAuthentication.Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355 or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(context.Background(), sConfigParams.DEVELOPMENT,
-		TOKENINVALIDSIG); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
+	if soteErr = sAuthentication.ValidToken(parentCtx, TOKENINVALIDSIG, &sAuthentication.Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.ErrCode)
 	}
 }
 func TestInValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(context.Background(), sConfigParams.DEVELOPMENT, TOKENINVALID); soteErr.ErrCode != 208355 {
+	if soteErr = sAuthentication.ValidToken(parentCtx, TOKENINVALID, &sAuthentication.Config{
+		AppEnvironment: sConfigParams.DEVELOPMENT,
+		AwsRegion:      awsRegion,
+		UserPoolId:     userPoolId,
+		ClientId:       "",
+	}); soteErr.ErrCode != 208355 {
 		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.ErrCode)
 	}
 }

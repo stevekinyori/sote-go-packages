@@ -1,4 +1,4 @@
-package main
+package TestingNATSFetch
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"gitlab.com/soteapps/packages/v2022/sMessage"
 )
 
-func main() {
+func run() {
 	mmPtr, soteErr := sMessage.New(context.Background(), "synadia", "staging", "", "west.eu.geo.ngs.global", "test", false, 1, 250*time.Millisecond,
 		false)
 	if soteErr.ErrCode != nil {

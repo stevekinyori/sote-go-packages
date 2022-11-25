@@ -1,4 +1,4 @@
-package packages
+package tests
 
 /*
 General description of the purpose of the go file.

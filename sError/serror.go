@@ -55,6 +55,19 @@ const (
 	INDENT             = "  "
 )
 
+// error codes
+const (
+	ErrDuplicateItems        = 100000
+	ErrContextCancelled      = 101020
+	ErrGenericError          = 199999
+	ErrItemNotFound          = 109999
+	ErrSQLError              = 200999
+	ErrInvalidSQLDataType    = 208010
+	ErrInvalidParameterCount = 203060
+	ErrInvalidParameterType  = 200200
+	ErrInvalidParameterValue = 200250
+)
+
 var (
 	EmptyMap = make(map[string]string)
 	/*
@@ -71,6 +84,7 @@ var (
 		100500: {100500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, "", nil},
 		100600: {100600, PROCESSERROR, 1, "Item is not active", ": You are making changes to an inactive %v", EmptyMap, "", nil},
 		101010: {101010, PROCESSERROR, 1, "Service Name", ": %v timed out", EmptyMap, "", nil},
+		101020: {101020, PROCESSERROR, 1, "None", ": context canceled", EmptyMap, "", nil},
 		109999: {109999, USERERROR, 1, "Item name", ": %v was/were not found", EmptyMap, "", nil},
 		199999: {199999, GENERALERROR, 1, "Error Details", ": An error has occurred that is not expected. See Log! %v", EmptyMap, "", nil},
 		// ======================================================================
@@ -145,7 +159,7 @@ var (
 			EmptyMap, "", nil},
 		207200: {207200, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v", EmptyMap, "", nil},
 		208000: {208000, CONTENTERROR, 0, "None", ": Column must have a non-null value. Details: ", EmptyMap, "", nil},
-		208010: {208010, CONTENTERROR, 0, "None", ": Column data type is not support or invalid. Details: ", EmptyMap, "", nil},
+		208010: {208010, CONTENTERROR, 0, "None", ": Column data type is not supported", EmptyMap, "", nil},
 		208110: {208110, CONTENTERROR, 2, "Thing being changed, System Id for the thing",
 			": No update is needed. No fields where changed for %v with id %v", EmptyMap, "", nil},
 		208120: {208120, CONTENTERROR, 3, "JSON array name, Thing being changed, System Id for the thing", ": The %v was empty for %v with id %v",

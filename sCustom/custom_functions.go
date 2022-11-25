@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/nats-io/nats.go"
 
@@ -90,6 +91,87 @@ func JSONMarshal(v interface{}) (buffer []byte, soteErr sError.SoteError) {
 		sLogger.Info(err.Error())
 		soteErr = sError.GetSError(207110, sError.BuildParams([]string{fmt.Sprint(v)}), sError.EmptyMap)
 	}
+
+	return
+}
+
+// CallUserFunc calls Exportable Methods using their method Name. This does not work on functions
+func CallUserFunc(funcName string, receiver any, args ...any) (response []reflect.Value, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if method := reflect.ValueOf(receiver).MethodByName(funcName); method.IsValid() {
+		var (
+			expectedParams = method.Type().NumIn()
+			providedParams = len(args)
+			methodType     = method.Type()
+		)
+		if expectedParams != providedParams && !methodType.IsVariadic() {
+			soteErr = sError.GetSError(sError.ErrInvalidParameterCount,
+				sError.BuildParams([]string{fmt.Sprint(providedParams), fmt.Sprint(expectedParams)}), nil)
+			return
+		}
+
+		inputs := make([]reflect.Value, providedParams)
+		for i := range args {
+			var (
+				inType   reflect.Type
+				argValue reflect.Value
+			)
+			if methodType.IsVariadic() && i >= expectedParams-1 {
+				inType = methodType.In(expectedParams - 1).Elem()
+			} else {
+				inType = methodType.In(i)
+			}
+
+			if argValue = reflect.ValueOf(args[i]); !argValue.IsValid() {
+				soteErr = sError.GetSError(sError.ErrInvalidParameterType,
+					sError.BuildParams([]string{argValue.String(), fmt.Sprint(inType)}), nil)
+				return
+			}
+
+			argValueType := argValue.Type()
+			switch true {
+			case inType.String() == "context.Context" && argValueType.String() == "*context.emptyCtx":
+				// skip this check
+			case argValue.Type() != inType:
+				// (inType.String() != "context.Context")
+				soteErr = sError.GetSError(sError.ErrInvalidParameterType,
+					sError.BuildParams([]string{argValue.String(), fmt.Sprint(inType)}), nil)
+				return
+			}
+
+			inputs[i] = argValue
+		}
+
+		response = method.Call(inputs)
+		return
+	}
+
+	var errMsg string
+	if receiver == nil {
+		errMsg = fmt.Sprintf("Function %v", funcName)
+	} else {
+		errMsg = fmt.Sprintf("Method (%v)%v", reflect.ValueOf(receiver).Type(), funcName)
+	}
+
+	soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{errMsg}), nil)
+
+	return
+}
+
+func UserFuncExists(funcName string, receiver any) (soteErr sError.SoteError) {
+	if method := reflect.ValueOf(receiver).MethodByName(funcName); method.IsValid() {
+		return
+	}
+
+	var errMsg string
+	if receiver == nil {
+		errMsg = fmt.Sprintf("Function %v", funcName)
+	} else {
+		errMsg = fmt.Sprintf("Method (%v)%v", reflect.ValueOf(receiver).Type(), funcName)
+	}
+
+	soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{errMsg}), nil)
 
 	return
 }

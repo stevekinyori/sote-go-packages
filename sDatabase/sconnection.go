@@ -12,6 +12,7 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"gitlab.com/soteapps/packages/v2022/sConfigParams"
 	"gitlab.com/soteapps/packages/v2022/sError"
 	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
@@ -46,19 +47,41 @@ type STransaction pgx.Tx
 type SRows pgx.Rows
 type SRow pgx.Row
 
-/*
-This will create a connection to a database and populate ConnInfo
+// New creates a new database connection based on environment
+func New(ctx context.Context, environment string) (dbConnInfo ConnInfo, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
 
-  dbName   Name of the Postgres database
-  user     User that connection will use to authenticate
-  password Users password for authentication
-  host     Internet DNS or IP address of the server running the instance of Postgres
-  sslMode  Type of encryption used for the connection (https://www.postgresql.org/docs/12/libpq-ssl.html for version 12)
-  port     Interface the connection communicates with Postgres
-  timeout  Number of seconds a request must complete (3 seconds is normal setting)
+	var (
+		dbConfig *sConfigParams.Database
+	)
 
-  DBContext is also set to context.Background() an empty context.
-*/
+	if dbConfig, soteErr = sConfigParams.GetAWSParams(ctx, sConfigParams.API, environment); soteErr.ErrCode != nil {
+		return
+	}
+
+	if dbConnInfo, soteErr = GetConnection(dbConfig.Name, dbConfig.User, dbConfig.Password, dbConfig.Host,
+		dbConfig.SSLMode, dbConfig.Port, 3); soteErr.ErrCode != nil {
+		return
+	}
+
+	if soteErr = VerifyConnection(dbConnInfo); soteErr.ErrCode != nil {
+		return
+	}
+
+	return
+}
+
+// GetConnection This will create a connection to a database and populate ConnInfo
+//
+//  dbName   - Name of the Postgres database
+//  user     - User that connection will use to authenticate
+//  password - Users password for authentication
+//  host     - Internet DNS or IP address of the server running the instance of Postgres
+//  sslMode  - Type of encryption used for the connection (https://www.postgresql.org/docs/12/libpq-ssl.html for version 12)
+//  port     - Interface the connection communicates with Postgres
+//  timeout  - Number of seconds a request must complete (3 seconds is normal setting)
+//
+//  DBContext is also set to context.Background() an empty context./*
 func GetConnection(dbName, user, password, host, sslMode string, port, timeout int) (dbConnInfo ConnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -113,7 +136,7 @@ func setConnectionValues(dbName, user, password, host, sslMode string, port, tim
 	return
 }
 
-// This will convert the connection values used to connect to the Sote database into
+// ToJSONString This will convert the connection values used to connect to the Sote database into
 // a JSON string.
 func ToJSONString(DSConnValues ConnValues) (jsonString string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -129,7 +152,7 @@ func ToJSONString(DSConnValues ConnValues) (jsonString string, soteErr sError.So
 	return
 }
 
-// Verify that the pointer to the database connection is active.
+// VerifyConnection Verify that the pointer to the database connection is active.
 func VerifyConnection(tConnInfo ConnInfo) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 

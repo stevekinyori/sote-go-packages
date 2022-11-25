@@ -1,4 +1,4 @@
-package packages
+package tests
 
 import (
 	"context"
@@ -247,7 +247,7 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 // 	tPtr.Fail()
 // }
 //
-// var columnInfo []sDatabase.SColumnInfo
+// var columnInfo []sDatabase.ColumnInfo
 // if columnInfo, soteErr = sDatabase.GetColumnInfo(SOTETESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != nil {
 // 	tPtr.Errorf("GetTableList Failed: Expected error code to be nil")
 // 	tPtr.Fail()
@@ -257,7 +257,7 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 // 	tPtr.Errorf("GetColumnInfo Failed: Expected at least one column's info to be returned")
 // 	tPtr.Fail()
 // } else {
-// 	if columnInfo[0].ColName == "" {
+// 	if columnInfo[0].Name == "" {
 // 		tPtr.Errorf("GetColumnInfo Failed: Expected the column name to be returned")
 // 		tPtr.Fail()
 // 	}
