@@ -34,49 +34,170 @@ This is an optional setup. It's only needed when you want to run the application
 
 ## sMigration
 
-#### SETUP
+#### INIT
 
-This setups up the necessary files needed for migration or seeding. Run one of these commands
+This initializes the necessary files needed for migration or seeding. Run one of these commands
+
+- Seeding
 
 ```go 
-go run main.go -e development -s seed -a setup
+go run main.go -e development -s seed -a init -d '/root/Go/src/business-services-path'
 ```
 
 or
 
 ```shell
-./build/mac/packages -e development -s seed -a setup
+./build/mac/packages -e development -s seed -a init -d '/root/Go/src/business-services-path'
 ```
+
+- Migration
+
+```go 
+go run main.go -e development -s migration -a init -d '/root/Go/src/business-services-path'
+```
+
+or
+
+```shell
+./build/mac/packages -e development -s migration -a init -d '/root/Go/src/business-services-path'
+```
+
+#### SETUP
+
+This Copies the necessary files from your specified director (-d). Run one of these commands
+
+- Seeding
+
+```go 
+go run main.go -e development -s seed -a setup -d '/root/Go/src/business-services-path'
+```
+
+or
+
+```shell
+./build/mac/packages -e development -s seed -a setup -d '/root/Go/src/business-services-path'
+```
+
+- Migration
 
 ```go 
 go run main.go -e development -s migration -a setup
 ```
 
+or
+
 ```shell
-./build/mac/packages -e development -s migration -a setup
+./build/mac/packages -e development -s migration -a setup -d '/root/Go/src/business-services-path'
 ```
 
 #### RUN
 
 This runs either migration or seeding. Run the necessary command
 
+- Seeding
+
 ```go 
-go run main.go -e development -s seed -a run
+go run main.go -e development -s seed -a run -d '/root/Go/src/business-services-path'
 ```
 
 or
 
 ```shell
-./build/mac/packages -e development -s seed -a run
+./build/mac/packages -e development -s seed -a run -d '/root/Go/src/business-services-path'
 ```
 
+- Migration
+
 ```go 
-go run main.go -e development -s migration -a run 
+go run main.go -e development -s migration -a run -d '/root/Go/src/business-services-path'
 ```
 
 or
 
 ```shell
-./build/mac/packages -e development -s migration -a run 
+./build/mac/packages -e development -s migration -a run -d '/root/Go/src/business-services-path'
 ```
-   
+
+#### RUN
+
+This runs either migration or seeding. Run the necessary command
+
+- Seeding
+
+```go 
+go run main.go -e development -s seed -a run -d '/root/Go/src/business-services-path'
+```
+
+or
+
+```shell
+./build/mac/packages -e development -s seed -a run -d '/root/Go/src/business-services-path'
+```
+
+- Migration
+
+```go 
+go run main.go -e development -s migration -a run -d '/root/Go/src/business-services-path'
+```
+
+or
+
+```shell
+./build/mac/packages -e development -s migration -a run -d '/root/Go/src/business-services-path'
+```
+
+#### RUN
+
+This runs either migration or seeding. Run the necessary command
+
+- Seeding
+
+```go 
+go run main.go -e development -s seed -a run -d '/root/Go/src/business-services-path'
+```
+
+or
+
+```shell
+./build/mac/packages -e development -s seed -a run -d '/root/Go/src/business-services-path'
+```
+
+- Migration
+
+```go 
+go run main.go -e development -s migration -a run -d '/root/Go/src/business-services-path'
+```
+
+or
+
+```shell
+./build/mac/packages -e development -s migration -a run -d '/root/Go/src/business-services-path'
+```
+
+#### CLEANUP
+
+This runs either migration or seeding. Run the necessary command
+
+- Seeding
+
+```go 
+go run main.go -e development -s seed -a cleanup -d '/root/Go/src/business-services-path'
+```
+
+or
+
+```shell
+./build/mac/packages -e development -s seed -a cleanup -d '/root/Go/src/business-services-path'
+```
+
+- Migration
+
+```go 
+go run main.go -e development -s migration -a cleanup -d '/root/Go/src/business-services-path'
+```
+
+or
+
+```shell
+./build/mac/packages -e development -s migration -a cleanup -d '/root/Go/src/business-services-path'
+```

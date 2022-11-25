@@ -282,7 +282,10 @@ func cleanup(setupType string, stackSkips int, setupDir string) (soteErr sError.
 	}
 
 	for _, file := range files {
-		_ = os.Remove(packagesRootDir + migrationSubDir + "/" + file.Name())
+		re := regexp.MustCompile(`(?i)^([0-9]{14})(_*[A-Z]+[A-Z0-9_]*)(\.go)$`)
+		if len(re.FindStringSubmatch(file.Name())) == 4 {
+			_ = os.Remove(packagesRootDir + migrationSubDir + "/" + file.Name())
+		}
 	}
 
 	return
@@ -608,7 +611,7 @@ func (config Config) removeFiles(ctx context.Context, migrationFiles []Migration
 		}
 
 		if file.FileType == goFileType {
-			os.Remove(packagesRootDir + mSubDir + file.FileName)
+			_ = os.Remove(packagesRootDir + mSubDir + file.FileName)
 		}
 	}
 
