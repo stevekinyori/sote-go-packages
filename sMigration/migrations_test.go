@@ -35,4 +35,10 @@ func TestMigration(tPtr *testing.T) {
 			tPtr.Errorf("%v Failed: Expected error code %v got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
 	})
+
+	tPtr.Run("test run", func(tPtr *testing.T) {
+		if soteErr = CopyDir("/Users/mary/Go/src/list-of-values/db", "/Users/mary/Go/src/packages/db"); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code %v got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
 }

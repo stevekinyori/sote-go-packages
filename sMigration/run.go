@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -60,28 +61,31 @@ type MigrationQueryInfo struct {
 	EndMigrationMsg         string // seed
 }
 
+var (
+	packagesRootDir string
+)
+
 func init() {
 	sLogger.SetLogMessagePrefix(LOGMESSAGEPREFIX)
+	_, pFile, _, _ := runtime.Caller(0)
+	packagesRootDir = filepath.Dir(path.Join(path.Dir(pFile)))
 }
 
 // New sets up the migration and seeding info .
 // setupType either sMigration.SeedingType or sMigration.MigrationType
 // if setupDir is empty, then it takes the directory of the calling file
-func New(ctx context.Context, environment string, setupType string, stackSkips int, setupDir string) (mDir string, dbConnInfo sDatabase.ConnInfo,
-	soteErr sError.SoteError) {
+func New(ctx context.Context, environment string, setupType string, stackSkips int, setupDir string) (mDir string, mSubDir string,
+	dbConnInfo sDatabase.ConnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
-		mSubDir string
-		err     error
-		table   = sDatabase.TableInfo{
+		table = sDatabase.TableInfo{
 			Name: MigrationTableName,
 			PrimaryKey: &sDatabase.PrimaryKeyInfo{
 				Columns: []string{"version"},
 			},
 			Description: "Contains Migration and Seeding Logs for sDatabase package",
 		}
-
 		columns = []sDatabase.ColumnInfo{
 			{
 				Name:        "version",
@@ -133,23 +137,11 @@ func New(ctx context.Context, environment string, setupType string, stackSkips i
 		setupDir = filepath.Dir(file)
 	}
 
-	mDir = setupDir + mSubDir
-	if err = os.MkdirAll(setupDir+MigrationsSubDir, os.ModePerm); err == nil { // migration dir
-		_ = os.WriteFile(setupDir+MigrationsSubDir+"/init.go",
-			[]byte(fmt.Sprintf("package %v\n", MigrationsPackageName)+
-				"import \"gitlab.com/soteapps/packages/v2022/sDatabase\"\n"+
-				"type Config struct{DBConnInfo sDatabase.ConnInfo}"),
-			os.ModePerm)
-		_ = exec.Command("go", "fmt", setupDir+MigrationsSubDir+"/init.go").Run()
-	}
-	if err = os.MkdirAll(setupDir+SeedsSubDir, os.ModePerm); err == nil { // seeding dir
-		_ = os.WriteFile(setupDir+SeedsSubDir+"/init.go",
-			[]byte(fmt.Sprintf("package %v\n", SeedsPackageName)+
-				"import \"gitlab.com/soteapps/packages/v2022/sDatabase\"\n"+
-				"type Config struct{DBConnInfo sDatabase.ConnInfo}"), os.ModePerm)
-		_ = exec.Command("go", "fmt", setupDir+SeedsSubDir+"/init.go").Run()
+	if soteErr = createInitFiles(setupDir); soteErr.ErrCode != nil {
+		return
 	}
 
+	mDir = setupDir + mSubDir
 	return
 }
 
@@ -160,32 +152,37 @@ func Run(ctx context.Context, environment string, service string, action string,
 	sLogger.DebugMethod()
 
 	var (
-		mDir     string
-		isAction bool
+		mDir        string
+		isActionErr bool
 	)
 	switch service {
 	case MigrationType:
-		if action == "setup" {
-			if mDir, _, soteErr = New(ctx, environment, MigrationType, internalDefaultStackTraceSkips, setupDir); soteErr.ErrCode == nil {
+		if action == "init" { // initializes the migration configurations
+			if mDir, _, _, soteErr = New(ctx, environment, MigrationType, internalDefaultStackTraceSkips, setupDir); soteErr.ErrCode == nil {
 				sLogger.Info(mDir)
 			}
-
-		} else if action == "run" {
+		} else if action == "setup" { // copies the necessary migration files. Call this before run
+			soteErr = setup(ctx, environment, MigrationType, internalDefaultStackTraceSkips, setupDir)
+		} else if action == "run" { // runs the migration process
 			soteErr = Migrate(ctx, environment, setupDir)
+		} else if action == "cleanup" { // remove migration files copied during setup
+			soteErr = cleanup(MigrationType, internalDefaultStackTraceSkips, setupDir)
 		} else {
-			isAction = true
+			isActionErr = true
 		}
-
 	case SeedingAction:
-		if action == "setup" {
-			if mDir, _, soteErr = New(ctx, environment, SeedingType, internalDefaultStackTraceSkips, setupDir); soteErr.ErrCode == nil {
+		if action == "init" { // initializes the seeding configurations
+			if mDir, _, _, soteErr = New(ctx, environment, SeedingType, internalDefaultStackTraceSkips, setupDir); soteErr.ErrCode == nil {
 				sLogger.Info(mDir)
 			}
-
-		} else if action == "run" {
+		} else if action == "setup" { // copies the necessary seeding files. Call this before run
+			soteErr = setup(ctx, environment, SeedingType, internalDefaultStackTraceSkips, setupDir)
+		} else if action == "run" { // runs the seeding process
 			soteErr = Seed(ctx, environment, setupDir)
+		} else if action == "cleanup" { // remove seeding files copied during setup
+			soteErr = cleanup(SeedingType, internalDefaultStackTraceSkips, setupDir)
 		} else {
-			isAction = true
+			isActionErr = true
 		}
 	default:
 		soteErr = sError.GetSError(sError.ErrInvalidParameterValue,
@@ -193,7 +190,7 @@ func Run(ctx context.Context, environment string, service string, action string,
 			sError.EmptyMap)
 	}
 
-	if isAction {
+	if isActionErr {
 		soteErr = sError.GetSError(sError.ErrInvalidParameterValue, sError.BuildParams([]string{"action", action, "setup|run"}), sError.EmptyMap)
 	}
 
@@ -203,7 +200,7 @@ func Run(ctx context.Context, environment string, service string, action string,
 //  By default, this function migrates|seeds all .go & .sql files withing MigrationsSubDir | SeedsSubDir folder
 // setupType either sMigration.SeedingType or sMigration.MigrationType
 // if setupDir is empty, then it takes the directory of the calling file
-func migrationAndSeeding(ctx context.Context, environment string, setupType string, stackSkips int, setupDir string) (soteErr sError.SoteError) {
+func run(ctx context.Context, environment string, setupType string, stackSkips int, setupDir string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -213,7 +210,7 @@ func migrationAndSeeding(ctx context.Context, environment string, setupType stri
 		dbConnInfo     = sDatabase.ConnInfo{}
 	)
 
-	if migrationDir, dbConnInfo, soteErr = New(ctx, environment, setupType, stackSkips, setupDir); soteErr.ErrCode != nil {
+	if migrationDir, _, dbConnInfo, soteErr = New(ctx, environment, setupType, stackSkips, setupDir); soteErr.ErrCode != nil {
 		return
 	}
 
@@ -222,7 +219,71 @@ func migrationAndSeeding(ctx context.Context, environment string, setupType stri
 		return
 	}
 
-	soteErr = config.run(ctx, migrationFiles, migrationQInfo)
+	soteErr = config.migrationAndSeeding(ctx, migrationFiles, migrationQInfo)
+
+	return
+}
+
+// setups the necessary files
+func setup(ctx context.Context, environment string, setupType string, stackSkips int, setupDir string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		migrationDir    string
+		migrationSubDir string
+		migrationFiles  = make([]MigrationFiles, 0)
+		migrationQInfo  = &MigrationQueryInfo{}
+		dbConnInfo      = sDatabase.ConnInfo{}
+	)
+
+	if migrationDir, migrationSubDir, dbConnInfo, soteErr = New(ctx, environment, setupType, stackSkips, setupDir); soteErr.ErrCode != nil {
+		return
+	}
+
+	config := Config{DBConnInfo: dbConnInfo}
+	if migrationFiles, migrationQInfo, soteErr = config.getMigrationAndSeedsFiles(migrationDir, setupType); soteErr.ErrCode != nil {
+		return
+	}
+
+	soteErr = config.copyFiles(ctx, migrationFiles, migrationQInfo, migrationSubDir)
+
+	return
+}
+
+func cleanup(setupType string, stackSkips int, setupDir string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		migrationSubDir string
+		files           []fs.FileInfo
+		err             error
+	)
+
+	switch setupType {
+	case SeedingType:
+		migrationSubDir = SeedsSubDir
+	case MigrationType:
+		migrationSubDir = MigrationsSubDir
+	default:
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{"invalid setup type"}), sError.EmptyMap)
+		return
+	}
+
+	// set up the migration directory
+	if setupDir == DefaultSetupDir {
+		_, file, _, _ := runtime.Caller(stackSkips)
+		sLogger.Info(fmt.Sprintf("Caller File %v", file))
+		setupDir = filepath.Dir(file)
+	}
+
+	if files, err = ioutil.ReadDir(setupDir + migrationSubDir); err != nil {
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+		return
+	}
+
+	for _, file := range files {
+		_ = os.Remove(packagesRootDir + migrationSubDir + "/" + file.Name())
+	}
 
 	return
 }
@@ -281,17 +342,11 @@ func (config Config) getMigrationAndSeedsFiles(migrationDir string, setupType st
 
 			switch setupType {
 			case SeedingType:
-				if mFile.FileType == goFileType { // check if the function for the go file exists
-					soteErr = sCustom.UserFuncExists(mFile.MigrationName, seeds.Config{DBConnInfo: config.DBConnInfo})
-				}
 				migrationQInfo.EndMigrationMsg = "seeded"
 				migrationQInfo.StartMigrationMsg = "seeding"
 				migrationQInfo.SetupType = SeedingType
 				migrationQInfo.MigrationAction = SeedingAction
 			case MigrationType:
-				if mFile.FileType == goFileType { // check if the function for the go file exists
-					soteErr = sCustom.UserFuncExists(mFile.MigrationName, migrations.Config{DBConnInfo: config.DBConnInfo})
-				}
 				migrationQInfo.EndMigrationMsg = "migrated"
 				migrationQInfo.StartMigrationMsg = "migrating"
 				migrationQInfo.SetupType = MigrationType
@@ -321,7 +376,7 @@ func (config Config) getMigrationAndSeedsFiles(migrationDir string, setupType st
 }
 
 // runs all the migrations and seeds files
-func (config Config) run(ctx context.Context, migrationFiles []MigrationFiles,
+func (config Config) migrationAndSeeding(ctx context.Context, migrationFiles []MigrationFiles,
 	migrationQInfo *MigrationQueryInfo) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -385,8 +440,8 @@ func (config Config) run(ctx context.Context, migrationFiles []MigrationFiles,
 			if file.FileType == goFileType {
 				switch migrationQInfo.SetupType {
 				case SeedingType:
-					resp, soteErr = sCustom.CallUserFunc(file.MigrationName, seeds.Config{DBConnInfo: config.DBConnInfo},
-						ctx)
+					resp, soteErr = sCustom.CallUserFunc(file.MigrationName, seeds.Config{DBConnInfo: config.DBConnInfo}, ctx)
+
 				case MigrationType:
 					resp, soteErr = sCustom.CallUserFunc(file.MigrationName, migrations.Config{DBConnInfo: config.DBConnInfo},
 						ctx)
@@ -430,6 +485,189 @@ func (config Config) run(ctx context.Context, migrationFiles []MigrationFiles,
 	sLogger.Info(fmt.Sprintf("All %v Done. Took %v", migrationQInfo.SetupType, time.Since(mStart)))
 
 	// print done message
+
+	return
+}
+
+// copies the necessary files
+func (config Config) copyFiles(ctx context.Context, migrationFiles []MigrationFiles, migrationQInfo *MigrationQueryInfo,
+	mSubDir string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	sort.Slice(migrationFiles, func(i, j int) bool {
+		return migrationFiles[i].MigrationVersion < migrationFiles[j].MigrationVersion
+	}) // sort the files in ascending order
+	var (
+		tRows              sDatabase.SRows
+		err                error
+		existingMigrations = make([]MigrationFiles, 0)
+	)
+
+	qStmt := fmt.Sprintf("SELECT version::TEXT AS version,migration_name FROM %v WHERE version IN (%v)", MigrationTableName,
+		migrationQInfo.VersionPreparedSubQuery)
+	tRows, soteErr = config.DBConnInfo.QueryDBStmt(ctx, qStmt, migrationQInfo.SetupType, migrationQInfo.Params...)
+	if soteErr.ErrCode != nil {
+		return
+	}
+
+	defer tRows.Close()
+	for tRows.Next() {
+		existingMigration := new(MigrationFiles)
+		if err = tRows.Scan(
+			&existingMigration.MigrationVersion,
+			&existingMigration.MigrationName,
+		); err != nil {
+			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+			return
+		}
+
+		existingMigrations = append(existingMigrations, *existingMigration)
+	}
+
+	for _, file := range migrationFiles {
+		if len(existingMigrations) > 0 {
+			if idSkip := slices.IndexFunc(existingMigrations, func(m MigrationFiles) bool {
+				// checks if the exact migration file was already migrated in a previous migration
+				return m.MigrationVersion == file.MigrationVersion && m.MigrationName == file.MigrationName
+			}); idSkip != -1 {
+				continue // skip this migration
+			}
+
+			if idDup := slices.IndexFunc(existingMigrations, func(m MigrationFiles) bool {
+				// checks if we have a different migration with similar version was already migrated in a previous migration
+				return m.MigrationVersion == file.MigrationVersion
+			}); idDup != -1 {
+				sLogger.Info(fmt.Sprintf("Skipping %v - a migration with a similar version(%v) was previously migrated",
+					file.FilePath, file.MigrationVersion))
+				continue // skip this migration
+			}
+		}
+
+		if file.FileType == goFileType {
+			if soteErr = sCustom.CopyFile(file.FilePath, packagesRootDir+mSubDir+"/"+file.FileName); soteErr.ErrCode != nil {
+				log.Fatalln(soteErr.FmtErrMsg)
+			}
+		}
+	}
+
+	return
+}
+
+// removes the necessary files
+func (config Config) removeFiles(ctx context.Context, migrationFiles []MigrationFiles, migrationQInfo *MigrationQueryInfo,
+	mSubDir string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	sort.Slice(migrationFiles, func(i, j int) bool {
+		return migrationFiles[i].MigrationVersion < migrationFiles[j].MigrationVersion
+	}) // sort the files in ascending order
+	var (
+		tRows              sDatabase.SRows
+		err                error
+		existingMigrations = make([]MigrationFiles, 0)
+	)
+
+	qStmt := fmt.Sprintf("SELECT version::TEXT AS version,migration_name FROM %v WHERE version IN (%v)", MigrationTableName,
+		migrationQInfo.VersionPreparedSubQuery)
+	tRows, soteErr = config.DBConnInfo.QueryDBStmt(ctx, qStmt, migrationQInfo.SetupType, migrationQInfo.Params...)
+	if soteErr.ErrCode != nil {
+		return
+	}
+
+	defer tRows.Close()
+	for tRows.Next() {
+		existingMigration := new(MigrationFiles)
+		if err = tRows.Scan(
+			&existingMigration.MigrationVersion,
+			&existingMigration.MigrationName,
+		); err != nil {
+			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+			return
+		}
+
+		existingMigrations = append(existingMigrations, *existingMigration)
+	}
+
+	for _, file := range migrationFiles {
+		if len(existingMigrations) > 0 {
+			if idSkip := slices.IndexFunc(existingMigrations, func(m MigrationFiles) bool {
+				// checks if the exact migration file was already migrated in a previous migration
+				return m.MigrationVersion == file.MigrationVersion && m.MigrationName == file.MigrationName
+			}); idSkip != -1 {
+				continue // skip this migration
+			}
+
+			if idDup := slices.IndexFunc(existingMigrations, func(m MigrationFiles) bool {
+				// checks if we have a different migration with similar version was already migrated in a previous migration
+				return m.MigrationVersion == file.MigrationVersion
+			}); idDup != -1 {
+				sLogger.Info(fmt.Sprintf("Skipping %v - a migration with a similar version(%v) was previously migrated",
+					file.FilePath, file.MigrationVersion))
+				continue // skip this migration
+			}
+		}
+
+		if file.FileType == goFileType {
+			os.Remove(packagesRootDir + mSubDir + file.FileName)
+		}
+	}
+
+	return
+}
+
+// create the necessary configuration files
+func createInitFiles(setupDir string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		err           error
+		migrationInit = []byte(fmt.Sprintf("package %v\n", MigrationsPackageName) +
+			"import \"gitlab.com/soteapps/packages/v2022/sDatabase\"\n" +
+			"type Config struct{DBConnInfo sDatabase.ConnInfo}")
+		seedsInit = []byte(fmt.Sprintf("package %v\n", SeedsPackageName) +
+			"import \"gitlab.com/soteapps/packages/v2022/sDatabase\"\n" +
+			"type Config struct{DBConnInfo sDatabase.ConnInfo}")
+	)
+
+	// create migrations config files for the setup directory
+	if err = os.MkdirAll(setupDir+MigrationsSubDir, os.ModePerm); err != nil { // migration dir
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+		return
+	}
+
+	_ = os.WriteFile(setupDir+MigrationsSubDir+"/init.go", migrationInit, os.ModePerm)
+	_ = exec.Command("go", "fmt", setupDir+MigrationsSubDir+"/init.go").Run()
+
+	// create migrations config files for the packages root directory
+	if setupDir+MigrationsSubDir != packagesRootDir+MigrationsSubDir {
+		if err = os.MkdirAll(packagesRootDir+MigrationsSubDir, os.ModePerm); err != nil { // migration dir
+			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+			return
+		}
+		_ = os.WriteFile(packagesRootDir+MigrationsSubDir+"/init.go", migrationInit, os.ModePerm)
+		_ = exec.Command("go", "fmt", packagesRootDir+MigrationsSubDir+"/init.go").Run()
+	}
+
+	// create seeds config files for setup directory
+	if err = os.MkdirAll(setupDir+SeedsSubDir, os.ModePerm); err != nil { // seeding dir
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+		return
+	}
+
+	_ = os.WriteFile(setupDir+SeedsSubDir+"/init.go", seedsInit, os.ModePerm)
+	_ = exec.Command("go", "fmt", setupDir+SeedsSubDir+"/init.go").Run()
+
+	// create seeds config files for the packages root directory
+	if setupDir+SeedsSubDir != packagesRootDir+SeedsSubDir {
+		if err = os.MkdirAll(packagesRootDir+SeedsSubDir, os.ModePerm); err != nil { // seeding dir
+			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+			return
+		}
+
+		_ = os.WriteFile(packagesRootDir+SeedsSubDir+"/init.go",
+			seedsInit, os.ModePerm)
+		_ = exec.Command("go", "fmt", packagesRootDir+SeedsSubDir+"/init.go").Run()
+	}
 
 	return
 }

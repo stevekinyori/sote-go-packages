@@ -55,7 +55,7 @@ func init() {
 	flaggy.String(&service, "s", "service",
 		"This defines the service you are calling .Can be one of these [migration|seed]")
 	flaggy.String(&action, "a", "action",
-		"This defines the action to perform on the set service .Can be one of these [setup|run]")
+		"This defines the action to perform on the set service .Can be one of these [init|setup|run|cleanup]")
 	flaggy.String(&setupDir, "d", "dir",
 		"This defines the directory where the installation files are to be set. Defaults to current directory path of this file")
 	// Set the version
