@@ -10,7 +10,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.33.1
 	github.com/ddliu/go-httpclient v0.6.9
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
-	github.com/integrii/flaggy v1.5.2
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgproto3/v2 v2.3.1
 	github.com/jackc/pgx/v4 v4.17.2
