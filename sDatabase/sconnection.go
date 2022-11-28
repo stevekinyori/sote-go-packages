@@ -8,6 +8,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
@@ -93,10 +95,20 @@ func GetConnection(dbName, dbSchema, user, password, host, sslMode string, port,
 
 		return
 	} else {
-		var err error
+		var (
+			err    error
+			DBPort int
+		)
+
+		if tDbPort, ok := os.LookupEnv("DB_PORT"); ok {
+			if DBPort, err = strconv.Atoi(tDbPort); err == nil {
+				dbConnInfo.DSConnValues.Port = DBPort
+			}
+		}
+
 		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.DSConnValues.DBName, dbConnInfo.DSConnValues.Schema, dbConnInfo.DSConnValues.User,
-			dbConnInfo.DSConnValues.Password,
-			dbConnInfo.DSConnValues.Host, dbConnInfo.DSConnValues.Port, dbConnInfo.DSConnValues.Timeout, dbConnInfo.DSConnValues.SSLMode)
+			dbConnInfo.DSConnValues.Password, dbConnInfo.DSConnValues.Host, dbConnInfo.DSConnValues.Port, dbConnInfo.DSConnValues.Timeout,
+			dbConnInfo.DSConnValues.SSLMode)
 		if dbConnInfo.DBPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString); err != nil {
 			if strings.Contains(err.Error(), "dial") {
 				soteErr = sError.GetSError(209299, nil, sError.EmptyMap)
@@ -118,6 +130,7 @@ func GetConnection(dbName, dbSchema, user, password, host, sslMode string, port,
 
 		dbConnInfo.DBContext = context.Background()
 	}
+
 	return
 }
 
