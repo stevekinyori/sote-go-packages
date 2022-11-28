@@ -21,19 +21,19 @@ func init() {
 }
 
 func TestSetConnectionValue(tPtr *testing.T) {
-	_, soteErr := setConnectionValues("dbName", "User", "Password", "Host", "INVALID", 1, 1)
+	_, soteErr := setConnectionValues("dbName", "Schema", "User", "Password", "Host", "INVALID", 1, 1)
 	if soteErr.ErrCode != 209220 {
 		tPtr.Errorf("setConnectionValues Failed: Error code is not for an invalid sslMode.")
 		tPtr.Fail()
 	}
-	_, soteErr = setConnectionValues("dbName", "User", "Password", "Host", "disable", 1, 1)
+	_, soteErr = setConnectionValues("dbName", "Schema", "User", "Password", "Host", "disable", 1, 1)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
 		tPtr.Fail()
 	}
 }
 func TestSetConnectionValues(tPtr *testing.T) {
-	_, soteErr := setConnectionValues("dbName", "User", "Password", "Host", "disable", 1, 1)
+	_, soteErr := setConnectionValues("dbName", "Schema", "User", "Password", "Host", "disable", 1, 1)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
 		tPtr.Fail()
@@ -43,43 +43,79 @@ func TestVerifyConnection(tPtr *testing.T) {
 	var (
 		tConnInfo ConnInfo
 		config    = &sConfigParams.Database{}
+		soteErr   sError.SoteError
 	)
-	soteErr := VerifyConnection(tConnInfo)
-	if soteErr.ErrCode != 209299 {
-		tPtr.Errorf("VerifyConnection Failed: Expected 209299 error code.")
-		tPtr.Fail()
-	}
 
 	tPtr.Run("test", func(tPtr *testing.T) {
-		if config, soteErr = sConfigParams.GetAWSParams(parentCtx, sConfigParams.API, sConfigParams.DEMO); soteErr.ErrCode != nil {
-			tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
-			tPtr.Fatal()
+		if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode != 209299 {
+			tPtr.Errorf("VerifyConnection Failed: Expected 209299 error code.")
+			tPtr.Fail()
 		}
 	})
 
-	if config, soteErr = sConfigParams.GetAWSParams(parentCtx, sConfigParams.API, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
-		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
-		tPtr.Fatal()
-	}
+	tPtr.Run("valid connection", func(tPtr *testing.T) {
+		if config, soteErr = sConfigParams.GetAWSParams(parentCtx, sConfigParams.API, sConfigParams.DEVELOPMENT); soteErr.ErrCode != nil {
+			tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
+			tPtr.Fatal()
+		}
 
-	tConnInfo, soteErr = GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
-	if soteErr.ErrCode != nil {
-		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
-		tPtr.Fail()
-	}
+		tConnInfo, soteErr = GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
+		if soteErr.ErrCode != nil {
+			tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
+			tPtr.Fail()
+		}
 
-	soteErr = VerifyConnection(tConnInfo)
-	if soteErr.ErrCode != nil {
-		tPtr.Errorf("VerifyConnection Failed: Expected a nil error code.")
-		tPtr.Fail()
-	}
+		soteErr = VerifyConnection(tConnInfo)
+		if soteErr.ErrCode != nil {
+			tPtr.Errorf("VerifyConnection Failed: Expected a nil error code.")
+			tPtr.Fail()
+		}
 
-	// This will test the condition that no database is available to connect
-	tConnInfo, soteErr = GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode, 65000, 3)
-	if soteErr.ErrCode != 209299 {
-		tPtr.Errorf("setConnectionValues Failed: Expected 209299 error code.")
-		tPtr.Fail()
-	}
+		testConnInfo.DropTable(parentCtx, "listofvalues", MigrationType)
+		tableInfo := TableInfo{
+			Name: "listofvalues",
+			PrimaryKey: &PrimaryKeyInfo{
+				Columns: []string{"sote_student_test_id"},
+				AutoIncrementInfo: &AutoIncrementInfo{
+					IsAutoIncrement:       true,
+					AutoIncrementInterval: 3,
+				},
+			},
+		}
+
+		columnInfo := []ColumnInfo{
+			{
+				Name:       "name",
+				DataType:   STRING,
+				IsNullable: false,
+			},
+			{
+				Name:       "age",
+				DataType:   INTEGER,
+				IsNullable: false,
+			},
+			{
+				Name:       "class",
+				DataType:   STRING,
+				IsNullable: false,
+			},
+		}
+
+		soteErr = testConnInfo.CreateTable(parentCtx, tableInfo, columnInfo, MigrationType)
+		// testConnInfo.DropTable(parentCtx, "listofvalues", MigrationType)
+		if soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code %v got %v", "listofvalues", "nil", soteErr.FmtErrMsg)
+		}
+	})
+
+	tPtr.Run("no database", func(tPtr *testing.T) {
+		// This will test the condition that no database is available to connect
+		tConnInfo, soteErr = GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode, 65000, 3)
+		if soteErr.ErrCode != 209299 {
+			tPtr.Errorf("setConnectionValues Failed: Expected 209299 error code.")
+			tPtr.Fail()
+		}
+	})
 
 }
 func TestToJSONString(tPtr *testing.T) {
@@ -94,7 +130,7 @@ func TestToJSONString(tPtr *testing.T) {
 		tPtr.Fatal()
 	}
 
-	tConnInfo, soteErr := GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
+	tConnInfo, soteErr := GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("GetConnection Failed: Please Investigate")
 		tPtr.Fail()
@@ -123,7 +159,7 @@ func TestContext(tPtr *testing.T) {
 		tPtr.Fatal()
 	}
 
-	tConnInfo, soteErr := GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
+	tConnInfo, soteErr := GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
 		tPtr.Fail()
@@ -161,7 +197,7 @@ func getMyDBConn(tPtr *testing.T) (myDBConn ConnInfo, soteErr sError.SoteError) 
 		tPtr.Fatal()
 	}
 
-	myDBConn, soteErr = GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
+	myDBConn, soteErr = GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("%v Failed: Expected a nil error code.", testName)
 		tPtr.Fail()

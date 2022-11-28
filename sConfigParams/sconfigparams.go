@@ -50,6 +50,7 @@ const (
 	CREDENTIALS                   = "credentials"
 	DBHOSTKEY                     = "DB_HOST"
 	DBNAMEKEY                     = "DB_NAME"
+	DBSCHEMAKEY                   = "DB_SCHEMA"
 	DBPASSWORDKEY                 = "DATABASE_PASSWORD"
 	DBPORTKEY                     = "DB_PORT"
 	DBSSLMODEKEY                  = "DB_SSL_MODE"
@@ -127,6 +128,7 @@ type SSMParameter struct {
 
 type Database struct {
 	Name     string
+	Schema   string
 	User     string
 	Password string
 	Host     string
@@ -366,6 +368,7 @@ func GetSmtpPassword(ctx context.Context, application, environment string) (smtp
 func GetAWSParams(ctx context.Context, application, environment string) (parameters *Database, soteErr sError.SoteError) {
 	var (
 		nameKey          = setPath(application, environment) + "/" + DBNAMEKEY
+		schemaKey        = setPath(application, environment) + "/" + DBSCHEMAKEY
 		userKey          = setPath(application, environment) + "/" + DBUSERKEY
 		passwordKey      = setPath(application, environment) + "/" + DBPASSWORDKEY
 		hostKey          = setPath(application, environment) + "/" + DBHOSTKEY
@@ -380,7 +383,7 @@ func GetAWSParams(ctx context.Context, application, environment string) (paramet
 		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
 			environment = strings.ToLower(environment)
 			pSSMParamsInput := &ssm.GetParametersInput{
-				Names:          []string{nameKey, userKey, passwordKey, hostKey, sslModeKey, portKey},
+				Names:          []string{nameKey, schemaKey, userKey, passwordKey, hostKey, sslModeKey, portKey},
 				WithDecryption: &pTrue,
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
@@ -391,6 +394,8 @@ func GetAWSParams(ctx context.Context, application, environment string) (paramet
 						switch *pParameter.Name {
 						case nameKey:
 							parameters.Name = *pParameter.Value
+						case schemaKey:
+							parameters.Schema = *pParameter.Value
 						case userKey:
 							parameters.User = *pParameter.Value
 						case passwordKey:
@@ -517,6 +522,27 @@ func GetDBName(ctx context.Context, application, environment string) (dbName str
 			tDBName, soteErr = getParameter(ctx, application, strings.ToLower(environment), DBNAMEKEY)
 			if tDBName != nil {
 				dbName = tDBName.(string)
+			}
+		}
+	}
+
+	return
+}
+
+/*
+GetDBSchema will retrieve the database schema parameter that is in AWS System Manager service for the ROOTPATH and
+application.  Application and environment are required.
+*/
+func GetDBSchema(ctx context.Context, application, environment string) (dbSchema string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var tDBSchema interface{}
+
+	if soteErr = ValidateApplication(application); soteErr.ErrCode == nil {
+		if soteErr = ValidateEnvironment(environment); soteErr.ErrCode == nil {
+			tDBSchema, soteErr = getParameter(ctx, application, strings.ToLower(environment), DBSCHEMAKEY)
+			if tDBSchema != nil {
+				dbSchema = tDBSchema.(string)
 			}
 		}
 	}

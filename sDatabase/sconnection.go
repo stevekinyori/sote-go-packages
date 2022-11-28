@@ -23,10 +23,10 @@ const (
 	SSLMODEALLOW    = "allow"
 	SSLMODEPREFER   = "prefer"
 	SSLMODEREQUIRED = "require"
-	DSCONNFORMAT    = "dbname=%v user=%v password=%v host=%v port=%v connect_timeout=%v sslmode=%v"
+	DSCONNFORMAT    = "dbname=%v search_path=%v user=%v password=%v host=%v port=%v connect_timeout=%v sslmode=%v"
 )
 
-// SRow and SRows are so pgx package doesn't need to be imported in every where there are queries to the database.
+// ConnInfo SRow and SRows are so pgx package doesn't need to be imported in everywhere there are queries to the database.
 type ConnInfo struct {
 	DBPoolPtr    *pgxpool.Pool
 	DSConnValues ConnValues
@@ -35,6 +35,7 @@ type ConnInfo struct {
 
 type ConnValues struct {
 	DBName   string `json:"dbName"`
+	Schema   string `json:"schema"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 	Host     string `json:"host"`
@@ -59,7 +60,7 @@ func New(ctx context.Context, environment string) (dbConnInfo ConnInfo, soteErr 
 		return
 	}
 
-	if dbConnInfo, soteErr = GetConnection(dbConfig.Name, dbConfig.User, dbConfig.Password, dbConfig.Host,
+	if dbConnInfo, soteErr = GetConnection(dbConfig.Name, dbConfig.Schema, dbConfig.User, dbConfig.Password, dbConfig.Host,
 		dbConfig.SSLMode, dbConfig.Port, 3); soteErr.ErrCode != nil {
 		return
 	}
@@ -74,6 +75,7 @@ func New(ctx context.Context, environment string) (dbConnInfo ConnInfo, soteErr 
 // GetConnection This will create a connection to a database and populate ConnInfo
 //
 //  dbName   - Name of the Postgres database
+//  dbSchema   - The default Schema of the Postgres database
 //  user     - User that connection will use to authenticate
 //  password - Users password for authentication
 //  host     - Internet DNS or IP address of the server running the instance of Postgres
@@ -82,18 +84,19 @@ func New(ctx context.Context, environment string) (dbConnInfo ConnInfo, soteErr 
 //  timeout  - Number of seconds a request must complete (3 seconds is normal setting)
 //
 //  DBContext is also set to context.Background() an empty context./*
-func GetConnection(dbName, user, password, host, sslMode string, port, timeout int) (dbConnInfo ConnInfo, soteErr sError.SoteError) {
+func GetConnection(dbName, dbSchema, user, password, host, sslMode string, port, timeout int) (dbConnInfo ConnInfo, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if dbConnInfo.DSConnValues, soteErr = setConnectionValues(dbName, user, password, host, sslMode, port, timeout); soteErr.ErrCode != nil {
+	if dbConnInfo.DSConnValues, soteErr = setConnectionValues(dbName, dbSchema, user, password, host, sslMode, port,
+		timeout); soteErr.ErrCode != nil {
 		sLogger.Info("Invalid connection parameters for database: " + soteErr.FmtErrMsg)
 
 		return
 	} else {
 		var err error
-		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.DSConnValues.DBName, dbConnInfo.DSConnValues.User, dbConnInfo.DSConnValues.Password,
-			dbConnInfo.DSConnValues.Host,
-			dbConnInfo.DSConnValues.Port, dbConnInfo.DSConnValues.Timeout, dbConnInfo.DSConnValues.SSLMode)
+		var dsConnString = fmt.Sprintf(DSCONNFORMAT, dbConnInfo.DSConnValues.DBName, dbConnInfo.DSConnValues.Schema, dbConnInfo.DSConnValues.User,
+			dbConnInfo.DSConnValues.Password,
+			dbConnInfo.DSConnValues.Host, dbConnInfo.DSConnValues.Port, dbConnInfo.DSConnValues.Timeout, dbConnInfo.DSConnValues.SSLMode)
 		if dbConnInfo.DBPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString); err != nil {
 			if strings.Contains(err.Error(), "dial") {
 				soteErr = sError.GetSError(209299, nil, sError.EmptyMap)
@@ -118,8 +121,8 @@ func GetConnection(dbName, user, password, host, sslMode string, port, timeout i
 	return
 }
 
-// This will set the connection values so GetConnection can be execute.
-func setConnectionValues(dbName, user, password, host, sslMode string, port, timeout int) (tConnInfo ConnValues, soteErr sError.SoteError) {
+// This will set the connection values so GetConnection can be executed.
+func setConnectionValues(dbName, dbSchema, user, password, host, sslMode string, port, timeout int) (tConnInfo ConnValues, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	switch sslMode {
@@ -132,7 +135,7 @@ func setConnectionValues(dbName, user, password, host, sslMode string, port, tim
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
-	tConnInfo = ConnValues{dbName, user, password, host, port, timeout, sslMode}
+	tConnInfo = ConnValues{dbName, dbSchema, user, password, host, port, timeout, sslMode}
 	return
 }
 

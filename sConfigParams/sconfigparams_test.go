@@ -122,6 +122,17 @@ func TestGetDBName(tPtr *testing.T) {
 		tPtr.Errorf("GetDBName failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
 	}
 }
+func TestGetDBSchema(tPtr *testing.T) {
+	if _, soteErr := GetDBSchema(parentCtx, API, DEVELOPMENT); soteErr.ErrCode != nil {
+		tPtr.Errorf("GetDBSchema failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetDBSchema(parentCtx, "MARY", DEVELOPMENT); soteErr.ErrCode != 109999 {
+		tPtr.Errorf("GetDBSchema failed: Expected soteErr to be 109999: %v", soteErr.FmtErrMsg)
+	}
+	if _, soteErr := GetDBSchema(parentCtx, "", DEVELOPMENT); soteErr.ErrCode != 200513 {
+		tPtr.Errorf("GetDBSchema failed: Expected soteErr to be 200513: %v", soteErr.FmtErrMsg)
+	}
+}
 func TestGetDBHost(tPtr *testing.T) {
 	if _, soteErr := GetDBHost(parentCtx, API, DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetDBHost failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
