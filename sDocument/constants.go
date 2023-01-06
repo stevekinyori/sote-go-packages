@@ -22,14 +22,15 @@ NOTES:
 */
 
 const (
-	PROCESSED                    = "processed"
-	INBOUND                      = "inbound"
-	PROCESSEDFOLDER              = PROCESSED
-	INBOUNDFOLDER                = INBOUND
-	PROCESSEDLINKKEY             = PROCESSED
-	INBOUNDLINKKEY               = INBOUND
-	BUCKETDOCSUBFOLDER           = "documents-management-system"
-	MOUNTPOINTENVIRONMENTVARNAME = "DOCUMENTS_MOUNT_POINT"
+	PROCESSED                             = "processed"
+	INBOUND                               = "inbound"
+	PROCESSEDFOLDER                       = PROCESSED
+	INBOUNDFOLDER                         = INBOUND
+	PROCESSEDLINKKEY                      = PROCESSED
+	INBOUNDLINKKEY                        = INBOUND
+	BUCKETDOCSUBFOLDER                    = "documents-management-system"
+	DOCUMENTSMOUNTPOINTENVIRONMENTVARNAME = "DOCUMENTS_MOUNT_POINT"
+	TEMPLATESMOUNTPOINTENVIRONMENTVARNAME = "TEMPLATES_MOUNT_POINT"
 )
 
 // List type's here

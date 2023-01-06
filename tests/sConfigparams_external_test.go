@@ -7,6 +7,7 @@ import (
 
 	"gitlab.com/soteapps/packages/v2022/sConfigParams"
 	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 const (
@@ -17,6 +18,10 @@ const (
 )
 
 var parentCtx = context.Background()
+
+func init() {
+	sLogger.SetLogMessagePrefix("packages")
+}
 
 func TestGetParametersFound(tPtr *testing.T) {
 	parameters := make(map[string]interface{})

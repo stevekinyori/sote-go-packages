@@ -18,6 +18,7 @@ NOTES:
 */
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -38,6 +39,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"gitlab.com/soteapps/packages/v2022/sConfigParams"
@@ -59,6 +61,7 @@ type DocumentParams struct {
 	AppConfigName        string
 	AppEnvironment       string
 	TestMode             bool
+	IgnoreMountPoint     bool
 	FormFiles            map[string][]*multipart.FileHeader
 }
 
@@ -83,6 +86,7 @@ type S3ClientServer struct {
 	BucketName         string
 	S3BucketMountPoint string
 	S3ClientPtr        *s3.Client
+	UploaderPtr        *manager.Uploader
 }
 
 type ObjectKeys struct {
@@ -135,32 +139,37 @@ func NewS3ClientServer(ctx context.Context, documentParamsPtr *DocumentParams,
 		bucketName          string
 		documentsMountPoint string
 	)
+
 	testMode = documentParamsPtr.TestMode
 	appEnvironment = documentParamsPtr.AppEnvironment
-
 	// Get document mount point
-	documentsMountPoint, soteErr = GetDocumentsMountPoint(ctx, documentParamsPtr.MountPointEnvVarName)
-	if soteErr.ErrCode != nil {
-		return
+	if !documentParamsPtr.IgnoreMountPoint {
+		documentsMountPoint, soteErr = GetDocumentsMountPoint(ctx, documentParamsPtr.MountPointEnvVarName)
+		if soteErr.ErrCode != nil {
+			return
+		}
 	}
-
+	// Initialize AWS S3 Server params
 	s3ClientServerPtr = new(S3ClientServer)
 	s3ClientServerPtr.DocumentParamsPtr = documentParamsPtr
 	s3ClientServerPtr.S3BucketMountPoint = documentsMountPoint
-	cfg, err = config.LoadDefaultConfig(ctx, optFns...)
-	if err != nil {
+	if cfg, err = config.LoadDefaultConfig(ctx, optFns...); err != nil {
 		sLogger.Info(err.Error())
 		soteErr = sError.GetSError(210399, nil, sError.EmptyMap)
 		return
 	}
-
-	// Initialize S3 Client
+	// Create S3 Client
 	s3ClientServerPtr.S3ClientPtr = s3.NewFromConfig(cfg)
+	// Create an uploader with the session and default options
+	partMiBs := int64(10)
+	s3ClientServerPtr.UploaderPtr = manager.NewUploader(s3ClientServerPtr.S3ClientPtr, func(u *manager.Uploader) {
+		u.PartSize = partMiBs * 1024 * 1024
+	})
 	// Get S3 Bucket Name
-	bucketName, soteErr = sConfigParams.GetAWSS3Bucket(ctx, documentParamsPtr.AppConfigName)
-	if soteErr.ErrCode != nil {
+	if bucketName, soteErr = sConfigParams.GetAWSS3Bucket(ctx, documentParamsPtr.AppConfigName); soteErr.ErrCode != nil {
 		return
 	}
+	// Initialize S3 Bucket Name
 	s3ClientServerPtr.BucketName = bucketName
 
 	return
@@ -339,7 +348,7 @@ func (s3sPtr *S3ClientServer) SingleDocumentUpload(ctx context.Context, file mul
 		tObjectKeys       = new(ObjectKeys)
 		wg                sync.WaitGroup
 		errChan           = make(chan sError.SoteError, 2)
-		docLinkChan       = make(chan *DocumentLinks)
+		docLinkChan       = make(chan *DocumentLinks, 1)
 	)
 	wg.Add(3)
 	wgCtx, cancel := context.WithCancel(ctx)
@@ -629,6 +638,34 @@ func (s3sPtr *S3ClientServer) EmbedMetadata(ctx context.Context, processedObject
 
 }
 
+/*DocumentUpload Uses an upload manager to upload data to an object in a bucket.
+The upload manager breaks large data into parts and uploads the parts concurrently.
+  Params:
+    objectKey    - Name of object in AWS S3 Bucket
+    contents     - Data to be uploaded
+    contentType  - Object media type
+*/
+func (s3sPtr *S3ClientServer) DocumentUpload(ctx context.Context, objectKey string, contents []byte, contentType string) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	largeBuffer := bytes.NewReader(contents)
+	if _, err := s3sPtr.UploaderPtr.Upload(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(s3sPtr.BucketName),
+		Key:         aws.String(objectKey),
+		Body:        largeBuffer,
+		ContentType: aws.String(contentType),
+	}); err != nil {
+		sLogger.Info(fmt.Sprintf("Couldn't upload large object to %v:%v. An error occured: %v\n",
+			s3sPtr.BucketName, objectKey, err))
+		soteErr = AmazonTextractErrorHandler(ctx, err)
+		return
+	}
+
+	sLogger.Info("Successfully uploaded document with object key " + objectKey)
+
+	return
+}
+
 // DocumentDelete  will delete a document from AWS S3 Bucket.
 func (s3sPtr *S3ClientServer) DocumentDelete(ctx context.Context, objectKey string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
@@ -880,6 +917,19 @@ func GetDocumentName(objectKey string) (fileName string) {
 	sLogger.DebugMethod()
 
 	fileName = filepath.Base(objectKey)
+
+	return
+}
+
+/*
+GetMIMEType Will return a file's MimeType
+	Input Parameters:
+		* Content - File data
+*/
+func GetMIMEType(content []byte) (mimeType string) {
+	sLogger.DebugMethod()
+
+	mimeType = http.DetectContentType(content)
 
 	return
 }

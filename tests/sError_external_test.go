@@ -5,7 +5,12 @@ import (
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("packages")
+}
 
 func TestIncorrectParams(tPtr *testing.T) {
 	if x := sError.GetSError(100100, sError.BuildParams([]string{""}), sError.EmptyMap); x.ErrCode != 203060 {

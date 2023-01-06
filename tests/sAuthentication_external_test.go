@@ -1,11 +1,13 @@
 package tests
 
 import (
+	"context"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2022/sAuthentication"
 	"gitlab.com/soteapps/packages/v2022/sConfigParams"
 	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 const (
@@ -28,13 +30,18 @@ const (
 )
 
 var (
-	awsRegion, _  = sConfigParams.GetRegion(parentCtx)
-	userPoolId, _ = sConfigParams.GetUserPoolId(parentCtx, sConfigParams.DEVELOPMENT)
+	sAuthCtx      = context.Background()
+	awsRegion, _  = sConfigParams.GetRegion(sAuthCtx)
+	userPoolId, _ = sConfigParams.GetUserPoolId(sAuthCtx, sConfigParams.DEVELOPMENT)
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("packages")
+}
 
 func TestValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(parentCtx, TOKENEXPIRED, &sAuthentication.Config{
+	if soteErr = sAuthentication.ValidToken(sAuthCtx, TOKENEXPIRED, &sAuthentication.Config{
 		AppEnvironment: sConfigParams.DEVELOPMENT,
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
@@ -45,7 +52,7 @@ func TestValidToken(tPtr *testing.T) {
 }
 func TestValidFakeToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(parentCtx, TOKENMISSINGSEGMENT, &sAuthentication.Config{
+	if soteErr = sAuthentication.ValidToken(sAuthCtx, TOKENMISSINGSEGMENT, &sAuthentication.Config{
 		AppEnvironment: sConfigParams.DEVELOPMENT,
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
@@ -56,7 +63,7 @@ func TestValidFakeToken(tPtr *testing.T) {
 }
 func TestValidMissingSegmentToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(parentCtx, FAKETOKEN, &sAuthentication.Config{
+	if soteErr = sAuthentication.ValidToken(sAuthCtx, FAKETOKEN, &sAuthentication.Config{
 		AppEnvironment: sConfigParams.DEVELOPMENT,
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
@@ -67,7 +74,7 @@ func TestValidMissingSegmentToken(tPtr *testing.T) {
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(parentCtx, TOKENINVALIDSIG, &sAuthentication.Config{
+	if soteErr = sAuthentication.ValidToken(sAuthCtx, TOKENINVALIDSIG, &sAuthentication.Config{
 		AppEnvironment: sConfigParams.DEVELOPMENT,
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
@@ -78,7 +85,7 @@ func TestInValidSignatureToken(tPtr *testing.T) {
 }
 func TestInValidToken(tPtr *testing.T) {
 	var soteErr sError.SoteError
-	if soteErr = sAuthentication.ValidToken(parentCtx, TOKENINVALID, &sAuthentication.Config{
+	if soteErr = sAuthentication.ValidToken(sAuthCtx, TOKENINVALID, &sAuthentication.Config{
 		AppEnvironment: sConfigParams.DEVELOPMENT,
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,

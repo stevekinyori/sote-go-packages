@@ -8,6 +8,7 @@ import (
 	"gitlab.com/soteapps/packages/v2022/sConfigParams"
 	"gitlab.com/soteapps/packages/v2022/sDatabase"
 	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 )
 
 const (
@@ -21,6 +22,10 @@ const (
 	EMPTYVALUE       = ""
 	SELF             = "self"
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("packages")
+}
 
 //
 // sconnection
@@ -43,7 +48,7 @@ func TestVerifyConnection(tPtr *testing.T) {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 	}
 
-	tConnInfo, soteErr = sDatabase.GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode,
+	tConnInfo, soteErr = sDatabase.GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode,
 		config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")
@@ -64,7 +69,8 @@ func TestToJSONString(tPtr *testing.T) {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 	}
 
-	tConnInfo, soteErr := sDatabase.GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode, config.Port, 3)
+	tConnInfo, soteErr := sDatabase.GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode,
+		config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("GetConnection Failed: Please Investigate")
 	}
@@ -88,7 +94,7 @@ func TestContext(tPtr *testing.T) {
 		tPtr.Errorf("GetAWSParams Failed: Expected error code to be nil.")
 	}
 
-	tConnInfo, soteErr := sDatabase.GetConnection(config.Name, config.User, config.Password, config.Host, config.SSLMode,
+	tConnInfo, soteErr := sDatabase.GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode,
 		config.Port, 3)
 	if soteErr.ErrCode != nil {
 		tPtr.Errorf("setConnectionValues Failed: Expected a nil error code.")

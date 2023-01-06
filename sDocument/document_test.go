@@ -57,7 +57,7 @@ func TestNewS3ClientServer(tPtr *testing.T) {
 	tPtr.Run("Init S3 Client Server", func(tPtr *testing.T) {
 		if _, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 			AppConfigName:        sConfigParams.DOCUMENTS,
-			MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             testMode,
 		}); soteErr.ErrCode != nil {
@@ -76,10 +76,22 @@ func TestNewS3ClientServer(tPtr *testing.T) {
 		}
 	})
 
+	tPtr.Run("Ignore Mount Point during Initialization S3 Client Server ", func(tPtr *testing.T) {
+		if _, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
+			AppConfigName:        sConfigParams.DOCUMENTS,
+			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
+			AppEnvironment:       TESTAPPENVIRONMENT,
+			TestMode:             testMode,
+			IgnoreMountPoint:     true,
+		}); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "209100", soteErr.FmtErrMsg)
+		}
+	})
+
 	tPtr.Run("Init S3 Client Server Using Invalid Application Name", func(tPtr *testing.T) {
 		if _, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 			AppConfigName:        "INVALIDAPPNAME",
-			MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             testMode,
 		}); soteErr.ErrCode != 109999 {
@@ -129,6 +141,25 @@ func TestReadFile(tPtr *testing.T) {
 	tPtr.Run("Read valid file", func(tPtr *testing.T) {
 		if _, soteErr = ReadFile(parentCtx, testLocalFilepath); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
+}
+func TestGetMIMEType(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+		contents          = make([]byte, 0)
+	)
+
+	tPtr.Run("Get File MIME Type Using a Valid File", func(tPtr *testing.T) {
+		if contents, soteErr = ReadFile(parentCtx, strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALFILENAME},
+			"/")); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+
+		if contentType := GetMIMEType(contents); contentType != "image/jpeg" {
+			tPtr.Errorf("%v Failed: Expected Content-Type to be %v but got %v", testName, "image/jpeg", contentType)
 		}
 	})
 }
@@ -186,7 +217,7 @@ func TestDocumentUpload(tPtr *testing.T) {
 
 		if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 			AppConfigName:        sConfigParams.DOCUMENTS,
-			MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 			ClientCompanyId:      TESTCLIENTCOMPANYID,
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             testMode,
@@ -227,7 +258,7 @@ func TestDocumentUpload(tPtr *testing.T) {
 
 		if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 			AppConfigName:        sConfigParams.DOCUMENTS,
-			MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 			ClientCompanyId:      TESTCLIENTCOMPANYID,
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             testMode,
@@ -238,6 +269,64 @@ func TestDocumentUpload(tPtr *testing.T) {
 			}
 		}
 	})
+}
+func TestDirectDocumentUpload(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+		s3ClientServerPtr *S3ClientServer
+		contents          = make([]byte, 0)
+		filenameOne       = "single-direct-image-upload.jpeg"
+		filenameTwo       = "single-direct-file-upload.pdf"
+		keysOne           = new(ObjectKeys)
+		keysTwo           = new(ObjectKeys)
+	)
+
+	tPtr.Cleanup(func() {
+		if keysOne != nil {
+			s3ClientServerPtr.DocumentDelete(parentCtx, keysOne.ProcessedObjectKey)
+		}
+
+		if keysTwo != nil {
+			s3ClientServerPtr.DocumentDelete(parentCtx, keysTwo.ProcessedObjectKey)
+		}
+	})
+
+	if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
+		AppConfigName:        sConfigParams.DOCUMENTS,
+		MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
+		ClientCompanyId:      TESTCLIENTCOMPANYID,
+		AppEnvironment:       TESTAPPENVIRONMENT,
+		TestMode:             testMode,
+		IgnoreMountPoint:     true,
+	}); soteErr.ErrCode == nil {
+		tPtr.Run("Using a Valid Image Ignoring Mount Point", func(tPtr *testing.T) {
+			if contents, soteErr = ReadFile(parentCtx, strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALFILENAME},
+				"/")); soteErr.ErrCode != nil {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+			}
+
+			keysOne = GetObjectKeys(filenameOne, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
+			if soteErr = s3ClientServerPtr.DocumentUpload(parentCtx, keysOne.ProcessedObjectKey, contents,
+				GetMIMEType(contents)); soteErr.ErrCode != nil {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+			}
+		})
+
+		tPtr.Run("Using a Valid File Ignoring Mount Point", func(tPtr *testing.T) {
+			if contents, soteErr = ReadFile(parentCtx, strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALPDFFILENAME},
+				"/")); soteErr.ErrCode != nil {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+			}
+
+			keysTwo = GetObjectKeys(filenameTwo, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
+			if soteErr = s3ClientServerPtr.DocumentUpload(parentCtx, keysTwo.ProcessedObjectKey, contents,
+				GetMIMEType(contents)); soteErr.ErrCode != nil {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+			}
+		})
+	}
 }
 func TestDocumentDelete(tPtr *testing.T) {
 	var (
@@ -251,7 +340,7 @@ func TestDocumentDelete(tPtr *testing.T) {
 
 	if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 		AppConfigName:        sConfigParams.DOCUMENTS,
-		MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+		MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 		ClientCompanyId:      TESTCLIENTCOMPANYID,
 		AppEnvironment:       TESTAPPENVIRONMENT,
 		TestMode:             testMode,
@@ -280,7 +369,7 @@ func TestDocumentPreSignedURL(tPtr *testing.T) {
 
 	if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 		AppConfigName:        sConfigParams.DOCUMENTS,
-		MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+		MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 		ClientCompanyId:      TESTCLIENTCOMPANYID,
 		AppEnvironment:       TESTAPPENVIRONMENT,
 		TestMode:             testMode,
@@ -331,7 +420,7 @@ func TestDocumentCopy(tPtr *testing.T) {
 	tPtr.Run("Copy document", func(tPtr *testing.T) {
 		if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 			AppConfigName:        sConfigParams.DOCUMENTS,
-			MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 			ClientCompanyId:      TESTCLIENTCOMPANYID,
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             testMode,
@@ -387,7 +476,7 @@ func TestEmbedMetadata(tPtr *testing.T) {
 	tPtr.Run("Embed metadata", func(tPtr *testing.T) {
 		if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 			AppConfigName:        sConfigParams.DOCUMENTS,
-			MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 			ClientCompanyId:      TESTCLIENTCOMPANYID,
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             testMode,

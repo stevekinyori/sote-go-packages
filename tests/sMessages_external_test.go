@@ -8,6 +8,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"gitlab.com/soteapps/packages/v2022/sConfigParams"
 	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2022/sLogger"
 	"gitlab.com/soteapps/packages/v2022/sMessage"
 )
 
@@ -21,6 +22,10 @@ const (
 var (
 	testPullSubjects = []string{"test-subject-delete-me-1", "test-subject-delete-me-2"}
 )
+
+func init() {
+	sLogger.SetLogMessagePrefix("packages")
+}
 
 func TestNew(tPtr *testing.T) {
 	if _, soteErr := sMessage.New(context.Background(), TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL,
