@@ -59,7 +59,7 @@ func GetDocumentsMountPoint(ctx context.Context, mountPointEnvName string) (docu
 	sLogger.DebugMethod()
 
 	if documentsMountPoint = os.Getenv(mountPointEnvName); documentsMountPoint == "" {
-		soteErr = panicService(ctx, sError.GetSError(209100, sError.BuildParams([]string{MOUNTPOINTENVIRONMENTVARNAME}), sError.EmptyMap))
+		soteErr = panicService(ctx, sError.GetSError(209100, sError.BuildParams([]string{DOCUMENTSMOUNTPOINTENVIRONMENTVARNAME}), sError.EmptyMap))
 
 	}
 

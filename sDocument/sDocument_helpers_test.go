@@ -37,19 +37,19 @@ import (
 
 const (
 	// Add Constants here
-	TESTCLIENTCOMPANYNAMEONE   = "SILAFRICA KENYA LTD"
-	TESTCOMPANYSUPPLIERNAMEONE = "ExxonMobil Petroleum & Chemical BV"
-	TESTCLIENTCOMPANYID        = 1
-	TESTCLIENTCOMPANYIDSTR     = "1"
-	TESTFILENAMEONE            = "test-invoice.jpeg"
-	TESTS3BUCKETNAME           = "sote-internal-technology-data"
-	TESTAPPENVIRONMENT         = "staging"
-	TESTMOUNTPOINTENVNAME      = MOUNTPOINTENVIRONMENTVARNAME
-	TESTFILESFOLDER            = "test-files"
-	TESTLOCALFILENAME          = "invoice.jpeg"
-	TESTLOCALPDFFILENAME       = "invoice-two.pdf"
-	TESTINVALIDFILEPATH        = "INVALID PATH"
-	TESTOBJECTKEYONE           = INBOUNDFOLDER + "/" + TESTAPPENVIRONMENT + "/" + TESTCLIENTCOMPANYIDSTR + "/" + TESTFILENAMEONE
+	TESTCLIENTCOMPANYNAMEONE       = "SILAFRICA KENYA LTD"
+	TESTCOMPANYSUPPLIERNAMEONE     = "ExxonMobil Petroleum & Chemical BV"
+	TESTCLIENTCOMPANYID            = 1
+	TESTCLIENTCOMPANYIDSTR         = "1"
+	TESTFILENAMEONE                = "test-invoice.jpeg"
+	TESTS3BUCKETNAME               = "sote-internal-technology-data"
+	TESTAPPENVIRONMENT             = "staging"
+	TESTDOCUMENTSMOUNTPOINTENVNAME = DOCUMENTSMOUNTPOINTENVIRONMENTVARNAME
+	TESTFILESFOLDER                = "test-files"
+	TESTLOCALFILENAME              = "invoice.jpeg"
+	TESTLOCALPDFFILENAME           = "invoice-two.pdf"
+	TESTINVALIDFILEPATH            = "INVALID PATH"
+	TESTOBJECTKEYONE               = INBOUNDFOLDER + "/" + TESTAPPENVIRONMENT + "/" + TESTCLIENTCOMPANYIDSTR + "/" + TESTFILENAMEONE
 )
 
 // List type's here
@@ -95,7 +95,7 @@ func TestGetDocumentsMountPoint(tPtr *testing.T) {
 	)
 
 	tPtr.Run("Get S3 Bucket mount point location", func(tPtr *testing.T) {
-		if _, soteErr = GetDocumentsMountPoint(parentCtx, TESTMOUNTPOINTENVNAME); soteErr.ErrCode != nil {
+		if _, soteErr = GetDocumentsMountPoint(parentCtx, TESTDOCUMENTSMOUNTPOINTENVNAME); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
 	})
@@ -316,7 +316,7 @@ func copyTestDocument(tPtr *testing.T, filename string, useProcessedFolder, useP
 	)
 	if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
 		AppConfigName:        sConfigParams.DOCUMENTS,
-		MountPointEnvVarName: TESTMOUNTPOINTENVNAME,
+		MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 		ClientCompanyId:      TESTCLIENTCOMPANYID,
 		AppEnvironment:       TESTAPPENVIRONMENT,
 		TestMode:             testMode,
