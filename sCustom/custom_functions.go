@@ -102,6 +102,20 @@ func JSONMarshal(v interface{}) (buffer []byte, soteErr sError.SoteError) {
 	return
 }
 
+// JSONUnmarshal parses the JSON-encoded data and stores the result in the value pointed to by response
+func JSONUnmarshal(ctx context.Context, data []byte, response interface{}) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if len(data) > 0 { // only unmarshall if message is not empty
+		if err := json.Unmarshal(data, &response); err != nil {
+			sLogger.Info(err.Error())
+			soteErr = sError.GetSError(207110, sError.BuildParams([]string{string(data)}), sError.EmptyMap)
+		}
+	}
+
+	return
+}
+
 // CallUserFunc calls Exportable Methods using their method Name. This does not work on functions
 func CallUserFunc(funcName string, receiver any, args ...any) (response []reflect.Value, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
