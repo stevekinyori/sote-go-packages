@@ -27,8 +27,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/aws/aws-sdk-go-v2/service/ssm/types"
-	"gitlab.com/soteapps/packages/v2022/sError"
-	"gitlab.com/soteapps/packages/v2022/sLogger"
+	"gitlab.com/soteapps/packages/v2023/sError"
+	"gitlab.com/soteapps/packages/v2023/sLogger"
 )
 
 const (

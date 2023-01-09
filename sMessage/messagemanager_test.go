@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/soteapps/packages/v2022/sConfigParams"
+	"gitlab.com/soteapps/packages/v2023/sConfigParams"
 )
 
 const (

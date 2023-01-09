@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2023/sError"
 )
 
 func TestConnInfo_CreateTable(tPtr *testing.T) {

@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"gitlab.com/soteapps/packages/v2022/sAuthentication"
-	"gitlab.com/soteapps/packages/v2022/sConfigParams"
-	"gitlab.com/soteapps/packages/v2022/sError"
-	"gitlab.com/soteapps/packages/v2022/sLogger"
+	"gitlab.com/soteapps/packages/v2023/sAuthentication"
+	"gitlab.com/soteapps/packages/v2023/sConfigParams"
+	"gitlab.com/soteapps/packages/v2023/sError"
+	"gitlab.com/soteapps/packages/v2023/sLogger"
 )
 
 const (

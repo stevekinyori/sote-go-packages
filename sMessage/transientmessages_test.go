@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/soteapps/packages/v2022/sConfigParams"
-	"gitlab.com/soteapps/packages/v2022/sError"
+	"gitlab.com/soteapps/packages/v2023/sConfigParams"
+	"gitlab.com/soteapps/packages/v2023/sError"
 )
 
 // We are not testing to see if NATS messaging works. We are only testing if the code works.

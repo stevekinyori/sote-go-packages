@@ -1,4 +1,4 @@
-module gitlab.com/soteapps/packages/v2022
+module gitlab.com/soteapps/packages/v2023
 
 go 1.18
 

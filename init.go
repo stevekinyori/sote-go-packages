@@ -1,5 +1,5 @@
 package seeds
 
-import "gitlab.com/soteapps/packages/v2022/sDatabase"
+import "gitlab.com/soteapps/packages/v2023/sDatabase"
 
 type Config struct{ DBConnInfo sDatabase.ConnInfo }

@@ -31,8 +31,8 @@ import (
 
 	"github.com/nats-io/nats.go"
 
-	"gitlab.com/soteapps/packages/v2022/sError"
-	"gitlab.com/soteapps/packages/v2022/sLogger"
+	"gitlab.com/soteapps/packages/v2023/sError"
+	"gitlab.com/soteapps/packages/v2023/sLogger"
 )
 
 const (

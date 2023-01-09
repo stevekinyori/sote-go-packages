@@ -19,7 +19,7 @@ NOTES:
 
 import (
 	// Add imports here
-	"gitlab.com/soteapps/packages/v2022/sLogger"
+	"gitlab.com/soteapps/packages/v2023/sLogger"
 )
 
 const (

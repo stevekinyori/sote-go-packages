@@ -1,9 +1,9 @@
 package tests
 
 import (
-	"gitlab.com/soteapps/packages/v2022/sError"
-	"gitlab.com/soteapps/packages/v2022/sHTTPClient"
-	"gitlab.com/soteapps/packages/v2022/sLogger"
+	"gitlab.com/soteapps/packages/v2023/sError"
+	"gitlab.com/soteapps/packages/v2023/sHTTPClient"
+	"gitlab.com/soteapps/packages/v2023/sLogger"
 
 	// "fmt"
 	"testing"
