@@ -66,6 +66,7 @@ const (
 	ErrInvalidParameterCount = 203060
 	ErrInvalidParameterType  = 200200
 	ErrInvalidParameterValue = 200250
+	ErrStatusUnauthorized    = 208375
 )
 
 var (
@@ -175,6 +176,7 @@ var (
 		208356: {208356, PERMISSIONERROR, 0, "None", ": Token contains an invalid number of segments", EmptyMap, "", nil},
 		208360: {208360, PERMISSIONERROR, 1, "Claim names", ": These claims are invalid: %v", EmptyMap, "", nil},
 		208370: {208370, PERMISSIONERROR, 0, "None", ": Required claim(s) is/are missing", EmptyMap, "", nil},
+		208375: {208375, PERMISSIONERROR, 0, "None", ": Unable to pass HTTP/HTTPS authentication", EmptyMap, "", nil},
 		209000: {209000, CONFIGURATIONISSUE, 0, "None", ": .env files are missing", EmptyMap, "", nil},
 		209010: {209010, CONFIGURATIONISSUE, 2, "File name, Message returned from Open", ": %v file was not found. Message return: %v", EmptyMap, "",
 			nil},
