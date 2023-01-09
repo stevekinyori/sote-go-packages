@@ -292,7 +292,8 @@ func formatArrayFilterCondition(ctx context.Context, tblColumnKeysMap map[string
 			arrFilterResp.QueryStr = strings.TrimSuffix(arrFilterResp.QueryStr, ",") + ")"
 		}
 	} else {
-		soteErr = sError.GetSError(207030, sError.BuildParams([]string{reqParams.FieldName, fmt.Sprint(reqParams.Value)}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrNotArray, sError.BuildParams([]string{reqParams.FieldName, fmt.Sprint(reqParams.Value)}),
+			sError.EmptyMap)
 	}
 
 	return

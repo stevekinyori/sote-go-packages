@@ -54,22 +54,23 @@ func GetTableGroupInfo(fileName string, testMode bool) (tableGroupTableInfo Tabl
 	sLogger.DebugMethod()
 
 	if fileName == "" {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{fileName}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrMissingParameters, sError.BuildParams([]string{fileName}), sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
 	if soteErr.ErrCode == nil {
 		if tableGroupFileHandle, err := ioutil.ReadFile(fileName); err != nil {
 			if strings.Contains(err.Error(), "no such file or directory") {
-				soteErr = sError.GetSError(109999, sError.BuildParams([]string{fileName + "/" + err.Error()}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{fileName + "/" + err.Error()}), sError.EmptyMap)
 				sLogger.Info(soteErr.FmtErrMsg)
 			} else {
-				soteErr = sError.GetSError(199999, sError.BuildParams([]string{fileName + "/" + err.Error()}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{fileName + "/" + err.Error()}),
+					sError.EmptyMap)
 				sLogger.Info(soteErr.FmtErrMsg)
 			}
 		} else {
 			if err = json.Unmarshal(tableGroupFileHandle, &tableGroupTableInfo); err != nil {
-				soteErr = sError.GetSError(207110, sError.BuildParams([]string{fileName}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{fileName}), sError.EmptyMap)
 				sLogger.Info(soteErr.FmtErrMsg)
 			}
 		}

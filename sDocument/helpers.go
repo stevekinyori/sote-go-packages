@@ -41,14 +41,15 @@ func AmazonTextractErrorHandler(ctx context.Context, err error) (soteErr sError.
 	sLogger.Info(err.Error())
 	// todo: build appropriate Sote error
 	if strings.Contains(err.Error(), "InvalidParameterException") {
-		soteErr = sError.GetSError(200514, []interface{}{"filename", "bucket name", "S3 bucket mount point"}, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrExpectedThreeParameters, []interface{}{"filename", "bucket name", "S3 bucket mount point"},
+			sError.EmptyMap)
 	} else if strings.Contains(err.Error(), "InvalidS3ObjectException") || strings.Contains(strings.ToLower(err.Error()),
 		"no such file or directory") || strings.Contains(strings.ToLower(err.Error()), "404") {
-		soteErr = sError.GetSError(109999, []interface{}{"document"}, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, []interface{}{"document"}, sError.EmptyMap)
 	} else if strings.Contains(err.Error(), "input member Bucket must not be empty") {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"bucket-name"}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrMissingParameters, sError.BuildParams([]string{"bucket-name"}), sError.EmptyMap)
 	} else {
-		soteErr = sError.GetSError(210599, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrBusinessServiceError, nil, sError.EmptyMap)
 	}
 
 	return
@@ -59,7 +60,8 @@ func GetDocumentsMountPoint(ctx context.Context, mountPointEnvName string) (docu
 	sLogger.DebugMethod()
 
 	if documentsMountPoint = os.Getenv(mountPointEnvName); documentsMountPoint == "" {
-		soteErr = panicService(ctx, sError.GetSError(209100, sError.BuildParams([]string{DOCUMENTSMOUNTPOINTENVIRONMENTVARNAME}), sError.EmptyMap))
+		soteErr = panicService(ctx,
+			sError.GetSError(sError.ErrMissingEnvVariable, sError.BuildParams([]string{DOCUMENTSMOUNTPOINTENVIRONMENTVARNAME}), sError.EmptyMap))
 
 	}
 
@@ -105,7 +107,8 @@ func ValidateFilepath(filepath string) (pathExists bool, soteErr sError.SoteErro
 	_, err = os.Stat(filepath)
 	if os.IsNotExist(err) {
 		pathExists = false
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{fmt.Sprintf("document in %v path", filepath)}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{fmt.Sprintf("document in %v path", filepath)}),
+			sError.EmptyMap)
 	} else {
 		pathExists = true
 		sLogger.Info(fmt.Sprintf("Document %v was found", filepath))
@@ -121,8 +124,8 @@ func panicService(ctx context.Context, inSoteErr sError.SoteError) (soteErr sErr
 	sLogger.Info(inSoteErr.FmtErrMsg)
 	soteErr = inSoteErr
 	if !testMode {
-		if inSoteErr.ErrCode != 199999 {
-			soteErr = sError.GetSError(199999, sError.BuildParams([]string{""}), sError.EmptyMap)
+		if inSoteErr.ErrCode != sError.ErrGenericError {
+			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{""}), sError.EmptyMap)
 		}
 
 		if appEnvironment == "development" || appEnvironment == "staging" {

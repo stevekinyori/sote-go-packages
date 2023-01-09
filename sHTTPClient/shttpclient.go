@@ -58,7 +58,7 @@ func (httpm *HTTPManager) setURL(sURL string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if _, err := url.Parse(sURL); err != nil || sURL == "" {
-		soteErr = sError.GetSError(210090, sError.BuildParams([]string{sURL}), nil)
+		soteErr = sError.GetSError(sError.ErrMissingURL, sError.BuildParams([]string{sURL}), nil)
 	} else {
 		httpm.sURL = sURL
 	}
@@ -132,23 +132,23 @@ func (httpm *HTTPManager) sHTTPCall(method string, route string) (soteErr sError
 	case "DELETE":
 		if httpm.sHTTPResponse, err = httpm.httpclient.Delete(httpm.sURL+route,
 			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
-			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrBadHTTPRequest, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
 	case "GET":
 		if httpm.sHTTPResponse, err = httpm.httpclient.Get(httpm.sURL+route,
 			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
-			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrBadHTTPRequest, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
 	case "POST":
 		if httpm.sHTTPResponse, err = httpm.httpclient.PostJson(httpm.sURL+route,
 			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
-			soteErr = sError.GetSError(200600, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrBadHTTPRequest, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
 	default:
-		soteErr = sError.GetSError(200600, sError.BuildParams([]string{"HTTP method Not supported"}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrBadHTTPRequest, sError.BuildParams([]string{"HTTP method Not supported"}), sError.EmptyMap)
 	}
 
 	return
@@ -177,7 +177,7 @@ func (httpm *HTTPManager) paramFormatting(reqParams map[string]interface{}) (sot
 				x = strconv.Itoa(v.(int))
 			default:
 				if x, ok = v.(string); !ok {
-					soteErr = sError.GetSError(207200, sError.BuildParams([]string{"v", "string"}), sError.EmptyMap)
+					soteErr = sError.GetSError(sError.ErrConversionError, sError.BuildParams([]string{"v", "string"}), sError.EmptyMap)
 					sLogger.Debug(soteErr.FmtErrMsg)
 					break forLoop
 				}
@@ -198,7 +198,7 @@ func (httpm *HTTPManager) readHTTPResponse() (soteErr sError.SoteError) {
 	var err error
 
 	if httpm.sHTTPBytePayload, err = ioutil.ReadAll(httpm.sHTTPResponse.Body); err != nil {
-		soteErr = sError.GetSError(200600, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrBadHTTPRequest, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 		sLogger.Debug(soteErr.FmtErrMsg)
 	}
 
@@ -223,7 +223,7 @@ func (httpm *HTTPManager) parseJSONResult(parseResult bool) (soteErr sError.Sote
 
 	if parseResult {
 		if err = json.Unmarshal(httpm.sHTTPBytePayload, &httpm.sHTTPMapPayload); err != nil {
-			soteErr = sError.GetSError(207105, sError.BuildParams([]string{"sPayloadBody", "[]byte"}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrJSONConversionError, sError.BuildParams([]string{"sPayloadBody", "[]byte"}), sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
 		} else if soteErr = httpm.convertErrors(); soteErr.ErrCode == nil {
 			httpm.RetPack = httpm.sHTTPMapPayload["retPack"]
@@ -246,16 +246,16 @@ func (httpm *HTTPManager) convertErrors() (soteErr sError.SoteError) {
 		case 0: // 0 is not an error
 			break
 		case 201005:
-			soteErr.ErrCode = 208360
+			soteErr.ErrCode = sError.ErrInvalidClaims
 			break
 		case 2080, 2097:
-			soteErr.ErrCode = 200600
+			soteErr.ErrCode = sError.ErrBadHTTPRequest
 			break
 		case 500000:
 			soteErr.ErrCode = 800000
 			break
 		case 800000:
-			soteErr.ErrCode = 206200
+			soteErr.ErrCode = sError.ErrInvalidMsgSignature
 			break
 		default:
 			soteErr.ErrCode = httpm.sHTTPMapPayload["errCode"]
@@ -268,7 +268,7 @@ func (httpm *HTTPManager) convertErrors() (soteErr sError.SoteError) {
 			soteErr.ErrorDetails = map[string]string{"microservice_error": fmt.Sprintf("%v", httpm.sHTTPMapPayload["retPack"])}
 		}
 	} else {
-		soteErr = sError.GetSError(207200, sError.BuildParams([]string{"errCode", "float64"}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrConversionError, sError.BuildParams([]string{"errCode", "float64"}), sError.EmptyMap)
 		sLogger.Debug(soteErr.FmtErrMsg)
 	}
 

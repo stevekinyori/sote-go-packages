@@ -73,7 +73,7 @@ func JSONMarshalIndent(v interface{}, prefix, indent string) (buf []byte, soteEr
 			buf = buffer.Bytes()
 		} else {
 			sLogger.Info(err.Error())
-			soteErr = sError.GetSError(207110, sError.BuildParams([]string{fmt.Sprint(v)}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{fmt.Sprint(v)}), sError.EmptyMap)
 		}
 	}
 
@@ -96,7 +96,7 @@ func JSONMarshal(v interface{}) (buffer []byte, soteErr sError.SoteError) {
 		buffer = tBuffer.Bytes()
 	} else {
 		sLogger.Info(err.Error())
-		soteErr = sError.GetSError(207110, sError.BuildParams([]string{fmt.Sprint(v)}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{fmt.Sprint(v)}), sError.EmptyMap)
 	}
 
 	return
@@ -109,7 +109,7 @@ func JSONUnmarshal(ctx context.Context, data []byte, response interface{}) (sote
 	if len(data) > 0 { // only unmarshall if message is not empty
 		if err := json.Unmarshal(data, &response); err != nil {
 			sLogger.Info(err.Error())
-			soteErr = sError.GetSError(207110, sError.BuildParams([]string{string(data)}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{string(data)}), sError.EmptyMap)
 		}
 	}
 
@@ -262,36 +262,6 @@ func CopyFile(source, destination string) (soteErr sError.SoteError) {
 
 	} else {
 		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
-	}
-
-	return
-}
-
-// PanicService panic when not in test mode/production/demo
-func PanicService(ctx context.Context, inSoteErr sError.SoteError, opts Options) (soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	sLogger.Info(inSoteErr.FmtErrMsg)
-	soteErr = inSoteErr
-	if !opts.Testmode {
-		if natsMsgPtr, ok := opts.AcknowledgeNatsMsg(ctx); ok { // at this point the message has been processed and if it's a NATS message, it should be acknowledged
-			sLogger.Info(fmt.Sprintf("PANIC - FilterSubject: %v Message Body: %v", natsMsgPtr.Subject,
-				string(natsMsgPtr.Data)))
-		}
-
-		if opts.Server == "nats" && (opts.AppEnvironment == "development" || opts.AppEnvironment == "staging") {
-			defer func() {
-				if r := recover(); r != nil {
-					sLogger.Info(fmt.Sprintf("Recovered from panic %v", r))
-				}
-			}()
-
-			panic(soteErr.FmtErrMsg)
-		}
-
-		if inSoteErr.ErrCode != 199999 {
-			soteErr = sError.GetSError(199999, sError.BuildParams([]string{""}), sError.EmptyMap)
-		}
 	}
 
 	return

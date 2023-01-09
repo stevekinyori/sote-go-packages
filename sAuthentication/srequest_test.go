@@ -64,7 +64,8 @@ func TestScriptAccessMissingFile(t *testing.T) {
 		"organizations-id": 10003,
 		"device-id": 123456789
 	}`))
-	AssertEqual(t, strings.Split(soteErr.FmtErrMsg, " Message return:")[0], "209010: .git/device.info file was not found.")
+	AssertEqual(t, strings.Split(soteErr.FmtErrMsg, " Message return:")[0],
+		fmt.Sprintf("%v: .git/device.info file was not found.", sError.ErrMissingFile))
 }
 
 func TestScriptAccessInvalidEntry(t *testing.T) {
@@ -75,7 +76,7 @@ func TestScriptAccessInvalidEntry(t *testing.T) {
 		"organizations-id": 10003,
 		"device-id": 123456789
 	}`))
-	AssertEqual(t, soteErr.FmtErrMsg, "208355: Token is invalid")
+	AssertEqual(t, soteErr.FmtErrMsg, fmt.Sprintf("%v: Token is invalid", sError.ErrInvalidToken))
 }
 
 func TestScriptAccessTimeoutToken(t *testing.T) {
@@ -89,7 +90,7 @@ func TestScriptAccessTimeoutToken(t *testing.T) {
 			"device-id": `+now+`
 		}
 	}`))
-	AssertEqual(t, soteErr.FmtErrMsg, "208350: Token is expired")
+	AssertEqual(t, soteErr.FmtErrMsg, fmt.Sprintf("%v: Token is expired", sError.ErrExpiredToken))
 }
 
 func TestScriptAccess(t *testing.T) {
@@ -106,8 +107,8 @@ func TestScriptAccess(t *testing.T) {
 
 func TestRequestMissingAwsUserName(t *testing.T) {
 	soteErr := validateBodyTest(sConfigParams.DEVELOPMENT, []byte(`{}`))
-	AssertEqual(t, soteErr.FmtErrMsg, "206200: Message doesn't match signature. "+
-		"Sender must provide the following parameter names: #/properties/aws-user-name")
+	AssertEqual(t, soteErr.FmtErrMsg, fmt.Sprintf("%v: Message doesn't match signature. "+
+		"Sender must provide the following parameter names: #/properties/aws-user-name", sError.ErrInvalidMsgSignature))
 
 }
 
@@ -115,8 +116,9 @@ func TestRequestMissingOrganizationId(t *testing.T) {
 	soteErr := validateBodyTest(sConfigParams.DEVELOPMENT, []byte(`{
 		"aws-user-name": "soteuser"
 	}`))
-	AssertEqual(t, soteErr.FmtErrMsg, "206200: Message doesn't match signature. "+
-		"Sender must provide the following parameter names: #/properties/organizations-id")
+	AssertEqual(t, soteErr.FmtErrMsg, fmt.Sprintf("%v: Message doesn't match signature. "+
+		"Sender must provide the following parameter names: #/properties/organizations-id",
+		sError.ErrInvalidMsgSignature))
 
 }
 
@@ -125,7 +127,7 @@ func TestRequestMissingJsonWebToken(t *testing.T) {
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
 	}`))
-	AssertEqual(t, soteErr.FmtErrMsg, "208355: Token is invalid")
+	AssertEqual(t, soteErr.FmtErrMsg, fmt.Sprintf("%v: Token is invalid", sError.ErrInvalidToken))
 }
 
 func TestRequestInvalidJsonWebToken(t *testing.T) {
@@ -134,7 +136,8 @@ func TestRequestInvalidJsonWebToken(t *testing.T) {
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
 	}`))
-	AssertEqual(t, soteErr.FmtErrMsg, "208356: Token contains an invalid number of segments")
+	AssertEqual(t, soteErr.FmtErrMsg, fmt.Sprintf("%v: Token contains an invalid number of segments",
+		sError.ErrMissingTokenSegments))
 }
 
 func TestRequestExpiredToken(t *testing.T) {
@@ -143,7 +146,7 @@ func TestRequestExpiredToken(t *testing.T) {
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
 	}`))
-	AssertEqual(t, soteErr.FmtErrMsg, "208350: Token is expired")
+	AssertEqual(t, soteErr.FmtErrMsg, fmt.Sprintf("%v: Token is expired", sError.ErrExpiredToken))
 }
 
 func TestRequestRequesrHeaderReleaseOne(t *testing.T) {

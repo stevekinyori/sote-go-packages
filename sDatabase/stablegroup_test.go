@@ -20,11 +20,11 @@ func TestGetTableGroupInfo(tPtr *testing.T) {
 		soteErr           sError.SoteError
 	)
 
-	if _, soteErr = GetTableGroupInfo("", true); soteErr.ErrCode != 200513 {
-		tPtr.Errorf("%v Failed: Expected error code to be 200513 got %v", testName, soteErr.FmtErrMsg)
+	if _, soteErr = GetTableGroupInfo("", true); soteErr.ErrCode != sError.ErrMissingParameters {
+		tPtr.Errorf("%v Failed: Expected error code to be %v got %v", testName, sError.ErrMissingParameters, soteErr.FmtErrMsg)
 	}
-	if _, soteErr = GetTableGroupInfo("file-does-not-exist.json", true); soteErr.ErrCode != 109999 {
-		tPtr.Errorf("%v Failed: Expected error code to be 109999 got %v", testName, soteErr.FmtErrMsg)
+	if _, soteErr = GetTableGroupInfo("file-does-not-exist.json", true); soteErr.ErrCode != sError.ErrItemNotFound {
+		tPtr.Errorf("%v Failed: Expected error code to be %v got %v", testName, sError.ErrItemNotFound, soteErr.FmtErrMsg)
 	}
 	if tTableGroupInfo, soteErr = GetTableGroupInfo("organizations-table-group.json", true); soteErr.ErrCode != nil {
 		tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)

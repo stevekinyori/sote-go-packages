@@ -49,8 +49,9 @@ func TestCreateLimitsStreamWithFileStorage(tPtr *testing.T) {
 		tPtr.Errorf("%v failed: Expected soteErr to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-		tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+	if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+		tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+			soteErr.FmtErrMsg)
 	}
 
 	if _, soteErr = tMMPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode != nil {
@@ -74,8 +75,9 @@ func TestCreateLimitsStreamWithMemoryStorage(tPtr *testing.T) {
 		tPtr.Errorf("%v failed: Expected soteErr to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-		tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+	if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+		tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+			soteErr.FmtErrMsg)
 	}
 
 	if _, soteErr = tMMPtr.CreateLimitsStreamWithMemoryStorage(TESTSTREAMNAME, testPullSubjects, 1, true); soteErr.ErrCode != nil {
@@ -99,8 +101,9 @@ func TestCreateWorkQueueStreamWithFileStorage(tPtr *testing.T) {
 		tPtr.Errorf("%v failed: Expected soteErr to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-		tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+	if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+		tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+			soteErr.FmtErrMsg)
 	}
 
 	if _, soteErr = tMMPtr.CreateWorkQueueStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode != nil {
@@ -124,8 +127,9 @@ func TestCreateWorkQueueStreamWithMemoryStorage(tPtr *testing.T) {
 		tPtr.Errorf("%v failed: Expected soteErr to be nil got %v", testName, soteErr.FmtErrMsg)
 	}
 
-	if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-		tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+	if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+		tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+			soteErr.FmtErrMsg)
 	}
 
 	if _, soteErr = tMMPtr.CreateWorkQueueStreamWithMemoryStorage(TESTSTREAMNAME, testPullSubjects, 1, true); soteErr.ErrCode != nil {

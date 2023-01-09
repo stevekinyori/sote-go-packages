@@ -22,7 +22,7 @@ func init() {
 
 func TestSetConnectionValue(tPtr *testing.T) {
 	_, soteErr := setConnectionValues("dbName", "Schema", "User", "Password", "Host", "INVALID", 1, 1)
-	if soteErr.ErrCode != 209220 {
+	if soteErr.ErrCode != sError.ErrInvalidSSLMode {
 		tPtr.Errorf("setConnectionValues Failed: Error code is not for an invalid sslMode.")
 		tPtr.Fail()
 	}
@@ -47,8 +47,8 @@ func TestVerifyConnection(tPtr *testing.T) {
 	)
 
 	tPtr.Run("test", func(tPtr *testing.T) {
-		if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode != 209299 {
-			tPtr.Errorf("VerifyConnection Failed: Expected 209299 error code.")
+		if soteErr = VerifyConnection(tConnInfo); soteErr.ErrCode != sError.ErrDBConnectionError {
+			tPtr.Errorf("VerifyConnection Failed: Expected %v error code.", sError.ErrDBConnectionError)
 			tPtr.Fail()
 		}
 	})
@@ -111,8 +111,8 @@ func TestVerifyConnection(tPtr *testing.T) {
 	tPtr.Run("no database", func(tPtr *testing.T) {
 		// This will test the condition that no database is available to connect
 		tConnInfo, soteErr = GetConnection(config.Name, config.Schema, config.User, config.Password, config.Host, config.SSLMode, 65000, 3)
-		if soteErr.ErrCode != 209299 {
-			tPtr.Errorf("setConnectionValues Failed: Expected 209299 error code.")
+		if soteErr.ErrCode != sError.ErrDBConnectionError {
+			tPtr.Errorf("setConnectionValues Failed: Expected %v error code.", sError.ErrDBConnectionError)
 			tPtr.Fail()
 		}
 	})

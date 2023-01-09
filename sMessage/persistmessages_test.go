@@ -47,8 +47,9 @@ func TestPSubscribe(tPtr *testing.T) {
 
 	if soteErr.ErrCode == nil {
 		if _, soteErr = mmPtr.PPublish(testPushSubjects[0], "Hello world", false); soteErr.ErrCode == nil {
-			if soteErr = mmPtr.PSubscribe(testPullSubjects[0], TESTCONSUMERNAMEPUSH, nil, false); soteErr.ErrCode != 200513 {
-				tPtr.Errorf("%v Failed: Expected error code to be 200513 got %v", testName, soteErr.FmtErrMsg)
+			if soteErr = mmPtr.PSubscribe(testPullSubjects[0], TESTCONSUMERNAMEPUSH, nil, false); soteErr.ErrCode != sError.ErrMissingParameters {
+				tPtr.Errorf("%v Failed: Expected error code to be %v got %v", testName, sError.ErrMissingParameters,
+					soteErr.FmtErrMsg)
 			}
 			if soteErr = mmPtr.PSubscribe(testPushSubjects[0], TESTCONSUMERNAMEPUSH, func(msgIn *nats.Msg) {
 				return
@@ -160,7 +161,8 @@ func TestFetch(tPtr *testing.T) {
 		if soteErr = mmPtr.PullSubscribe(testPullSubjects[0], TESTSTREAMNAME, TESTCONSUMERNAMEPULL, false); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
-		if soteErr = mmPtr.Fetch(TESTCONSUMERNAMEPULL, 1, true, false); soteErr.ErrCode != nil && soteErr.ErrCode != 101010 {
+		if soteErr = mmPtr.Fetch(TESTCONSUMERNAMEPULL, 1, true, false); soteErr.ErrCode != nil && soteErr.
+			ErrCode != sError.ErrTimeout {
 			tPtr.Errorf("%vFetch Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 		}
 	}
@@ -204,7 +206,7 @@ func TestAck(tPtr *testing.T) {
 func initPullTest() (soteErr sError.SoteError) {
 	if mmPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1, 250*time.Millisecond,
 		false); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode == nil || soteErr.ErrCode == 109999 {
+		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode == nil || soteErr.ErrCode == sError.ErrItemNotFound {
 			if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
 				if soteErr = mmPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
 					true); soteErr.ErrCode != nil {
@@ -220,7 +222,7 @@ func initPullTest() (soteErr sError.SoteError) {
 func initPushTest() (soteErr sError.SoteError) {
 	if mmPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1, 250*time.Millisecond,
 		false); soteErr.ErrCode == nil {
-		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode == nil || soteErr.ErrCode == 109999 {
+		if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode == nil || soteErr.ErrCode == sError.ErrItemNotFound {
 			if _, soteErr = mmPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPushSubjects, 1, false); soteErr.ErrCode == nil {
 				if soteErr = mmPtr.CreatePushReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPUSH, TESTDELIVERYSUBJECT, testPushSubjects[0],
 					1,
@@ -243,7 +245,7 @@ func cleanUpTest() (soteErr sError.SoteError) {
 	if soteErr = mmPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode == nil {
 		mmPtr.Close()
 	} else {
-		soteErr = sError.GetSError(199999, sError.BuildParams([]string{testName}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{testName}), sError.EmptyMap)
 	}
 
 	return

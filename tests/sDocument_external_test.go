@@ -98,8 +98,8 @@ func TestNewS3ClientServer(tPtr *testing.T) {
 			MountPointEnvVarName: "INVALIDMOUNTPOINTENVNAME",
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             TESTMODE,
-		}); soteErr.ErrCode != 209100 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "209100", soteErr.FmtErrMsg)
+		}); soteErr.ErrCode != sError.ErrMissingEnvVariable {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrMissingEnvVariable, soteErr.FmtErrMsg)
 		}
 	})
 
@@ -111,7 +111,7 @@ func TestNewS3ClientServer(tPtr *testing.T) {
 			TestMode:             TESTMODE,
 			IgnoreMountPoint:     true,
 		}); soteErr.ErrCode != nil {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "209100", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
 	})
 
@@ -121,8 +121,9 @@ func TestNewS3ClientServer(tPtr *testing.T) {
 			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             TESTMODE,
-		}); soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "109999", soteErr.FmtErrMsg)
+		}); soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrItemNotFound,
+				soteErr.FmtErrMsg)
 		}
 	})
 }
@@ -337,8 +338,8 @@ func TestDocumentPreSignedURL(tPtr *testing.T) {
 		})
 
 		tPtr.Run("Check Invalid Pre-Signed Document URL", func(tPtr *testing.T) {
-			if _, soteErr = sDocument.ValidatePreSignedDocumentURL(TESTINVALIDFILEPATH); soteErr.ErrCode != 109999 {
-				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, 109999, soteErr.FmtErrMsg)
+			if _, soteErr = sDocument.ValidatePreSignedDocumentURL(TESTINVALIDFILEPATH); soteErr.ErrCode != sError.ErrItemNotFound {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrItemNotFound, soteErr.FmtErrMsg)
 			}
 		})
 	}

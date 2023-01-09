@@ -45,7 +45,7 @@ func (dbConnInfo *ConnInfo) QueryDBStmt(ctx context.Context, qStmt string, error
 	}
 
 	tRows, err = dbConnInfo.DBPoolPtr.Query(ctx, qStmt, args...)
-	soteErr = convertSQLErrors(ctx, err, errorKey)
+	soteErr = convertSQLError(ctx, err, errorKey)
 
 	return
 }
@@ -60,7 +60,7 @@ func (dbConnInfo *ConnInfo) QueryOneColumnStmt(ctx context.Context, qStmt string
 	}
 
 	err := dbConnInfo.DBPoolPtr.QueryRow(ctx, qStmt, args...).Scan(&tColumn)
-	soteErr = convertSQLErrors(ctx, err, errorKey)
+	soteErr = convertSQLError(ctx, err, errorKey)
 
 	return
 }
@@ -81,7 +81,7 @@ func (dbConnInfo *ConnInfo) QueryOneRow(ctx context.Context, qStmt string, colum
 	}
 
 	err := dbConnInfo.DBPoolPtr.QueryRow(ctx, qStmt, args...).Scan(tRow...)
-	soteErr = convertSQLErrors(ctx, err, errorKey)
+	soteErr = convertSQLError(ctx, err, errorKey)
 
 	return
 }
@@ -95,7 +95,7 @@ func (dbConnInfo *ConnInfo) ExecDBStmt(ctx context.Context, qStmt string, errorK
 	}
 
 	_, err := dbConnInfo.DBPoolPtr.Exec(ctx, qStmt, args...)
-	soteErr = convertSQLErrors(ctx, err, errorKey)
+	soteErr = convertSQLError(ctx, err, errorKey)
 
 	return
 }
@@ -113,8 +113,8 @@ func (dbConnInfo *ConnInfo) ExecDBStmts(ctx context.Context, queries []Query) (s
 	return
 }
 
-// convertSQLErrors converts SQL errors to Sote Error
-func convertSQLErrors(ctx context.Context, err error, errorKey string) (soteErr sError.SoteError) {
+// convertSQLError converts SQL errors to Sote Error
+func convertSQLError(ctx context.Context, err error, errorKey string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -130,7 +130,7 @@ func convertSQLErrors(ctx context.Context, err error, errorKey string) (soteErr 
 			soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{errorKey}), sError.EmptyMap)
 		} else {
 			sLogger.Info(err.Error())
-			if dbError, soteErr = sError.ConvertErr(err); len(dbError) == 0 {
+			if dbError, soteErr = sError.ConvertSQLError(err); len(dbError) == 0 {
 				dbError = make(map[string]string)
 				dbError["Error"] = err.Error()
 			}

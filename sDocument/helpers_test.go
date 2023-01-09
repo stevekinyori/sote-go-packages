@@ -101,8 +101,8 @@ func TestGetDocumentsMountPoint(tPtr *testing.T) {
 	})
 
 	tPtr.Run("Validate missing mount point environment variable", func(tPtr *testing.T) {
-		if _, soteErr = GetDocumentsMountPoint(parentCtx, ""); soteErr.ErrCode != 209100 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "209100", soteErr.FmtErrMsg)
+		if _, soteErr = GetDocumentsMountPoint(parentCtx, ""); soteErr.ErrCode != sError.ErrMissingEnvVariable {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrMissingEnvVariable, soteErr.FmtErrMsg)
 		}
 	})
 }
@@ -114,8 +114,8 @@ func TestRemoveFile(tPtr *testing.T) {
 	)
 
 	tPtr.Run("Remove file with invalid path", func(tPtr *testing.T) {
-		if soteErr = RemoveFile(parentCtx, TESTINVALIDFILEPATH); soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "109999", soteErr.FmtErrMsg)
+		if soteErr = RemoveFile(parentCtx, TESTINVALIDFILEPATH); soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrItemNotFound, soteErr.FmtErrMsg)
 		}
 	})
 }
@@ -127,14 +127,14 @@ func TestValidateFilepath(tPtr *testing.T) {
 	)
 
 	tPtr.Run("Check invalid path", func(tPtr *testing.T) {
-		if _, soteErr = ValidateFilepath(TESTINVALIDFILEPATH); soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "109999", soteErr.FmtErrMsg)
+		if _, soteErr = ValidateFilepath(TESTINVALIDFILEPATH); soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrItemNotFound, soteErr.FmtErrMsg)
 		}
 	})
 
 	tPtr.Run("Check valid path", func(tPtr *testing.T) {
 		if _, soteErr = ValidateFilepath(testLocalFilepath); soteErr.ErrCode != nil {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "109999", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
 	})
 }
@@ -161,8 +161,8 @@ func TestPanicService(tPtr *testing.T) {
 
 	tPtr.Run("non-testMode error", func(tPtr *testing.T) {
 		testMode = false
-		if soteErr = panicService(parentCtx, sError.SoteError{ErrCode: 207500}); soteErr.ErrCode != 199999 {
-			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, "199999", soteErr.FmtErrMsg)
+		if soteErr = panicService(parentCtx, sError.SoteError{ErrCode: 207500}); soteErr.ErrCode != sError.ErrGenericError {
+			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, sError.ErrGenericError, soteErr.FmtErrMsg)
 		}
 		testMode = true
 	})
@@ -177,15 +177,16 @@ func TestAmazonTextractErrorHandler(tPtr *testing.T) {
 
 	tPtr.Run("InvalidParameterException Error", func(tPtr *testing.T) {
 		err = createCustomErr("InvalidParameterException")
-		if soteErr = AmazonTextractErrorHandler(parentCtx, err); soteErr.ErrCode != 200514 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "200514", soteErr.FmtErrMsg)
+		if soteErr = AmazonTextractErrorHandler(parentCtx, err); soteErr.ErrCode != sError.ErrExpectedThreeParameters {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrExpectedThreeParameters,
+				soteErr.FmtErrMsg)
 		}
 	})
 
 	tPtr.Run("General Business Service Error", func(tPtr *testing.T) {
 		err = createCustomErr("General Error")
-		if soteErr = AmazonTextractErrorHandler(parentCtx, err); soteErr.ErrCode != 210599 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "200514", soteErr.FmtErrMsg)
+		if soteErr = AmazonTextractErrorHandler(parentCtx, err); soteErr.ErrCode != sError.ErrBusinessServiceError {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrExpectedThreeParameters, soteErr.FmtErrMsg)
 		}
 	})
 }

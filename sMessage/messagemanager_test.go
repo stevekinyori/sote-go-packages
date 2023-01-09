@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"gitlab.com/soteapps/packages/v2023/sConfigParams"
+	"gitlab.com/soteapps/packages/v2023/sError"
 )
 
 const (
@@ -56,18 +57,19 @@ func TestNew(tPtr *testing.T) {
 
 	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT,
 		"/XXXX/syacko/.nkeys/creds/synadia/sote-staging/staging-soteadmin.creds",
-		TESTSYNADIAURL, "test", true, 1, 250*time.Millisecond, false); soteErr.ErrCode != 209010 {
-		tPtr.Errorf("%v failed: Expected error code of 209010 got %v", testName, soteErr.FmtErrMsg)
+		TESTSYNADIAURL, "test", true, 1, 250*time.Millisecond, false); soteErr.ErrCode != sError.ErrMissingFile {
+		tPtr.Errorf("%v failed: Expected error code of %v got %v", testName, sError.ErrMissingFile, soteErr.FmtErrMsg)
 	}
 
 	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, "INVALID", "", TESTSYNADIAURL, "test", true, 1,
-		250*time.Millisecond, false); soteErr.ErrCode != 209110 {
-		tPtr.Errorf("%v failed: Expected error code of 209110 got %v", testName, soteErr.FmtErrMsg)
+		250*time.Millisecond, false); soteErr.ErrCode != sError.ErrInvalidEnvValue {
+		tPtr.Errorf("%v failed: Expected error code of %v got %v", testName, sError.ErrInvalidEnvValue,
+			soteErr.FmtErrMsg)
 	}
 
 	if _, soteErr := New(parentCtx, "XXXX", sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", true, 1,
-		250*time.Millisecond, false); soteErr.ErrCode != 109999 {
-		tPtr.Errorf("%v failed: Expected error code of 109999 got %v", testName, soteErr.FmtErrMsg)
+		250*time.Millisecond, false); soteErr.ErrCode != sError.ErrItemNotFound {
+		tPtr.Errorf("%v failed: Expected error code of %v got %v", testName, sError.ErrItemNotFound, soteErr.FmtErrMsg)
 	}
 
 	if _, soteErr := New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", true, -1,

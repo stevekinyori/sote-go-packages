@@ -120,9 +120,9 @@ func (mmPtr *MessageManager) setCredentialsFile(streamCredentialFile string) (so
 	sLogger.DebugMethod()
 
 	if len(streamCredentialFile) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"streamCredentialFile"}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrMissingParameters, sError.BuildParams([]string{"streamCredentialFile"}), sError.EmptyMap)
 	} else if _, err := os.Stat(streamCredentialFile); err != nil {
-		soteErr = sError.GetSError(209010, sError.BuildParams([]string{streamCredentialFile, err.Error()}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrMissingFile, sError.BuildParams([]string{streamCredentialFile, err.Error()}), sError.EmptyMap)
 	} else {
 		mmPtr.connectionOptions = append(mmPtr.connectionOptions, nats.UserCredentials(streamCredentialFile))
 	}
@@ -178,7 +178,7 @@ func (mmPtr *MessageManager) setURL(ctx context.Context, connectionURL string, s
 	)
 
 	if _, err := url.Parse(connectionURL); err != nil || connectionURL == "" {
-		soteErr = sError.GetSError(210090, sError.BuildParams([]string{connectionURL}), nil)
+		soteErr = sError.GetSError(sError.ErrMissingURL, sError.BuildParams([]string{connectionURL}), nil)
 	} else {
 		if secure {
 			mask, soteErr = sConfigParams.GetNATSTLSURLMask(ctx, mmPtr.application)
@@ -221,37 +221,39 @@ func (mmPtr *MessageManager) natsErrorHandle(err error, params map[string]string
 	)
 	switch err.Error() {
 	case nats.ErrInvalidConnection.Error():
-		soteErr = sError.GetSError(210499, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrSynadiaError, nil, sError.EmptyMap)
 	case nats.ErrBadSubject.Error():
-		soteErr = sError.GetSError(208310, sError.BuildParams([]string{params["Subject"]}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrMissingTokenSubject, sError.BuildParams([]string{params["Subject"]}), sError.EmptyMap)
 	case nats.ErrNoServers.Error():
-		soteErr = sError.GetSError(209499, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrNATSConnectionError, nil, sError.EmptyMap)
 	case "no nkey seed found":
-		soteErr = sError.GetSError(209398, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrMissingNKeySeed, nil, sError.EmptyMap)
 	case nats.ErrNoMatchingStream.Error():
-		soteErr = sError.GetSError(210599, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrBusinessServiceError, nil, sError.EmptyMap)
 	case nats.ErrTimeout.Error():
 		errorDetail["raw_message"] = "nats: timeout"
-		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), errorDetail)
+		soteErr = sError.GetSError(sError.ErrTimeout, sError.BuildParams([]string{"nats"}), errorDetail)
 	case "context deadline exceeded":
 		errorDetail["raw_message"] = "context deadline exceeded"
-		soteErr = sError.GetSError(101010, sError.BuildParams([]string{"nats"}), errorDetail)
+		soteErr = sError.GetSError(sError.ErrContextDeadlineExceeded, sError.BuildParams([]string{"nats"}), errorDetail)
 	case nats.ErrConnectionClosed.Error():
 		errorDetail["raw_message"] = "nats: connection closed"
-		soteErr = sError.GetSError(209499, nil, errorDetail)
+		soteErr = sError.GetSError(sError.ErrNATSConnectionError, nil, errorDetail)
 	case nats.ErrBadSubscription.Error():
 		errorDetail["raw_message"] = "nats: invalid subscription"
-		soteErr = sError.GetSError(206050, sError.BuildParams([]string{params["Subscription Name"], params["Subject"]}), errorDetail)
+		soteErr = sError.GetSError(sError.ErrNATSInvalidSubscription, sError.BuildParams([]string{params["Subscription Name"], params["Subject"]}),
+			errorDetail)
 	case nats.ErrStreamNotFound.Error():
 		errorDetail["raw_message"] = "stream not found"
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), errorDetail)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{params["Stream Name"]}), errorDetail)
 	// 	TODO This should be removed once the NATS bug is resolved.
 	case "too many open files":
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"]}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{params["Stream Name"]}), sError.EmptyMap)
 	case "no message found":
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{params["Stream Name"], params["Message Sequence"]}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{params["Stream Name"], params["Message Sequence"]}),
+			sError.EmptyMap)
 	default:
-		soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 	}
 	sLogger.Info(fmt.Sprintf("ERROR IN: messagemanager.go err: %v | %v", err.Error(), dumpParams(params)))
 	sLogger.Info(soteErr.FmtErrMsg)

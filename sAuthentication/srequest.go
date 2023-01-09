@@ -64,9 +64,9 @@ func ValidateBody(ctx context.Context, data []byte, tEnvironment string, isTestM
 func Validate(ctx context.Context, rh RequestHeader, tEnvironment string, isTestMode bool) (RequestHeaderSchema, sError.SoteError) {
 	soteErr := sError.SoteError{}
 	if rh.Header.AwsUserName == "" {
-		soteErr = sError.GetSError(206200, []interface{}{"#/properties/aws-user-name"}, nil)
+		soteErr = sError.GetSError(sError.ErrInvalidMsgSignature, []interface{}{"#/properties/aws-user-name"}, nil)
 	} else if rh.Header.OrganizationId == 0 {
-		soteErr = sError.GetSError(206200, []interface{}{"#/properties/organizations-id"}, nil)
+		soteErr = sError.GetSError(sError.ErrInvalidMsgSignature, []interface{}{"#/properties/organizations-id"}, nil)
 	}
 
 	if soteErr.ErrCode != nil { // cannot send this error back to the client
@@ -87,16 +87,16 @@ func Validate(ctx context.Context, rh RequestHeader, tEnvironment string, isTest
 			path, _ := filepath.Abs(DEVICE_FILE)
 			fileData, err := ioutil.ReadFile(path)
 			if err != nil {
-				return rh.Header, sError.GetSError(209010, []interface{}{DEVICE_FILE, err.Error()}, nil)
+				return rh.Header, sError.GetSError(sError.ErrMissingFile, []interface{}{DEVICE_FILE, err.Error()}, nil)
 			} else {
 				var t int64
 				t, err = strconv.ParseInt(strings.TrimSpace(string(fileData)), 10, 0)
 				if err != nil {
 					sLogger.Debug(err.Error())
-					return rh.Header, sError.GetSError(208355, nil, nil)
+					return rh.Header, sError.GetSError(sError.ErrInvalidToken, nil, nil)
 				}
 				if t != rh.Header.DeviceId || math.Abs(float64(time.Now().Unix()-t)) >= DEVICE_TIMEOUT { // maxium duration of a device token
-					return rh.Header, sError.GetSError(208350, nil, nil)
+					return rh.Header, sError.GetSError(sError.ErrExpiredToken, nil, nil)
 				} else {
 					return rh.Header, soteErr
 				}
@@ -106,7 +106,7 @@ func Validate(ctx context.Context, rh RequestHeader, tEnvironment string, isTest
 	}
 
 	if rh.Header.JsonWebToken == "" {
-		soteErr = sError.GetSError(208355, nil, nil)
+		soteErr = sError.GetSError(sError.ErrInvalidToken, nil, nil)
 
 	} else {
 		// https://auth0.com/docs/tokens?_ga=2.253547273.1898510496.1593591557-1741611737.1593591372

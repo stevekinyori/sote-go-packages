@@ -50,8 +50,8 @@ func TestValidToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
+	}); soteErr.ErrCode != sError.ErrExpiredToken && soteErr.ErrCode != nil {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v or nil: %v", sError.ErrExpiredToken, soteErr.FmtErrMsg)
 	}
 }
 func TestValidMissingSegmentToken(tPtr *testing.T) {
@@ -61,8 +61,9 @@ func TestValidMissingSegmentToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
+	}); soteErr.ErrCode != sError.ErrMissingTokenSegments && soteErr.ErrCode != nil {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v or nil: %v", sError.ErrMissingTokenSegments,
+			soteErr.FmtErrMsg)
 	}
 }
 func TestValidFakeToken(tPtr *testing.T) {
@@ -72,8 +73,9 @@ func TestValidFakeToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208356 or nil: %v", soteErr.FmtErrMsg)
+	}); soteErr.ErrCode != sError.ErrMissingTokenSegments && soteErr.ErrCode != nil {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v or nil: %v", sError.ErrMissingTokenSegments,
+			soteErr.FmtErrMsg)
 	}
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
@@ -83,8 +85,9 @@ func TestInValidSignatureToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.FmtErrMsg)
+	}); soteErr.ErrCode != sError.ErrExpiredToken && soteErr.ErrCode != sError.ErrInvalidToken && soteErr.ErrCode != sError.ErrMissingTokenSegments {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v, %v or %v: %v", sError.ErrExpiredToken,
+			sError.ErrInvalidToken, sError.ErrMissingTokenSegments, soteErr.FmtErrMsg)
 	}
 }
 
@@ -95,8 +98,9 @@ func TestValidTokenMissingParams(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 200512 {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 200512 %v", soteErr.FmtErrMsg)
+	}); soteErr.ErrCode != sError.ErrExpectedTwoParameters {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v %v", sError.ErrExpectedTwoParameters,
+			soteErr.FmtErrMsg)
 	}
 }
 func TestInValidToken(tPtr *testing.T) {
@@ -106,8 +110,8 @@ func TestInValidToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208355 {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.FmtErrMsg)
+	}); soteErr.ErrCode != sError.ErrInvalidToken {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v: %v", sError.ErrInvalidToken, soteErr.FmtErrMsg)
 	}
 }
 func TestMatchKid(tPtr *testing.T) {
@@ -161,34 +165,34 @@ func TestFetchPublicKey(tPtr *testing.T) {
 		tPtr.Errorf("matchKid failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
 	}
 
-	if _, soteErr = fetchPublicKey("SCOTT_LAND", userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 210030 {
-		tPtr.Errorf("matchKid failed: Expected soteErr to be 210030: %v", soteErr.FmtErrMsg)
+	if _, soteErr = fetchPublicKey("SCOTT_LAND", userPoolId, sConfigParams.DEVELOPMENT); soteErr.ErrCode != sError.ErrFetchingJWKError {
+		tPtr.Errorf("matchKid failed: Expected soteErr to be %v: %v", sError.ErrFetchingJWKError, soteErr.FmtErrMsg)
 	}
 }
 func TestValidateClaims(tPtr *testing.T) {
 	var claims jwt.MapClaims
-	if soteErr := validateClaims(parentCtx, claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 208370 {
-		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208370")
+	if soteErr := validateClaims(parentCtx, claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != sError.ErrMissingClaims {
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be %v", sError.ErrMissingClaims)
 	}
 	claims = make(map[string]interface{})
 	claims["scope"] = "scott.fake.scope"
-	if soteErr := validateClaims(parentCtx, claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 208360 {
-		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
+	if soteErr := validateClaims(parentCtx, claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != sError.ErrInvalidClaims {
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be %v", sError.ErrInvalidClaims)
 	}
 	claims = make(map[string]interface{})
 	claims["token_use"] = "scott.fake.use"
-	if soteErr := validateClaims(parentCtx, claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 208360 {
-		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
+	if soteErr := validateClaims(parentCtx, claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != sError.ErrInvalidClaims {
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be %v", sError.ErrInvalidClaims)
 	}
 	claims = make(map[string]interface{})
 	claims["iss"] = "scott.fake.iss"
-	if soteErr := validateClaims(parentCtx, claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 208360 {
-		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208360")
+	if soteErr := validateClaims(parentCtx, claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != sError.ErrInvalidClaims {
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be %v", sError.ErrInvalidClaims)
 	}
 	/*claims = make(map[string]interface{})
 	claims["client_id"] = "scott.fake.client_id"
-	if soteErr := validateClaims(claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != 208340 {
-		tPtr.Errorf("validateClaims failed: Expected soteErr to be 208340")
+	if soteErr := validateClaims(claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != sError.ErrInvalidClientId {
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be sError.ErrInvalidClientId")
 	}*/
 }
 func TestValidateClientId(tPtr *testing.T) {

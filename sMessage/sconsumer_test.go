@@ -44,8 +44,9 @@ func TestPullReplayInstantConsumer(tPtr *testing.T) {
 
 	if tMMPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
-		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+				soteErr.FmtErrMsg)
 		}
 		if _, soteErr = tMMPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
 			if soteErr = tMMPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
@@ -53,8 +54,9 @@ func TestPullReplayInstantConsumer(tPtr *testing.T) {
 				tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 			}
 		}
-		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+				soteErr.FmtErrMsg)
 		}
 	}
 }
@@ -68,8 +70,9 @@ func TestPushReplayInstantConsumer(tPtr *testing.T) {
 
 	if tMMPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
-		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+				soteErr.FmtErrMsg)
 		}
 		if _, soteErr = tMMPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPushSubjects, 1, false); soteErr.ErrCode == nil {
 			if soteErr = tMMPtr.CreatePushReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPUSH, TESTDELIVERYSUBJECT, testPushSubjects[0], 1,
@@ -77,8 +80,9 @@ func TestPushReplayInstantConsumer(tPtr *testing.T) {
 				tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 			}
 		}
-		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+				soteErr.FmtErrMsg)
 		}
 	}
 }
@@ -92,8 +96,9 @@ func TestGetConsumerInfo(tPtr *testing.T) {
 
 	if tMMPtr, soteErr = New(parentCtx, TESTAPPLICATIONSYNADIA, sConfigParams.DEVELOPMENT, "", TESTSYNADIAURL, "test", false, 1,
 		250*time.Millisecond, false); soteErr.ErrCode == nil {
-		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+		if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName, sError.ErrItemNotFound,
+				soteErr.FmtErrMsg)
 		}
 		if _, soteErr = tMMPtr.CreateLimitsStreamWithFileStorage(TESTSTREAMNAME, testPullSubjects, 1, false); soteErr.ErrCode == nil {
 			if soteErr = tMMPtr.CreatePullReplayInstantConsumer(TESTSTREAMNAME, TESTCONSUMERNAMEPULL, testPullSubjects[0], 1,
@@ -102,8 +107,9 @@ func TestGetConsumerInfo(tPtr *testing.T) {
 					tPtr.Errorf("%v Failed: Expected error code to be nil got %v", testName, soteErr.FmtErrMsg)
 				}
 			}
-			if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != 109999 {
-				tPtr.Errorf("%v Failed: Expected error code to be nil or 109999 got %v", testName, soteErr.FmtErrMsg)
+			if soteErr = tMMPtr.DeleteStream(TESTSTREAMNAME, false); soteErr.ErrCode != nil && soteErr.ErrCode != sError.ErrItemNotFound {
+				tPtr.Errorf("%v Failed: Expected error code to be nil or %v got %v", testName,
+					sError.ErrItemNotFound, soteErr.FmtErrMsg)
 			}
 		}
 	}

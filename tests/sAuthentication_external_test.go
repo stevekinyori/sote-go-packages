@@ -46,8 +46,8 @@ func TestValidToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208350 && soteErr.ErrCode != nil {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.ErrCode)
+	}); soteErr.ErrCode != sError.ErrExpiredToken && soteErr.ErrCode != nil {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v or nil: %v", sError.ErrExpiredToken, soteErr.ErrCode)
 	}
 }
 func TestValidFakeToken(tPtr *testing.T) {
@@ -57,8 +57,8 @@ func TestValidFakeToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350 or nil: %v", soteErr.FmtErrMsg)
+	}); soteErr.ErrCode != sError.ErrMissingTokenSegments && soteErr.ErrCode != nil {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be nil or nil: %v", soteErr.FmtErrMsg)
 	}
 }
 func TestValidMissingSegmentToken(tPtr *testing.T) {
@@ -68,8 +68,8 @@ func TestValidMissingSegmentToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208356 && soteErr.ErrCode != nil {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355 or nil: %v", soteErr.FmtErrMsg)
+	}); soteErr.ErrCode != sError.ErrMissingTokenSegments && soteErr.ErrCode != nil {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v or nil: %v", sError.ErrInvalidToken, soteErr.FmtErrMsg)
 	}
 }
 func TestInValidSignatureToken(tPtr *testing.T) {
@@ -79,8 +79,9 @@ func TestInValidSignatureToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208350 && soteErr.ErrCode != 208355 && soteErr.ErrCode != 208356 {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208350, 208355 or 208356: %v", soteErr.ErrCode)
+	}); soteErr.ErrCode != sError.ErrExpiredToken && soteErr.ErrCode != sError.ErrInvalidToken && soteErr.ErrCode != sError.ErrMissingTokenSegments {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v, %v or %v: %v", sError.ErrExpiredToken,
+			sError.ErrMissingTokenSegments, sError.ErrInvalidToken, soteErr.ErrCode)
 	}
 }
 func TestInValidToken(tPtr *testing.T) {
@@ -90,7 +91,7 @@ func TestInValidToken(tPtr *testing.T) {
 		AwsRegion:      awsRegion,
 		UserPoolId:     userPoolId,
 		ClientId:       "",
-	}); soteErr.ErrCode != 208355 {
-		tPtr.Errorf("ValidToken failed: Expected soteErr to be 208355: %v", soteErr.ErrCode)
+	}); soteErr.ErrCode != sError.ErrInvalidToken {
+		tPtr.Errorf("ValidToken failed: Expected soteErr to be %v: %v", sError.ErrInvalidToken, soteErr.ErrCode)
 	}
 }

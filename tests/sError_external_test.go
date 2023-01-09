@@ -13,33 +13,34 @@ func init() {
 }
 
 func TestIncorrectParams(tPtr *testing.T) {
-	if x := sError.GetSError(100100, sError.BuildParams([]string{""}), sError.EmptyMap); x.ErrCode != 203060 {
-		tPtr.Errorf("The wrong error code (%v) was returned.  203060 should have been returned.", x.ErrCode)
+	if x := sError.GetSError(sError.ErrAuthorized, sError.BuildParams([]string{""}),
+		sError.EmptyMap); x.ErrCode != sError.ErrInvalidParameterCount {
+		tPtr.Errorf("The wrong error code (%v) was returned.  %v should have been returned.", x.ErrCode, sError.ErrInvalidParameterCount)
 	}
 }
 func TestErrorCodeNotFound(tPtr *testing.T) {
 	errCode := 999999999
-	if x := sError.GetSError(errCode, nil, sError.EmptyMap); x.ErrCode != 208200 {
-		tPtr.Errorf("%v should have returned an error of 208200", errCode)
+	if x := sError.GetSError(errCode, nil, sError.EmptyMap); x.ErrCode != sError.ErrMissingErrorMessage {
+		tPtr.Errorf("%v should have returned an error of %v", errCode, sError.ErrMissingErrorMessage)
 	}
 }
-func Test100100Error(tPtr *testing.T) {
-	var errCode = 100100
+func TestErrAuthorizedError(tPtr *testing.T) {
+	var errCode = sError.ErrAuthorized
 	s := sError.BuildParams([]string{"SUPER_USER, EXECUTIVE", "DELETE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test109999Error(tPtr *testing.T) {
-	var errCode = 109999
+func TestErrItemNotFoundError(tPtr *testing.T) {
+	var errCode = sError.ErrItemNotFound
 	s := sError.BuildParams([]string{"ITEM_NAME"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test200200Error(tPtr *testing.T) {
-	var errCode = 200200
+func TestErrInvalidParameterTypeError(tPtr *testing.T) {
+	var errCode = sError.ErrInvalidParameterType
 	s := sError.BuildParams([]string{"PARAMETER_NAME", "DATA_TYPE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test200250Error(tPtr *testing.T) {
-	var errCode = 200250
+func TestErrInvalidParameterValueError(tPtr *testing.T) {
+	var errCode = sError.ErrInvalidParameterValue
 	s := sError.BuildParams([]string{"PARAMETER_NAME", "PARAMETER_VALUE", "LIST_OF_VALUES"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -58,18 +59,18 @@ func Test200511Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"PARAMETER_NAME", "PARAMETER_NAME"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test200512Error(tPtr *testing.T) {
-	var errCode = 200512
+func TestErrExpectedTwoParametersError(tPtr *testing.T) {
+	var errCode = sError.ErrExpectedTwoParameters
 	s := sError.BuildParams([]string{"PARAMETER_NAME", "PARAMETER_NAME"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test200513Error(tPtr *testing.T) {
-	var errCode = 200513
+func TestErrMissingParametersError(tPtr *testing.T) {
+	var errCode = sError.ErrMissingParameters
 	s := sError.BuildParams([]string{"PARAMETER_NAME"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test200600Error(tPtr *testing.T) {
-	var errCode = 200600
+func TestErrBadHTTPRequestError(tPtr *testing.T) {
+	var errCode = sError.ErrBadHTTPRequest
 	s := sError.BuildParams([]string{"DETAILED_MESSAGE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -83,8 +84,8 @@ func Test203050Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"NAME", "APP_PACKAGE_NAME"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test203060Error(tPtr *testing.T) {
-	var errCode = 203060
+func TestErrInvalidParameterCountError(tPtr *testing.T) {
+	var errCode = sError.ErrInvalidParameterCount
 	s := sError.BuildParams([]string{"PROVIDED_PARAMETER_COUNT", "EXPECTED_PARAMETER_COUNT"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -100,8 +101,8 @@ func Test206105Error(tPtr *testing.T) {
 	params[0] = "KEY_NAME"
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test206200Error(tPtr *testing.T) {
-	var errCode = 206200
+func TestErrInvalidMsgSignatureError(tPtr *testing.T) {
+	var errCode = sError.ErrInvalidMsgSignature
 	s := sError.BuildParams([]string{"PARAMETER_LIST"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -120,8 +121,8 @@ func Test206700Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"PARAMETER", "ANOTHER_PARAMETER"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test207000Error(tPtr *testing.T) {
-	var errCode = 207000
+func TestErrNotNumericError(tPtr *testing.T) {
+	var errCode = sError.ErrNotNumeric
 	s := sError.BuildParams([]string{"FIELD_NAME", "FIELD_VALUE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -130,8 +131,8 @@ func Test207005Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"FIELD_NAME", "MINIMAL_LENGTH"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test207010Error(tPtr *testing.T) {
-	var errCode = 207010
+func TestErrNotStringError(tPtr *testing.T) {
+	var errCode = sError.ErrNotString
 	s := sError.BuildParams([]string{"FIELD_NAME", "FIELD_VALUE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -140,8 +141,8 @@ func Test207020Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"FIELD_NAME", "FIELD_VALUE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test207030Error(tPtr *testing.T) {
-	var errCode = 207030
+func TestErrNotArrayError(tPtr *testing.T) {
+	var errCode = sError.ErrNotArray
 	s := sError.BuildParams([]string{"FIELD_NAME", "FIELD_VALUE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -180,28 +181,28 @@ func Test207090Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"FIELD_NAME", "FIELD_VALUE", "SMALL_LARGE", "MIN_MAX", "SIZE_EXPECTED", "SIZE_PROVIDED"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test207100Error(tPtr *testing.T) {
-	var errCode = 207100
+func TestErrCustomJSONConversionError(tPtr *testing.T) {
+	var errCode = sError.ErrCustomJSONConversionError
 	s := sError.BuildParams([]string{"PARAMETER_NAME", "DATA_STRUCTURE_TYPE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test207200Error(tPtr *testing.T) {
-	var errCode = 207200
+func TestErrConversionError(tPtr *testing.T) {
+	var errCode = sError.ErrConversionError
 	s := sError.BuildParams([]string{"PARAMETER_NAME", "DATA_STRUCTURE_TYPE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test207105Error(tPtr *testing.T) {
-	var errCode = 207105
+func TestErrJSONConversionError(tPtr *testing.T) {
+	var errCode = sError.ErrJSONConversionError
 	s := sError.BuildParams([]string{"DATA_STRUCTURE_NAME", "DATA_STRUCTURE_TYPE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test207110Error(tPtr *testing.T) {
-	var errCode = 207110
+func TestErrInvalidJSONError(tPtr *testing.T) {
+	var errCode = sError.ErrInvalidJSON
 	s := sError.BuildParams([]string{"PARAMETER_NAME"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test207111Error(tPtr *testing.T) {
-	var errCode = 207111
+func TestErrMapConversionError(tPtr *testing.T) {
+	var errCode = sError.ErrMapConversionError
 	s := sError.BuildParams([]string{"PARAMETER_NAME", "APPLICATION_PACKAGE_NAME"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -215,18 +216,18 @@ func Test208120Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"JSON_ARRAY", "OBJECT_TYPE", "SYSTEM_ID"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test208200Error(tPtr *testing.T) {
-	var errCode = 208200
+func TestErrMissingErrorMessageError(tPtr *testing.T) {
+	var errCode = sError.ErrMissingErrorMessage
 	s := sError.BuildParams([]string{"ERROR_MESSAGE_NUMBER"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test209010Error(tPtr *testing.T) {
-	var errCode = 209010
+func TestErrMissingFileError(tPtr *testing.T) {
+	var errCode = sError.ErrMissingFile
 	s := sError.BuildParams([]string{"FILE_NAME", "MESSAGE_RETURNED_FROM_OPEN"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test209100Error(tPtr *testing.T) {
-	var errCode = 209100
+func TestErrMissingEnvVariableError(tPtr *testing.T) {
+	var errCode = sError.ErrMissingEnvVariable
 	s := sError.BuildParams([]string{"ENVIRONMENT"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -235,8 +236,8 @@ func Test209200Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"DATABASE_NAME", "DATABASE_DRIVER", "DATABASE_PORT"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test209220Error(tPtr *testing.T) {
-	var errCode = 209220
+func TestErrInvalidSSLModeError(tPtr *testing.T) {
+	var errCode = sError.ErrInvalidSSLMode
 	s := sError.BuildParams([]string{"SSL_MODE"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -250,18 +251,18 @@ func Test209520Error(tPtr *testing.T) {
 	s := sError.BuildParams([]string{"KID"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test209521Error(tPtr *testing.T) {
-	var errCode = 209521
+func TestErrMissingKidInPublicKeyError(tPtr *testing.T) {
+	var errCode = sError.ErrMissingKidInPublicKey
 	s := sError.BuildParams([]string{"KID"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test210030Error(tPtr *testing.T) {
-	var errCode = 210030
+func TestErrFetchingJWKError(tPtr *testing.T) {
+	var errCode = sError.ErrFetchingJWKError
 	s := sError.BuildParams([]string{"REGION", "ENVIRONMENT"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
-func Test210090Error(tPtr *testing.T) {
-	var errCode = 210090
+func TestErrMissingURLError(tPtr *testing.T) {
+	var errCode = sError.ErrMissingURL
 	s := sError.BuildParams([]string{"URL_IS_MISSING"})
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, sError.EmptyMap))
 }
@@ -290,7 +291,7 @@ func TestErrorDetails(tPtr *testing.T) {
 	errDetails["test_2"] = "Test_2_Value"
 	errDetails["test_3"] = "Test_3_Value"
 	validateReply(tPtr, errCode, s, sError.GetSError(errCode, s, errDetails))
-	errCode = 210499
+	errCode = sError.ErrSynadiaError
 	validateReply(tPtr, errCode, nil, sError.GetSError(errCode, nil, errDetails))
 	validateReply(tPtr, errCode, nil, sError.GetSError(errCode, nil, sError.EmptyMap))
 }

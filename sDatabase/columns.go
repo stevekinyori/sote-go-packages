@@ -61,8 +61,7 @@ func GetColumnInfoJSONFormat(schemaName, tableName string, tConnInfo ConnInfo) (
 	if tableColumnInfo, soteErr = GetColumnInfo(schemaName, tableName, tConnInfo); soteErr.ErrCode == nil {
 		if tableColumnInfoJSON, err = json.MarshalIndent(tableColumnInfo, sError.PREFIX, sError.INDENT); err != nil {
 			sLogger.Info(err.Error())
-			soteErr := sError.GetSError(207110, sError.BuildParams([]string{"Sote Error"}), sError.EmptyMap)
-			sError.PanicService(soteErr)
+			soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{"Sote Error"}), sError.EmptyMap)
 		}
 	}
 
@@ -79,11 +78,11 @@ func GetColumnInfo(schemaName, tableName string, tConnInfo ConnInfo) (tableColum
 	)
 
 	if len(schemaName) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Schema name: " + schemaName}), nil)
+		soteErr = sError.GetSError(sError.ErrMissingParameters, sError.BuildParams([]string{"Schema name: " + schemaName}), nil)
 	}
 
 	if len(tableName) == 0 {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"Schema name: " + tableName}), nil)
+		soteErr = sError.GetSError(sError.ErrMissingParameters, sError.BuildParams([]string{"Schema name: " + tableName}), nil)
 	}
 
 	if soteErr.ErrCode == nil {
@@ -139,7 +138,7 @@ func (dbConnInfo *ConnInfo) AddColumns(ctx context.Context, tableName string, co
 	)
 
 	if tableName == "" {
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{"Table Name"}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"Table Name"}), sError.EmptyMap)
 		return
 	}
 

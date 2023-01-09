@@ -57,16 +57,58 @@ const (
 
 // error codes
 const (
-	ErrDuplicateItems        = 100000
-	ErrContextCancelled      = 101020
-	ErrGenericError          = 199999
-	ErrItemNotFound          = 109999
-	ErrSQLError              = 200999
-	ErrInvalidSQLDataType    = 208010
-	ErrInvalidParameterCount = 203060
-	ErrInvalidParameterType  = 200200
-	ErrInvalidParameterValue = 200250
-	ErrStatusUnauthorized    = 208375
+	ErrDuplicateItems            = 100000
+	ErrAuthorized                = 100100
+	ErrTimeout                   = 101010
+	ErrContextCancelled          = 101020
+	ErrCancelOrComplete          = 100500
+	ErrContextDeadlineExceeded   = 101025
+	ErrGenericError              = 199999
+	ErrItemNotFound              = 109999
+	ErrSQLError                  = 200999
+	ErrInvalidSQLDataType        = 208010
+	ErrInvalidParameterCount     = 203060
+	ErrInvalidParameterType      = 200200
+	ErrInvalidParameterValue     = 200250
+	ErrStatusUnauthorized        = 208375
+	ErrInvalidMsgSignature       = 206200
+	ErrNotNumeric                = 207000
+	ErrNotString                 = 207010
+	ErrNotArray                  = 207030
+	ErrInvalidJSON               = 207110
+	ErrMissingParameters         = 200513
+	ErrMissingFile               = 209010
+	ErrMissingURL                = 210090
+	ErrExpectedThreeParameters   = 200514
+	ErrExpectedTwoParameters     = 200512
+	ErrAWSSessionError           = 210399
+	ErrDBConnectionError         = 209299
+	ErrBusinessServiceError      = 210599
+	ErrMissingEnvVariable        = 209100
+	ErrPostgresError             = 210200
+	ErrBadHTTPRequest            = 200600
+	ErrSynadiaError              = 210499
+	ErrMissingTokenSubject       = 208310
+	ErrInvalidToken              = 208355
+	ErrConversionError           = 207200
+	ErrNATSConnectionError       = 209499
+	ErrExpiredToken              = 208350
+	ErrUnexpectedSigningMethod   = 209500
+	ErrMissingKidHeader          = 209510
+	ErrInvalidSSLMode            = 209220
+	ErrMissingTokenSegments      = 208356
+	ErrMissingNKeySeed           = 209398
+	ErrMissingKidInPublicKey     = 209521
+	ErrFetchingJWKError          = 210030
+	ErrInvalidClaims             = 208360
+	ErrMissingClaims             = 208370
+	ErrJSONConversionError       = 207105
+	ErrCustomJSONConversionError = 207100
+	ErrMissingErrorMessage       = 208200
+	ErrNATSInvalidSubscription   = 206050
+	ErrInvalidClientId           = 208340
+	ErrMapConversionError        = 207111
+	ErrInvalidEnvValue           = 209110
 )
 
 var (
@@ -85,7 +127,8 @@ var (
 		100500: {100500, PROCESSERROR, 1, "Thing being changed", ": You are making changes to a canceled or completed %v", EmptyMap, "", nil},
 		100600: {100600, PROCESSERROR, 1, "Item is not active", ": You are making changes to an inactive %v", EmptyMap, "", nil},
 		101010: {101010, PROCESSERROR, 1, "Service Name", ": %v timed out", EmptyMap, "", nil},
-		101020: {101020, PROCESSERROR, 1, "None", ": context canceled", EmptyMap, "", nil},
+		101020: {101020, PROCESSERROR, 1, "Item Name", ": %v context canceled", EmptyMap, "", nil},
+		101025: {101025, PROCESSERROR, 1, "Item Name", ": %v context deadline exceeded", EmptyMap, "", nil},
 		109999: {109999, USERERROR, 1, "Item name", ": %v was/were not found", EmptyMap, "", nil},
 		199999: {199999, GENERALERROR, 1, "Error Details", ": An error has occurred that is not expected. See Log! %v", EmptyMap, "", nil},
 		// ======================================================================
@@ -337,12 +380,12 @@ func GetSError(code int, params []interface{}, errorDetails map[string]string) (
 	if soteErr.ErrCode != code {
 		s := make([]interface{}, 1)
 		s[0] = code
-		soteErr = GetSError(208200, s, errorDetails)
+		soteErr = GetSError(ErrMissingErrorMessage, s, errorDetails)
 	} else if soteErr.ParamCount != len(params) {
 		s := make([]interface{}, 2)
 		s[0] = soteErr.ParamCount
 		s[1] = len(params)
-		soteErr = GetSError(203060, s, errorDetails)
+		soteErr = GetSError(ErrInvalidParameterCount, s, errorDetails)
 	} else {
 		if soteErr.ParamCount == 0 {
 			soteErr.ErrorDetails = errorDetails
@@ -362,8 +405,8 @@ func GetSError(code int, params []interface{}, errorDetails map[string]string) (
 	return
 }
 
-// This will convert a postgresql error into error details for inclusion in SoteError
-func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
+// ConvertSQLError This will convert a postgresql error into error details for inclusion in SoteError
+func ConvertSQLError(err error) (errorDetails map[string]string, soteErr SoteError) {
 	sLogger.DebugMethod()
 
 	if strings.Contains(err.Error(), SQLSTATE) {
@@ -393,7 +436,7 @@ func ConvertErr(err error) (errorDetails map[string]string, soteErr SoteError) {
 		s := make([]interface{}, 2)
 		s[0] = "err"
 		s[1] = "sError"
-		soteErr = GetSError(207111, s, EmptyMap)
+		soteErr = GetSError(ErrMapConversionError, s, EmptyMap)
 	}
 	return
 }
@@ -413,7 +456,7 @@ func BuildParams(values []string) (s []interface{}) {
 }
 
 /*
-	This will generate the markdown syntax that can be published on a Wiki page.  This makes
+	This will generate the Markdown syntax that can be published on a Wiki page.  This makes
 	this code the master source of Sote Error messages. Results are output to the console.
 */
 func GenerateDocumentation() (markDown, funcComments string) {
@@ -458,8 +501,8 @@ func ConvertError(inSoteErr SoteError, testMode bool) (soteErr SoteError) {
 	sLogger.Info(inSoteErr.FmtErrMsg)
 	soteErr = inSoteErr
 	if !testMode {
-		if inSoteErr.ErrCode != 199999 {
-			soteErr = GetSError(199999, BuildParams([]string{""}), EmptyMap)
+		if inSoteErr.ErrCode != ErrGenericError {
+			soteErr = GetSError(ErrGenericError, BuildParams([]string{""}), EmptyMap)
 		}
 	}
 

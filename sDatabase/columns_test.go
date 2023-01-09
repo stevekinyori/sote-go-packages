@@ -30,18 +30,18 @@ func TestGetColumnInfo(tPtr *testing.T) {
 		testName          = runtime.FuncForPC(function).Name()
 	)
 
-	if _, soteErr = GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 209299 {
-		tPtr.Errorf("%v Failed: Expected error code of 209299", testName)
+	if _, soteErr = GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != sError.ErrDBConnectionError {
+		tPtr.Errorf("%v Failed: Expected error code of %v", testName, sError.ErrDBConnectionError)
 		tPtr.Fail()
 	}
 
 	if tConnInfo, soteErr = getMyDBConn(tPtr); soteErr.ErrCode == nil {
-		if _, soteErr = GetColumnInfo("", INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != 200513 {
-			tPtr.Errorf("%v Failed: Expected error code of 200513", testName)
+		if _, soteErr = GetColumnInfo("", INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != sError.ErrMissingParameters {
+			tPtr.Errorf("%v Failed: Expected error code of %v", testName, sError.ErrMissingParameters)
 			tPtr.Fail()
 		}
-		if _, soteErr = GetColumnInfo(TESTINFOSCHEMA, "", tConnInfo); soteErr.ErrCode != 200513 {
-			tPtr.Errorf("%v Failed: Expected error code of 200513", testName)
+		if _, soteErr = GetColumnInfo(TESTINFOSCHEMA, "", tConnInfo); soteErr.ErrCode != sError.ErrMissingParameters {
+			tPtr.Errorf("%v Failed: Expected error code of %v", testName, sError.ErrMissingParameters)
 			tPtr.Fail()
 		}
 		if columnInfo, soteErr = GetColumnInfo(TESTINFOSCHEMA, INFOSCHEMATABLE, tConnInfo); soteErr.ErrCode != nil {

@@ -39,8 +39,8 @@ func TestVerifyConnection(tPtr *testing.T) {
 	)
 
 	soteErr = sDatabase.VerifyConnection(tConnInfo)
-	if soteErr.ErrCode != 209299 {
-		tPtr.Errorf("VerifyConnection Failed: Expected 209299 error code.")
+	if soteErr.ErrCode != sError.ErrDBConnectionError {
+		tPtr.Errorf("VerifyConnection Failed: Expected %v error code.", sError.ErrDBConnectionError)
 		tPtr.Fail()
 	}
 
@@ -186,15 +186,15 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 // if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); len(myConstraints) == 0 {
 // 	tPtr.Errorf("GetSingleColumnConstraintInfo Failed: myContraints should not be empty")
 // }
-// if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo(EMPTYVALUE, tConnInfo); soteErr.ErrCode != 200513 {
-// 	tPtr.Errorf("pkLookup Failed: Expected error code to be 200513.")
+// if myConstraints, soteErr = sDatabase.GetSingleColumnConstraintInfo(EMPTYVALUE, tConnInfo); soteErr.ErrCode != sError.ErrMissingParameters {
+// 	tPtr.Errorf("pkLookup Failed: Expected error code to be %v.",sError.ErrMissingParameters)
 //
 // }
 // }
 // func TestGetSingleColumnConstraintInfoNoConn(tPtr *testing.T) {
 // 	var tConnInfo = sDatabase.ConnInfo{nil, sDatabase.ConnValues{}}
-// 	if _, soteErr := sDatabase.GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); soteErr.ErrCode != 209299 {
-// 		tPtr.Errorf("pkLookup Failed: Expected error code to be 209299.")
+// 	if _, soteErr := sDatabase.GetSingleColumnConstraintInfo(SOTETESTSCHEMA, tConnInfo); soteErr.ErrCode != sError.ErrDBConnectionError {
+// 		tPtr.Errorf("pkLookup Failed: Expected error code to be %v.",sError.ErrDBConnectionError)
 //
 // 	}
 // }
@@ -204,8 +204,8 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 //
 // func TestGetTables(tPtr *testing.T) {
 // var tConnInfo sDatabase.ConnInfo
-// if _, soteErr := sDatabase.GetTableList("sote", tConnInfo); soteErr.ErrCode != 209299 {
-// 	tPtr.Errorf("Get Tables Failed: Expected error code of 209299")
+// if _, soteErr := sDatabase.GetTableList("sote", tConnInfo); soteErr.ErrCode != sError.ErrDBConnectionError {
+// 	tPtr.Errorf("Get Tables Failed: Expected error code of %v",sError.ErrDBConnectionError)
 // 	tPtr.Fail()
 // }
 //
@@ -237,8 +237,8 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 //
 // func TestGetColumnInfo(tPtr *testing.T) {
 // var tConnInfo sDatabase.ConnInfo
-// if _, soteErr := sDatabase.GetColumnInfo(SOTETESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != 209299 {
-// 	tPtr.Errorf("GetColumnInfo Failed: Expected error code of 209299")
+// if _, soteErr := sDatabase.GetColumnInfo(SOTETESTSCHEMA, REFERENCETABLE, tConnInfo); soteErr.ErrCode != sError.ErrDBConnectionError {
+// 	tPtr.Errorf("GetColumnInfo Failed: Expected error code of %v",sError.ErrDBConnectionError)
 // 	tPtr.Fail()
 // }
 //
@@ -305,13 +305,13 @@ func TestFormatArrayFilterCondition(tPtr *testing.T) {
 // 		tPtr.Fail()
 // 	}
 //
-// 	if _, soteErr := sDatabase.PKLookup(EMPTYVALUE, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 200513 {
-// 		tPtr.Errorf("pkLookup Failed: Expected error code to be 200513.")
+// 	if _, soteErr := sDatabase.PKLookup(EMPTYVALUE, PARENTCHILDTABLE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != sError.ErrMissingParameters {
+// 		tPtr.Errorf("pkLookup Failed: Expected error code to be %v.",sError.ErrMissingParameters)
 // 	}
-// 	if _, soteErr := sDatabase.PKLookup(SOTETESTSCHEMA, EMPTYVALUE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != 200513 {
-// 		tPtr.Errorf("pkLookup Failed: Expected error code to be 200513.")
+// 	if _, soteErr := sDatabase.PKLookup(SOTETESTSCHEMA, EMPTYVALUE, PCTBLCOLUMNNAME, tConnInfo); soteErr.ErrCode != sError.ErrMissingParameters {
+// 		tPtr.Errorf("pkLookup Failed: Expected error code to be %v.",sError.ErrMissingParameters)
 // 	}
-// 	if _, soteErr := sDatabase.PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, EMPTYVALUE, tConnInfo); soteErr.ErrCode != 200513 {
-// 		tPtr.Errorf("pkLookup Failed: Expected error code to be 200513.")
+// 	if _, soteErr := sDatabase.PKLookup(SOTETESTSCHEMA, PARENTCHILDTABLE, EMPTYVALUE, tConnInfo); soteErr.ErrCode != sError.ErrMissingParameters {
+// 		tPtr.Errorf("pkLookup Failed: Expected error code to be %v.",sError.ErrMissingParameters)
 // 	}
 // }

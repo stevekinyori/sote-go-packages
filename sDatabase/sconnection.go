@@ -111,18 +111,18 @@ func GetConnection(dbName, dbSchema, user, password, host, sslMode string, port,
 			dbConnInfo.DSConnValues.SSLMode)
 		if dbConnInfo.DBPoolPtr, err = pgxpool.Connect(context.Background(), dsConnString); err != nil {
 			if strings.Contains(err.Error(), "dial") {
-				soteErr = sError.GetSError(209299, nil, sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrDBConnectionError, nil, sError.EmptyMap)
 				sLogger.Info(soteErr.FmtErrMsg)
 			} else {
 				var errDetails = make(map[string]string)
-				errDetails, soteErr = sError.ConvertErr(err)
+				errDetails, soteErr = sError.ConvertSQLError(err)
 				if soteErr.ErrCode != nil {
 					sLogger.Info(soteErr.FmtErrMsg)
-					sLogger.Info("sError.ConvertErr Failed")
+					sLogger.Info("sError.ConvertSQLError Failed")
 					return
 				}
 
-				sLogger.Info(sError.GetSError(210200, nil, errDetails).FmtErrMsg)
+				sLogger.Info(sError.GetSError(sError.ErrPostgresError, nil, errDetails).FmtErrMsg)
 				sLogger.Info("sDatabase.sconnection.GetConnection Failed")
 				return
 			}
@@ -144,7 +144,7 @@ func setConnectionValues(dbName, dbSchema, user, password, host, sslMode string,
 	case SSLMODEPREFER:
 	case SSLMODEREQUIRED:
 	default:
-		soteErr = sError.GetSError(209220, sError.BuildParams([]string{sslMode}), nil)
+		soteErr = sError.GetSError(sError.ErrInvalidSSLMode, sError.BuildParams([]string{sslMode}), nil)
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
 
@@ -159,7 +159,7 @@ func ToJSONString(DSConnValues ConnValues) (jsonString string, soteErr sError.So
 
 	jsonConnValues, err := json.Marshal(DSConnValues)
 	if err != nil {
-		soteErr = sError.GetSError(207010, sError.BuildParams([]string{"DSConnValues", "struct"}), nil)
+		soteErr = sError.GetSError(sError.ErrNotString, sError.BuildParams([]string{"DSConnValues", "struct"}), nil)
 		sLogger.Info(soteErr.FmtErrMsg)
 	} else {
 		jsonString = string(jsonConnValues)
@@ -173,7 +173,7 @@ func VerifyConnection(tConnInfo ConnInfo) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if tConnInfo.DBPoolPtr == nil {
-		soteErr = sError.GetSError(209299, nil, nil)
+		soteErr = sError.GetSError(sError.ErrDBConnectionError, nil, nil)
 		sLogger.Info(soteErr.FmtErrMsg)
 	} else {
 		qStmt := "SELECT * FROM pg_stat_activity WHERE datname = $1 and state = 'active';"
@@ -182,7 +182,7 @@ func VerifyConnection(tConnInfo ConnInfo) (soteErr sError.SoteError) {
 		var err error
 		tbRows, err = tConnInfo.DBPoolPtr.Query(context.Background(), qStmt, tConnInfo.DSConnValues.DBName)
 		if err != nil {
-			soteErr = sError.GetSError(209299, nil, nil)
+			soteErr = sError.GetSError(sError.ErrDBConnectionError, nil, nil)
 			sLogger.Info(soteErr.FmtErrMsg)
 		}
 		defer tbRows.Close()

@@ -155,7 +155,7 @@ func NewS3ClientServer(ctx context.Context, documentParamsPtr *DocumentParams,
 	s3ClientServerPtr.S3BucketMountPoint = documentsMountPoint
 	if cfg, err = config.LoadDefaultConfig(ctx, optFns...); err != nil {
 		sLogger.Info(err.Error())
-		soteErr = sError.GetSError(210399, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrAWSSessionError, nil, sError.EmptyMap)
 		return
 	}
 	// Create S3 Client
@@ -316,9 +316,8 @@ func (s3sPtr *S3ClientServer) UploadDocuments(ctx context.Context, params *FileP
 	}
 
 	if errors.Is(ctx.Err(), context.Canceled) {
-		params.ErrChan <- sError.GetSError(100500,
-			sError.BuildParams([]string{fmt.Sprintf("document couldn't be created in specified path %v", params.TargetFilepath)}),
-			sError.EmptyMap)
+		sLogger.Info(fmt.Sprintf("document couldn't be created in specified path %v", params.TargetFilepath))
+		params.ErrChan <- sError.GetSError(sError.ErrContextCancelled, sError.BuildParams([]string{"document upload"}), sError.EmptyMap)
 		params.UploadResponseChan <- &UploadResponse{}
 		cancel()
 
@@ -408,9 +407,8 @@ func (s3sPtr *S3ClientServer) SingleDocumentUpload(ctx context.Context, file mul
 	}
 
 	if errors.Is(ctx.Err(), context.Canceled) {
-		errChan <- sError.GetSError(100500,
-			sError.BuildParams([]string{fmt.Sprintf("%v document couldn't be created", filename)}),
-			sError.EmptyMap)
+		sLogger.Info(fmt.Sprintf("%v document couldn't be created", filename))
+		errChan <- sError.GetSError(sError.ErrContextCancelled, sError.BuildParams([]string{"document upload"}), sError.EmptyMap)
 		cancel()
 
 		return
@@ -458,9 +456,8 @@ func WriteFiles(ctx context.Context, params *FileParams) {
 	}
 
 	if errors.Is(ctx.Err(), context.Canceled) {
-		params.ErrChan <- sError.GetSError(100500,
-			sError.BuildParams([]string{fmt.Sprintf("document couldn't be created in specified path %v", params.TargetFilepath)}),
-			sError.EmptyMap)
+		sLogger.Info(fmt.Sprintf("document couldn't be created in specified path %v", params.TargetFilepath))
+		params.ErrChan <- sError.GetSError(sError.ErrContextCancelled, sError.BuildParams([]string{"document write"}), sError.EmptyMap)
 		cancel()
 
 		return
@@ -495,9 +492,9 @@ func GetDocumentsLinks(ctx context.Context, params *FileParams) {
 	}
 
 	if errors.Is(ctx.Err(), context.Canceled) {
-		params.ErrChan <- sError.GetSError(100500,
-			sError.BuildParams([]string{fmt.Sprintf("Document links couldn't be created")}),
-			sError.EmptyMap)
+
+		sLogger.Info(fmt.Sprintf("Document links couldn't be created"))
+		params.ErrChan <- sError.GetSError(sError.ErrContextCancelled, sError.BuildParams([]string{"get document link"}), sError.EmptyMap)
 		params.DocumentLinksChan <- &DocumentLinks{}
 
 		cancel()
@@ -620,15 +617,15 @@ func (s3sPtr *S3ClientServer) EmbedMetadata(ctx context.Context, processedObject
 
 				if _, err = s3sPtr.S3ClientPtr.CopyObject(ctx, params); err != nil {
 					sLogger.Info(err.Error())
-					soteErr = sError.GetSError(210599, nil, sError.EmptyMap)
+					soteErr = sError.GetSError(sError.ErrBusinessServiceError, nil, sError.EmptyMap)
 				}
 			} else {
 				sLogger.Info(err.Error())
-				soteErr = sError.GetSError(207110, sError.BuildParams([]string{"objHeaders"}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{"objHeaders"}), sError.EmptyMap)
 			}
 		} else {
 			sLogger.Info(err.Error())
-			soteErr = sError.GetSError(207105, []interface{}{"sourceObject", sourceObject}, sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrJSONConversionError, []interface{}{"sourceObject", sourceObject}, sError.EmptyMap)
 		}
 	} else {
 		soteErr = AmazonTextractErrorHandler(ctx, err)
@@ -798,13 +795,13 @@ func ValidatePreSignedDocumentURL(preSignedDocURL string) (isPreSignedDocumentUR
 					// Check if pre-signed document URL is expired
 					isPreSignedDocumentURLExpired = currentDatetime.After(expiryDatetime)
 				} else {
-					soteErr = sError.GetSError(207110, sError.BuildParams([]string{"expires-in"}), sError.EmptyMap)
+					soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{"expires-in"}), sError.EmptyMap)
 				}
 			} else {
-				soteErr = sError.GetSError(207110, sError.BuildParams([]string{"created-date string"}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{"created-date string"}), sError.EmptyMap)
 			}
 		} else {
-			soteErr = sError.GetSError(109999, sError.BuildParams([]string{"document"}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"document"}), sError.EmptyMap)
 		}
 	}
 
@@ -889,7 +886,7 @@ func CreateSubdirectories(documentFilepath string) (soteErr sError.SoteError) {
 	)
 
 	if err = os.MkdirAll(filepath.Dir(documentFilepath), os.ModePerm); err != nil {
-		soteErr = sError.GetSError(210599, nil, sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrBusinessServiceError, nil, sError.EmptyMap)
 	}
 
 	return

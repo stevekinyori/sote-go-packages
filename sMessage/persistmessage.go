@@ -52,7 +52,7 @@ func (mmPtr *MessageManager) PSubscribe(subject, durableName string, callback na
 	params["testMode"] = strconv.FormatBool(testMode)
 
 	if callback == nil {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{"callback"}), nil)
+		soteErr = sError.GetSError(sError.ErrMissingParameters, sError.BuildParams([]string{"callback"}), nil)
 	} else {
 		js, err := mmPtr.NatsConnectionPtr.JetStream()
 		if err != nil {

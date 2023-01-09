@@ -71,8 +71,8 @@ func TestNewS3ClientServer(tPtr *testing.T) {
 			MountPointEnvVarName: "INVALIDMOUNTPOINTENVNAME",
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             testMode,
-		}); soteErr.ErrCode != 209100 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "209100", soteErr.FmtErrMsg)
+		}); soteErr.ErrCode != sError.ErrMissingEnvVariable {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrMissingEnvVariable, soteErr.FmtErrMsg)
 		}
 	})
 
@@ -84,7 +84,7 @@ func TestNewS3ClientServer(tPtr *testing.T) {
 			TestMode:             testMode,
 			IgnoreMountPoint:     true,
 		}); soteErr.ErrCode != nil {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "209100", soteErr.FmtErrMsg)
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
 	})
 
@@ -94,8 +94,8 @@ func TestNewS3ClientServer(tPtr *testing.T) {
 			MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
 			AppEnvironment:       TESTAPPENVIRONMENT,
 			TestMode:             testMode,
-		}); soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "109999", soteErr.FmtErrMsg)
+		}); soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrItemNotFound, soteErr.FmtErrMsg)
 		}
 	})
 }
@@ -133,8 +133,8 @@ func TestReadFile(tPtr *testing.T) {
 	)
 
 	tPtr.Run("Read invalid file", func(tPtr *testing.T) {
-		if _, soteErr = ReadFile(parentCtx, TESTINVALIDFILEPATH); soteErr.ErrCode != 109999 {
-			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "109999", soteErr.FmtErrMsg)
+		if _, soteErr = ReadFile(parentCtx, TESTINVALIDFILEPATH); soteErr.ErrCode != sError.ErrItemNotFound {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrItemNotFound, soteErr.FmtErrMsg)
 		}
 	})
 
@@ -348,8 +348,8 @@ func TestDocumentDelete(tPtr *testing.T) {
 		tPtr.Run("Using Invalid Bucket Name", func(tPtr *testing.T) {
 			keys = GetObjectKeys(filename, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
 			s3ClientServerPtr.BucketName = ""
-			if soteErr = s3ClientServerPtr.DocumentDelete(parentCtx, keys.InboundObjectKey); soteErr.ErrCode != 200513 {
-				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "200513", soteErr.FmtErrMsg)
+			if soteErr = s3ClientServerPtr.DocumentDelete(parentCtx, keys.InboundObjectKey); soteErr.ErrCode != sError.ErrMissingParameters {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrMissingParameters, soteErr.FmtErrMsg)
 			}
 		})
 	}
@@ -393,8 +393,8 @@ func TestDocumentPreSignedURL(tPtr *testing.T) {
 		})
 
 		tPtr.Run("Check Invalid Pre-Signed Document URL", func(tPtr *testing.T) {
-			if _, soteErr = ValidatePreSignedDocumentURL(TESTINVALIDFILEPATH); soteErr.ErrCode != 109999 {
-				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, 109999, soteErr.FmtErrMsg)
+			if _, soteErr = ValidatePreSignedDocumentURL(TESTINVALIDFILEPATH); soteErr.ErrCode != sError.ErrItemNotFound {
+				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrItemNotFound, soteErr.FmtErrMsg)
 			}
 		})
 	}
@@ -484,8 +484,10 @@ func TestEmbedMetadata(tPtr *testing.T) {
 			tPtr.Run("Using invalid document-link", func(tPtr *testing.T) {
 				tObjectKeys := GetObjectKeys(TESTINVALIDFILEPATH, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
 				if soteErr = s3ClientServerPtr.EmbedMetadata(parentCtx, tObjectKeys.InboundObjectKey,
-					metadata); soteErr.ErrCode != 109999 {
-					tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "210599 or 109999", soteErr.FmtErrMsg)
+					metadata); soteErr.ErrCode != sError.ErrItemNotFound {
+					tPtr.Errorf("%v Failed: Expected error code to be %v or %v but got %v", testName, sError.ErrBusinessServiceError,
+						sError.ErrItemNotFound,
+						soteErr.FmtErrMsg)
 				}
 			})
 
@@ -512,8 +514,10 @@ func TestEmbedMetadata(tPtr *testing.T) {
 				if _, _, keysTwo, soteErr = copyTestDocument(tPtr, filenameTwo, false, false); soteErr.ErrCode == nil {
 					if soteErr = s3ClientServerPtr.EmbedMetadata(parentCtx, keysTwo.InboundObjectKey, metadataTwo); soteErr.ErrCode == nil {
 						s3ClientServerPtr.BucketName = ""
-						if _, soteErr = s3ClientServerPtr.GetEmbeddedDocumentMetadata(parentCtx, keysTwo); soteErr.ErrCode != 200513 {
-							tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "200513", soteErr.FmtErrMsg)
+						if _, soteErr = s3ClientServerPtr.GetEmbeddedDocumentMetadata(parentCtx,
+							keysTwo); soteErr.ErrCode != sError.ErrMissingParameters {
+							tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrMissingParameters,
+								soteErr.FmtErrMsg)
 						}
 					}
 				}

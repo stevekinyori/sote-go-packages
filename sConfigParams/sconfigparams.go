@@ -195,7 +195,7 @@ func GetSMTPConfig(ctx context.Context, application, environment string) (parame
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
-					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"smtp configuration"}), sError.EmptyMap)
+					soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"smtp configuration"}), sError.EmptyMap)
 				} else {
 					for _, pParameter := range pSSMParamsOutput.Parameters {
 						switch *pParameter.Name {
@@ -211,7 +211,7 @@ func GetSMTPConfig(ctx context.Context, application, environment string) (parame
 					}
 				}
 			} else {
-				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			}
 		}
 	}
@@ -245,7 +245,7 @@ func GetQuickbooksConfig(ctx context.Context, application, environment string) (
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
-					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"quickbooks configuration"}), sError.EmptyMap)
+					soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"quickbooks configuration"}), sError.EmptyMap)
 				} else {
 					for _, pParameter := range pSSMParamsOutput.Parameters {
 						switch *pParameter.Name {
@@ -269,7 +269,7 @@ func GetQuickbooksConfig(ctx context.Context, application, environment string) (
 					}
 				}
 			} else {
-				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			}
 		}
 	}
@@ -297,7 +297,7 @@ func GetCognitoConfig(ctx context.Context, application, environment string) (par
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
-					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
+					soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
 				} else {
 					for _, pParameter := range pSSMParamsOutput.Parameters {
 						switch *pParameter.Name {
@@ -311,7 +311,7 @@ func GetCognitoConfig(ctx context.Context, application, environment string) (par
 					}
 				}
 			} else {
-				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			}
 		}
 	}
@@ -388,7 +388,7 @@ func GetAWSParams(ctx context.Context, application, environment string) (paramet
 			}
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
-					soteErr = sError.GetSError(109999, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
+					soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
 				} else {
 					for _, pParameter := range pSSMParamsOutput.Parameters {
 						switch *pParameter.Name {
@@ -414,7 +414,7 @@ func GetAWSParams(ctx context.Context, application, environment string) (paramet
 			}
 
 			if err != nil {
-				soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			}
 		}
 	}
@@ -500,7 +500,7 @@ func GetDBPort(ctx context.Context, application, environment string) (dbPort int
 			if tDBPort != nil {
 				dbPort, _ = strconv.Atoi(tDBPort.(string))
 			} else {
-				soteErr = sError.GetSError(109999, sError.BuildParams([]string{DBPORTKEY}), sError.EmptyMap)
+				soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{DBPORTKEY}), sError.EmptyMap)
 			}
 		}
 	}
@@ -746,7 +746,7 @@ func ValidateApplication(application string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if application == "" {
-		soteErr = sError.GetSError(200513, sError.BuildParams([]string{application}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrMissingParameters, sError.BuildParams([]string{application}), sError.EmptyMap)
 	}
 
 	return
@@ -763,7 +763,7 @@ func ValidateEnvironment(environment string) (soteErr sError.SoteError) {
 	case DEVELOPMENT, STAGING, DEMO, PRODUCTION:
 		return
 	default:
-		soteErr = sError.GetSError(209110, sError.BuildParams([]string{environment}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrInvalidEnvValue, sError.BuildParams([]string{environment}), sError.EmptyMap)
 	}
 
 	return
@@ -790,7 +790,7 @@ func GetEnvironmentVariable(key string) (envValue string, soteErr sError.SoteErr
 
 	envValue = os.Getenv(key)
 	if envValue = os.Getenv(key); len(envValue) == 0 {
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{key}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{key}), sError.EmptyMap)
 	}
 
 	return
@@ -869,7 +869,7 @@ func listParameters(ctx context.Context, application, environment string) (pSSMP
 		ssmPathInput.MaxResults = &pMaxResult
 		// If there are any parameters that matches the path, a result set will be return by the GetParametersByPath call.
 		if pSSMPathOutput, err = awsService.GetParametersByPath(ctx, &ssmPathInput); len(pSSMPathOutput.Parameters) == 0 {
-			soteErr = sError.GetSError(109999, sError.BuildParams([]string{path}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{path}), sError.EmptyMap)
 		}
 	}
 	if err != nil {
@@ -896,7 +896,7 @@ func getParameter(ctx context.Context, application, environment, key string) (re
 	if pSSMParamOutput, err := awsService.GetParameter(ctx, &ssmParamInput); err != nil {
 		sLogger.Info("error" + err.Error())
 		sLogger.Info("name" + name)
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{name}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{name}), sError.EmptyMap)
 	} else {
 		returnValue = *pSSMParamOutput.Parameter.Value
 	}
@@ -923,7 +923,7 @@ func updateParameter(ctx context.Context, application, environment string, param
 		}
 
 		if _, err := awsService.PutParameter(ctx, pSSMParamInput); err != nil {
-			soteErr = sError.GetSError(199999, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			break
 		}
 	}

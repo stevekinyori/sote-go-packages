@@ -127,7 +127,7 @@ func (dbConnInfo *ConnInfo) createTable(ctx context.Context, tableInfo TableInfo
 	)
 
 	if tableInfo.Name == "" {
-		soteErr = sError.GetSError(109999, sError.BuildParams([]string{"Table Name"}), sError.EmptyMap)
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"Table Name"}), sError.EmptyMap)
 		return
 	}
 
