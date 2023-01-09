@@ -445,18 +445,25 @@ func OutputErrorJSON(inSoteErr SoteError) (outSoteErr []byte) {
 
 	if outSoteErr, err = json.MarshalIndent(inSoteErr, PREFIX, INDENT+INDENT); err != nil {
 		sLogger.Info(err.Error())
-		soteErr := GetSError(207110, BuildParams([]string{"Sote Error"}), EmptyMap)
-		PanicService(soteErr)
+		panic(err)
 	}
 
 	return
 }
 
-func PanicService(soteErr SoteError) {
+// ConvertError converts Sote Error to FrontEnd Friendly Error
+func ConvertError(inSoteErr SoteError, testMode bool) (soteErr SoteError) {
 	sLogger.DebugMethod()
 
-	sLogger.Info(soteErr.FmtErrMsg)
-	panic(soteErr.FmtErrMsg)
+	sLogger.Info(inSoteErr.FmtErrMsg)
+	soteErr = inSoteErr
+	if !testMode {
+		if inSoteErr.ErrCode != 199999 {
+			soteErr = GetSError(199999, BuildParams([]string{""}), EmptyMap)
+		}
+	}
+
+	return
 }
 
 func formatErrorDetails(tErrDetails map[string]string) (errDetails string) {
