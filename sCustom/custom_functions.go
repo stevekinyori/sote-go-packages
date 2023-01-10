@@ -37,6 +37,8 @@ import (
 
 const (
 	LOGMESSAGEPREFIX = "sCustom"
+	PREFIX           = ""
+	INDENT           = " "
 	// Add Constants here
 )
 
@@ -177,6 +179,19 @@ func JSONUnmarshal(ctx context.Context, data []byte, response interface{}) (sote
 			sLogger.Info(err.Error())
 			soteErr = sError.GetSError(sError.ErrInvalidJSON, sError.BuildParams([]string{string(data)}), sError.EmptyMap)
 		}
+	}
+
+	return
+}
+
+// OutputJSONResponse marshal the response message
+func OutputJSONResponse(response interface{}, testMode bool) (resp []byte) {
+	sLogger.DebugMethod()
+
+	var soteErr sError.SoteError
+
+	if resp, soteErr = JSONMarshalIndent(response, PREFIX, INDENT); soteErr.ErrCode != nil {
+		soteErr = sError.ConvertError(soteErr, testMode)
 	}
 
 	return
