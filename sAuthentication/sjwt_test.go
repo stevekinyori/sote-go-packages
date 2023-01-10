@@ -191,8 +191,8 @@ func TestValidateClaims(tPtr *testing.T) {
 	}
 	/*claims = make(map[string]interface{})
 	claims["client_id"] = "scott.fake.client_id"
-	if soteErr := validateClaims(claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != sError.ErrInvalidClientId {
-		tPtr.Errorf("validateClaims failed: Expected soteErr to be sError.ErrInvalidClientId")
+	if soteErr := validateClaims(claims, sConfigParams.DEVELOPMENT); soteErr.ErrCode != sError.ErrInvalidAppClientId {
+		tPtr.Errorf("validateClaims failed: Expected soteErr to be sError.ErrInvalidAppClientId")
 	}*/
 }
 func TestValidateClientId(tPtr *testing.T) {

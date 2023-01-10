@@ -218,7 +218,7 @@ func validateClientId(ctx context.Context, tClientId, tApplication, tEnvironment
 
 	if clientId, soteErr = sConfigParams.GetClientId(ctx, tApplication, tEnvironment); soteErr.ErrCode == nil {
 		if tClientId != clientId {
-			soteErr = sError.GetSError(sError.ErrInvalidClientId, nil, sError.EmptyMap)
+			soteErr = sError.GetSError(sError.ErrInvalidAppClientId, nil, sError.EmptyMap)
 			sLogger.Info(soteErr.FmtErrMsg)
 		}
 	} else if soteErr.ErrCode != nil {
