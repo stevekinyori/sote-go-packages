@@ -282,6 +282,8 @@ func (e *SoteError) Unwrap() error { return e.Err }
 		100500	Thing being changed > : You are making changes to a canceled or completed %v
 		100600	Item is not active > : You are making changes to an inactive %v
 		101010	Service Name > : %v timed out
+		101020	Item Name > : %v context canceled
+		101025	Item Name > : %v context deadline exceeded
 		109999	Item name > : %v was/were not found
 		199999	Error Details > : An error has occurred that is not expected. See Log! %v
 		200100	None > : Table doesn't exist
@@ -333,7 +335,7 @@ func (e *SoteError) Unwrap() error { return e.Err }
 		207111	Parameter name, Application/Package name > : %v couldn't be converted to a map/keyed array - %v
 		207200	Parameter name, Data Structure Type > : %v couldn't be converted to an %v
 		208000	None > : Column must have a non-null value. Details:
-		208010	None > : Column data type is not support or invalid. Details:
+		208010	None > : Column data type is not supported
 		208110	Thing being changed, System Id for the thing > : No update is needed. No fields where changed for %v with id %v
 		208120	JSON array name, Thing being changed, System Id for the thing > : The %v was empty for %v with id %v
 		208200	Error message number > : %v error message is missing from sError package
@@ -347,6 +349,7 @@ func (e *SoteError) Unwrap() error { return e.Err }
 		208356	None > : Token contains an invalid number of segments
 		208360	Claim names > : These claims are invalid: %v
 		208370	None > : Required claim(s) is/are missing
+		208375	None > : Unable to pass HTTP/HTTPS authentication
 		209000	None > : .env files are missing
 		209010	File name, Message returned from Open > : %v file was not found. Message return: %v
 		209100	Environment name > : environment variable is missing (%v)
