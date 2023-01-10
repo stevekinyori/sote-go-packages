@@ -42,10 +42,20 @@ const (
 
 // Options are the options expected by the panic service function
 type Options struct {
-	Testmode           bool
+	TestMode           bool
 	AcknowledgeNatsMsg func(ctx context.Context) (*nats.Msg, bool)
 	Server             string
 	AppEnvironment     string
+}
+
+// Date ISODate YYYY-DD-MM struct
+type Date struct {
+	Time interface{}
+}
+
+// DateTime ISODate Time YYYY-DD-MM HH:mm struct
+type DateTime struct {
+	Time interface{}
 }
 
 var (
@@ -54,6 +64,62 @@ var (
 
 func init() {
 	sLogger.SetLogMessagePrefix(LOGMESSAGEPREFIX)
+}
+
+// UnmarshalJSON ISODate YYYY-DD-MM method
+func (d *Date) UnmarshalJSON(b []byte) error {
+	var (
+		s      string
+		t      time.Time
+		layout string
+		err    error
+	)
+
+	if err = json.Unmarshal(b, &s); err == nil {
+		if s == "" {
+			d.Time = "1700-01-01"
+		} else {
+
+			if strings.Contains(s, "/") {
+				layout = "2006/01/02"
+			} else {
+				layout = "2006-01-02"
+			}
+
+			if t, err = time.Parse(layout, s); err == nil {
+				d.Time = t.Format(layout)
+			}
+		}
+	}
+
+	return err
+}
+
+// UnmarshalJSON ISODate YYYY-DD-MM HH:mm method
+func (d *DateTime) UnmarshalJSON(b []byte) error {
+	var (
+		s      string
+		t      time.Time
+		layout string
+		err    error
+	)
+	if err = json.Unmarshal(b, &s); err == nil {
+		if s == "" {
+			d.Time = "1700-01-01"
+		} else {
+			if strings.Contains(s, "/") {
+				layout = "2006/01/02 15:04"
+			} else {
+				layout = "2006-01-02 15:04"
+			}
+
+			if t, err = time.Parse(layout, s); err == nil {
+				d.Time = t.Format(layout)
+			}
+		}
+	}
+
+	return err
 }
 
 // JSONMarshalIndent is like JSONMarshal but applies Indent to format the output.
