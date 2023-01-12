@@ -387,9 +387,8 @@ func readFileAndReplace(source, replaceRegex, replaceNew string) (fPtr *bufio.Re
 
 	if len(replaceRegex) > 0 && len(dataBytes) > 0 {
 		data = regexp.MustCompile(replaceRegex).ReplaceAllString(string(dataBytes), replaceNew)
+		fPtr.Reset(bytes.NewBufferString(data))
 	}
-
-	fPtr.Reset(bytes.NewBufferString(data))
 
 	return
 }
