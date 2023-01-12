@@ -16,16 +16,16 @@ NOTES:
 package sCustom
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
-	"runtime"
+	"regexp"
 	"strings"
 	"time"
 
@@ -317,33 +317,79 @@ func CopyDir(source, destination string, ext string) (soteErr sError.SoteError) 
 }
 
 // CopyFile copies a files from a specific director to another
-func CopyFile(source, destination string) (soteErr sError.SoteError) {
+func CopyFile(source, destination, replaceRegex, replaceNew string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
-	var err error
+	var (
+		err          error
+		tDestination *os.File
+		fPtr         *bufio.Reader
+	)
 
-	if runtime.GOOS == "windows" {
-		var (
-			data []byte
-		)
-
-		if data, err = ioutil.ReadFile(source); err == nil {
-			err = ioutil.WriteFile(destination, data, os.ModePerm)
-		}
-	} else {
-		err = exec.Command("cp", source, destination).Run()
+	if tDestination, err = os.Create(destination); err != nil {
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+		return
 	}
 
-	if err == nil {
+	defer func(tDestination *os.File) {
+		_ = tDestination.Close()
+	}(tDestination)
+
+	if fPtr, err = readFileAndReplace(source, replaceRegex, replaceNew); err != nil {
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+		return
+	}
+
+	if _, err = fPtr.WriteTo(tDestination); err == nil {
 		for start := time.Now(); ; {
 			if _, err = os.Stat(destination); err == nil || time.Since(start) >= time.Second {
 				return
 			}
-
 		}
+	}
 
-	} else {
+	if err != nil {
 		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 	}
+
+	return
+}
+
+func readFileAndReplace(source, replaceRegex, replaceNew string) (fPtr *bufio.Reader, err error) {
+	sLogger.DebugMethod()
+	var (
+		tSource   *os.File
+		fInfo     os.FileInfo
+		data      string
+		dataBytes []byte
+	)
+
+	if tSource, err = os.Open(source); err != nil {
+		return
+	}
+
+	defer func(tSource *os.File) {
+		_ = tSource.Close()
+	}(tSource)
+
+	if fInfo, err = tSource.Stat(); err != nil {
+		return
+	}
+
+	fSize := int(fInfo.Size())
+	fPtr = bufio.NewReaderSize(tSource, fSize)
+	for {
+		if dataByte, tErr := fPtr.ReadByte(); tErr == nil {
+			dataBytes = append(dataBytes, dataByte)
+		} else {
+			break
+		}
+	}
+
+	if len(replaceRegex) > 0 && len(dataBytes) > 0 {
+		data = regexp.MustCompile(replaceRegex).ReplaceAllString(string(dataBytes), replaceNew)
+	}
+
+	fPtr.Reset(bytes.NewBufferString(data))
 
 	return
 }

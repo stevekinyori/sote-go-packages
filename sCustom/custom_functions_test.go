@@ -23,12 +23,6 @@ import (
 	"gitlab.com/soteapps/packages/v2023/sLogger"
 )
 
-const (
-	// Add Constants here
-	PREFIX string = ""
-	INDENT string = "  "
-)
-
 // List type's here
 
 var (
@@ -51,5 +45,4 @@ func TestMarshal(tPtr *testing.T) {
 	if _, soteErr := JSONMarshal(v); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestMarshal Failed: Expected error code to be %v but got %v", nil, soteErr.FmtErrMsg)
 	}
-
 }
