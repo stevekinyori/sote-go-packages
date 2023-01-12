@@ -109,8 +109,8 @@ forLoop:
 		case "json-web-token":
 			rh.JSONWebToken = v[0]
 		case "reply-subject": // for business to business service calls
-			rh.businessServiceId = v[0]
-			rh.replySubjectNode = v[1]
+			rh.BusinessServiceId = v[0]
+			rh.ReplySubjectNode = v[1]
 		case "content-type":
 			rh.ContentType = v
 		case "origin":

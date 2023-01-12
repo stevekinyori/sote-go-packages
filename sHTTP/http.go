@@ -30,8 +30,8 @@ type RequestHeaderParams struct {
 	RoleList          []string `json:"role-list" validate:"required"`
 	ContentType       []string `json:"Content-Type"`
 	Origin            string   `json:"origin"`
-	replySubjectNode  string
-	businessServiceId string
+	ReplySubjectNode  string
+	BusinessServiceId string
 }
 
 type Request struct {
