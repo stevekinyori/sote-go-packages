@@ -50,8 +50,8 @@ func (dbConnInfo *ConnInfo) QueryDBStmt(ctx context.Context, qStmt string, error
 	return
 }
 
-// QueryOneColumnStmt query single column to destination(pointer)
-func (dbConnInfo *ConnInfo) QueryOneColumnStmt(ctx context.Context, qStmt string, dest interface{}, errorKey string,
+// QueryOneColumn query single column to destination(pointer)
+func (dbConnInfo *ConnInfo) QueryOneColumn(ctx context.Context, qStmt string, dest interface{}, errorKey string,
 	args ...interface{}) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 

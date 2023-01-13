@@ -73,10 +73,8 @@ func (dbConnInfo *ConnInfo) RenameTable(ctx context.Context, table ObjRename, er
 func (dbConnInfo *ConnInfo) HasTable(ctx context.Context, tableName string, errorKey string) (exists bool, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	if _, soteErr = dbConnInfo.QueryOneColumnStmt(ctx, "select 1 from information_schema.tables where table_name=$1", errorKey,
-		tableName); soteErr.ErrCode == nil {
-		exists = true
-	} else if soteErr.ErrCode == sError.ErrItemNotFound {
+	if soteErr = dbConnInfo.QueryOneColumn(ctx, "select true from information_schema.tables where table_name=$1", &exists, errorKey,
+		tableName); soteErr.ErrCode == sError.ErrItemNotFound {
 		soteErr = sError.SoteError{}
 	}
 
