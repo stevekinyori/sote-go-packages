@@ -50,43 +50,54 @@ func (dbConnInfo *ConnInfo) QueryDBStmt(ctx context.Context, qStmt string, error
 	return
 }
 
-// QueryOneColumnStmt query single column
-func (dbConnInfo *ConnInfo) QueryOneColumnStmt(ctx context.Context, qStmt string, errorKey string, args ...interface{}) (tColumn interface{},
-	soteErr sError.SoteError) {
+// QueryOneColumnStmt query single column to destination(pointer)
+func (dbConnInfo *ConnInfo) QueryOneColumnStmt(ctx context.Context, qStmt string, dest interface{}, errorKey string,
+	args ...interface{}) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if !slices.Contains([]string{MigrationType, SeedingType}, errorKey) {
 		sLogger.Info(fmt.Sprintf("Executing: %s", qStmt))
 	}
 
-	err := dbConnInfo.DBPoolPtr.QueryRow(ctx, qStmt, args...).Scan(&tColumn)
+	err := dbConnInfo.DBPoolPtr.QueryRow(ctx, qStmt, args...).Scan(dest)
 	soteErr = convertSQLError(ctx, err, errorKey)
 
 	return
 }
 
-// QueryOneRow query single row of n columns
-func (dbConnInfo *ConnInfo) QueryOneRow(ctx context.Context, qStmt string, columnCount int, errorKey string, args ...interface{}) (row []interface{},
+// QueryOneRow query single row of n columns (unknown number of columns)
+func (dbConnInfo *ConnInfo) QueryOneRow(ctx context.Context, qStmt string, errorKey string, args ...interface{}) (row []interface{},
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	row = make([]interface{}, columnCount)
-	tRow := make([]interface{}, columnCount)
-	for i := range row {
-		tRow[i] = &row[i]
+	var (
+		rows        SRows
+		tRow        []interface{}
+		columnCount int
+		err         error
+	)
+
+	if rows, soteErr = dbConnInfo.QueryDBStmt(ctx, qStmt, errorKey, args...); soteErr.ErrCode != nil {
+		return
 	}
 
-	if !slices.Contains([]string{MigrationType, SeedingType}, errorKey) {
-		sLogger.Info(fmt.Sprintf("Executing: %s", qStmt))
-	}
+	defer rows.Close()
+	if rows.Next() {
+		columnCount = len(rows.FieldDescriptions())
+		row = make([]interface{}, columnCount)
+		tRow = make([]interface{}, columnCount)
+		for i := range row {
+			tRow[i] = &row[i]
+		}
 
-	err := dbConnInfo.DBPoolPtr.QueryRow(ctx, qStmt, args...).Scan(tRow...)
-	soteErr = convertSQLError(ctx, err, errorKey)
+		err = rows.Scan(tRow...)
+		soteErr = convertSQLError(ctx, err, errorKey)
+	}
 
 	return
 }
 
-// QueryOneRowWithDest query single row of n columns and scan them to set destinations (pointers)
+// QueryOneRowWithDest query single row of known number of columns and scan them to the set destination(every slice value must be a pointer)
 func (dbConnInfo *ConnInfo) QueryOneRowWithDest(ctx context.Context, qStmt string, dest []interface{}, errorKey string,
 	args ...interface{}) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
