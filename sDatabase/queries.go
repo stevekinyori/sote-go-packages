@@ -86,6 +86,21 @@ func (dbConnInfo *ConnInfo) QueryOneRow(ctx context.Context, qStmt string, colum
 	return
 }
 
+// QueryOneRowWithDest query single row of n columns and scan them to set destinations (pointers)
+func (dbConnInfo *ConnInfo) QueryOneRowWithDest(ctx context.Context, qStmt string, dest []interface{}, errorKey string,
+	args ...interface{}) (soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	if !slices.Contains([]string{MigrationType, SeedingType}, errorKey) {
+		sLogger.Info(fmt.Sprintf("Executing: %s", qStmt))
+	}
+
+	err := dbConnInfo.DBPoolPtr.QueryRow(ctx, qStmt, args...).Scan(dest...)
+	soteErr = convertSQLError(ctx, err, errorKey)
+
+	return
+}
+
 // ExecDBStmt query database without expecting a response other than error
 func (dbConnInfo *ConnInfo) ExecDBStmt(ctx context.Context, qStmt string, errorKey string, args ...interface{}) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
