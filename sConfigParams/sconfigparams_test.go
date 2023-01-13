@@ -81,6 +81,19 @@ func TestGetCognitoConfig(tPtr *testing.T) {
 		tPtr.Errorf("TestGetCognitoConfig failed: Expected soteErr to be %v: %v", sError.ErrMissingParameters, soteErr.FmtErrMsg)
 	}
 }
+func TestGetBSLBaseURLs(tPtr *testing.T) {
+	if _, soteErr := GetBSLBaseURLs(parentCtx, DEVELOPMENT, []string{SHIPMENTSBSID}); soteErr.ErrCode != nil {
+		tPtr.Errorf("GetBSLBaseURLs failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)
+	}
+
+	if _, soteErr := GetBSLBaseURLs(parentCtx, DEVELOPMENT, []string{"MARY"}); soteErr.ErrCode != sError.ErrItemNotFound {
+		tPtr.Errorf("GetBSLBaseURLs failed: Expected soteErr to be %v: %v", sError.ErrItemNotFound, soteErr.FmtErrMsg)
+	}
+
+	if _, soteErr := GetBSLBaseURLs(parentCtx, "MARY", nil); soteErr.ErrCode != sError.ErrInvalidEnvValue {
+		tPtr.Errorf("GetBSLBaseURLs failed: Expected soteErr to be %v: %v", sError.ErrInvalidEnvValue, soteErr.FmtErrMsg)
+	}
+}
 func TestGetSmtpUsername(tPtr *testing.T) {
 	if _, soteErr := GetSmtpUsername(parentCtx, SMTP, DEVELOPMENT); soteErr.ErrCode != nil {
 		tPtr.Errorf("GetSmtpUsername failed: Expected soteErr to be nil: %v", soteErr.FmtErrMsg)

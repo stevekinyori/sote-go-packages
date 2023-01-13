@@ -18,8 +18,10 @@ NOTES:
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -29,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm/types"
 	"gitlab.com/soteapps/packages/v2023/sError"
 	"gitlab.com/soteapps/packages/v2023/sLogger"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -72,7 +75,7 @@ const (
 	QUICKBOOKSREFRESHTOKEN        = "REFRESH_TOKEN"
 	QUICKBOOKSREFRESHTOKENEXPIRY  = "REFRESH_TOKEN_EXPIRY"
 	QUICKBOOKSREFRESHTOKENREALMID = "REFRESH_TOKEN_REALM_ID"
-
+	BASEURLKEY                    = "BASE_URL"
 	// Application values
 	API        string = "api"
 	SDCC       string = "sdcc"
@@ -81,8 +84,26 @@ const (
 	QUICKBOOKS        = "quickbooks"
 	SMTP              = "smtp"
 	COGNITO           = "cognito"
+	BSL               = "bsl"
 	// Root Path
 	ROOTPATH = "/sote"
+)
+const (
+	ORGGANIZATIONSBSID         = "5"
+	USERMANAGEMENTBSID         = "6"
+	SHIPMENTSBSID              = "7"
+	TRIPSBSID                  = "8"
+	SHIPMENTSFINTRANSBSID      = "9"
+	TRIPFINTRANSBSID           = "10"
+	DOCUMENTSBSID              = "11"
+	NOTESBSID                  = "12"
+	LISTOFVALUESBSID           = "13"
+	COGNITOBSID                = "14"
+	COGNITOUSERMANAGEMENTBSID  = "15"
+	QUICKBOOKSBSID             = "16"
+	DOCUMENTSNOTIFICATIONSBSID = "17"
+	NOTIFICATIONSBSID          = "18"
+	CRONNOTIFICATIONSBSID      = "19"
 )
 
 var (
@@ -136,6 +157,11 @@ type Database struct {
 	Port     int
 }
 
+type BSLBaseURL struct {
+	ServiceId string // use sMessage.GetBusinessServiceIds
+	BaseURL   string
+}
+
 /*
 This will establish a session using the default .aws location
 */
@@ -148,6 +174,28 @@ func init() {
 		log.Fatalln(err)
 	}
 	awsService = ssm.NewFromConfig(cfg)
+}
+
+func GetBusinessServiceIds() []string {
+	sLogger.DebugMethod()
+
+	return []string{
+		ORGGANIZATIONSBSID,
+		USERMANAGEMENTBSID,
+		SHIPMENTSBSID,
+		TRIPSBSID,
+		SHIPMENTSFINTRANSBSID,
+		TRIPFINTRANSBSID,
+		DOCUMENTSBSID,
+		NOTESBSID,
+		LISTOFVALUESBSID,
+		COGNITOBSID,
+		COGNITOUSERMANAGEMENTBSID,
+		QUICKBOOKSBSID,
+		DOCUMENTSNOTIFICATIONSBSID,
+		NOTIFICATIONSBSID,
+		CRONNOTIFICATIONSBSID,
+	}
 }
 
 /*
@@ -295,6 +343,7 @@ func GetCognitoConfig(ctx context.Context, application, environment string) (par
 				Names:          []string{clientIdKey, userKey, passwordKey},
 				WithDecryption: &pTrue,
 			}
+
 			if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err == nil {
 				if len(pSSMParamsOutput.Parameters) < len(pSSMParamsInput.Names) {
 					soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"cognito configuration"}), sError.EmptyMap)
@@ -313,6 +362,65 @@ func GetCognitoConfig(ctx context.Context, application, environment string) (par
 			} else {
 				soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			}
+		}
+	}
+
+	return
+}
+
+// GetBSLBaseURLs retrieves a maximum of 10 business service URLS from SSM
+func GetBSLBaseURLs(ctx context.Context, environment string, services []string) (parameters []BSLBaseURL, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+
+	var (
+		pSSMParamsOutput  = &ssm.GetParametersOutput{}
+		err               error
+		availableServices = GetBusinessServiceIds()
+	)
+	if soteErr = ValidateEnvironment(environment); soteErr.ErrCode != nil {
+		return
+	}
+
+	environment = strings.ToLower(environment)
+	if len(services) == 0 {
+		services = availableServices
+	}
+
+	ssmPaths := make([]string, 0, len(services))
+	for i, service := range services {
+		if !slices.Contains(availableServices, service) {
+			soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"business service Id"}), sError.EmptyMap)
+			return
+		}
+
+		ssmPaths = append(ssmPaths, fmt.Sprintf("%v/%v/%v", setPath(BSL, environment), BASEURLKEY, service))
+		if i == 9 {
+			break
+		}
+	}
+
+	pSSMParamsInput := &ssm.GetParametersInput{
+		Names:          ssmPaths,
+		WithDecryption: &pTrue,
+	}
+	if pSSMParamsOutput, err = awsService.GetParameters(ctx, pSSMParamsInput); err != nil {
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
+		return
+	}
+
+	paramCount := len(pSSMParamsOutput.Parameters)
+	if paramCount < len(pSSMParamsInput.Names) {
+		soteErr = sError.GetSError(sError.ErrItemNotFound, sError.BuildParams([]string{"BSL base URLs"}), sError.EmptyMap)
+		return
+	}
+
+	parameters = make([]BSLBaseURL, 0, paramCount)
+	for _, pParameter := range pSSMParamsOutput.Parameters {
+		if pParameter.Name != nil && pParameter.Value != nil {
+			parameters = append(parameters, BSLBaseURL{
+				ServiceId: filepath.Base(*pParameter.Name),
+				BaseURL:   *pParameter.Value,
+			})
 		}
 	}
 
