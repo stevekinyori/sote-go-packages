@@ -418,11 +418,9 @@ func GetBSLBaseURLs(ctx context.Context, environment string, services []string) 
 	for _, pParameter := range pSSMParamsOutput.Parameters {
 		if pParameter.Name != nil && pParameter.Value != nil {
 			serviceId := filepath.Base(*pParameter.Name)
-			parameters = map[string]BSLBaseURL{
-				serviceId: {
-					ServiceId: serviceId,
-					BaseURL:   *pParameter.Value,
-				},
+			parameters[serviceId] = BSLBaseURL{
+				ServiceId: serviceId,
+				BaseURL:   *pParameter.Value,
 			}
 		}
 	}
