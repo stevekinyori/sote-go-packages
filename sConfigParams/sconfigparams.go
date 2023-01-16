@@ -369,7 +369,7 @@ func GetCognitoConfig(ctx context.Context, application, environment string) (par
 }
 
 // GetBSLBaseURLs retrieves a maximum of 10 business service URLS from SSM
-func GetBSLBaseURLs(ctx context.Context, environment string, services []string) (parameters []BSLBaseURL, soteErr sError.SoteError) {
+func GetBSLBaseURLs(ctx context.Context, environment string, services []string) (parameters map[string]BSLBaseURL, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -414,13 +414,16 @@ func GetBSLBaseURLs(ctx context.Context, environment string, services []string) 
 		return
 	}
 
-	parameters = make([]BSLBaseURL, 0, paramCount)
+	parameters = make(map[string]BSLBaseURL, paramCount)
 	for _, pParameter := range pSSMParamsOutput.Parameters {
 		if pParameter.Name != nil && pParameter.Value != nil {
-			parameters = append(parameters, BSLBaseURL{
-				ServiceId: filepath.Base(*pParameter.Name),
-				BaseURL:   *pParameter.Value,
-			})
+			serviceId := filepath.Base(*pParameter.Name)
+			parameters = map[string]BSLBaseURL{
+				serviceId: {
+					ServiceId: serviceId,
+					BaseURL:   *pParameter.Value,
+				},
+			}
 		}
 	}
 
