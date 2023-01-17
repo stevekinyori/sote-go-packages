@@ -180,15 +180,14 @@ func (ConnInfo *ConnInfo) Patch(request *Request, testMode bool) (body []byte, s
 	sLogger.DebugMethod()
 
 	var (
-		req       *http.Request
-		err       error
-		tBodyByte []byte
-		tBody     io.Reader
+		req   *http.Request
+		err   error
+		tBody io.Reader
 	)
 
 	if request != nil {
 		if len(request.BodyParams) > 0 {
-			tBody = bytes.NewReader(tBodyByte)
+			tBody = bytes.NewReader(request.BodyParams)
 		}
 
 		if req, err = http.NewRequest("PATCH", request.URL, tBody); err != nil { // create a new PATCH request
@@ -210,15 +209,14 @@ func (ConnInfo *ConnInfo) Post(request *Request, testMode bool) (body []byte, so
 	sLogger.DebugMethod()
 
 	var (
-		req       *http.Request
-		err       error
-		tBodyByte []byte
-		tBody     io.Reader
+		req   *http.Request
+		err   error
+		tBody io.Reader
 	)
 
 	if request != nil {
 		if len(request.BodyParams) > 0 {
-			tBody = bytes.NewReader(tBodyByte)
+			tBody = bytes.NewReader(request.BodyParams)
 		}
 
 		if req, err = http.NewRequest("POST", request.URL, tBody); err != nil { // create a new POST request
