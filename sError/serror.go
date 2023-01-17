@@ -150,6 +150,7 @@ const (
 	ErrMissingURL                            = 210090
 	ErrInvalidStartUpValueRange              = 210098
 	ErrMissingStartUpParameter               = 210099
+	ErrInvalidAPICallSignature               = 210100
 	ErrPostgresError                         = 210200
 	ErrPostgresUnresponsive                  = 210299
 	ErrAWSSessionError                       = 210399

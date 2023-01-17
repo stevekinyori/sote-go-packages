@@ -1,6 +1,7 @@
 package sHTTPClient
 
 import (
+	"net/http"
 	"testing"
 
 	"gitlab.com/soteapps/packages/v2023/sError"
@@ -145,7 +146,7 @@ func TestHTTPCall(tPtr *testing.T) {
 			"q": "news",
 		}
 
-		if soteErr = httpm.sHTTPCall("GET", "/get"); soteErr.ErrCode != nil {
+		if soteErr = httpm.sHTTPCall(http.MethodGet, "/get"); soteErr.ErrCode != nil {
 			tPtr.Errorf("sHTTPCall failed: Expected error code to be nil but got %v", soteErr.ErrCode)
 		}
 	} else {
@@ -163,7 +164,7 @@ func TestHTTPCallExpectErrBadHTTPRequest(tPtr *testing.T) {
 			"q": "news",
 		}
 
-		if soteErr = httpm.sHTTPCall("DELETE", "/post"); soteErr.ErrCode != sError.ErrBadHTTPRequest {
+		if soteErr = httpm.sHTTPCall(http.MethodDelete, "/post"); soteErr.ErrCode != sError.ErrBadHTTPRequest {
 			tPtr.Errorf("sHTTPCall failed: Expected error code %v but got %v", sError.ErrBadHTTPRequest, soteErr.ErrCode)
 		}
 	} else {

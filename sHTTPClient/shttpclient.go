@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"strconv"
 	"sync"
@@ -67,13 +68,13 @@ func (httpm *HTTPManager) setURL(sURL string) (soteErr sError.SoteError) {
 }
 
 /*
-	This will make an HTTP DELETE call to the set route with the supplied request parameters
+	This will make a http.MethodDelete call to the set route with the supplied request parameters
 */
 func (httpm *HTTPManager) Delete(route string, reqParams map[string]interface{}, parseResult bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = httpm.paramFormatting(reqParams); soteErr.ErrCode == nil {
-		if soteErr = httpm.sHTTPCall("DELETE", route); soteErr.ErrCode == nil {
+		if soteErr = httpm.sHTTPCall(http.MethodDelete, route); soteErr.ErrCode == nil {
 			if soteErr = httpm.readHTTPResponse(); soteErr.ErrCode == nil {
 				soteErr = httpm.parseJSONResult(parseResult)
 			}
@@ -84,7 +85,7 @@ func (httpm *HTTPManager) Delete(route string, reqParams map[string]interface{},
 }
 
 /*
-	This will make an HTTP GET call to the set route with the supplied request parameters
+	This will make a http.MethodGet call to the set route with the supplied request parameters
 	Using the parseResult parameter, you can load the raw result or the JSON result
 	into the struct payloadManager.RetPack using the parseResult parameter (false = load row, true = parse JSON)
 */
@@ -92,7 +93,7 @@ func (httpm *HTTPManager) Get(route string, reqParams map[string]interface{}, pa
 	sLogger.DebugMethod()
 
 	if soteErr = httpm.paramFormatting(reqParams); soteErr.ErrCode == nil {
-		if soteErr = httpm.sHTTPCall("GET", route); soteErr.ErrCode == nil {
+		if soteErr = httpm.sHTTPCall(http.MethodGet, route); soteErr.ErrCode == nil {
 			if soteErr = httpm.readHTTPResponse(); soteErr.ErrCode == nil {
 				soteErr = httpm.parseJSONResult(parseResult)
 			}
@@ -103,13 +104,13 @@ func (httpm *HTTPManager) Get(route string, reqParams map[string]interface{}, pa
 }
 
 /*
-	This will make an HTTP POST call to the set route with the supplied request parameters
+	This will make a http.MethodPost call to the set route with the supplied request parameters
 */
 func (httpm *HTTPManager) Post(route string, reqParams map[string]interface{}, parseResult bool) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	if soteErr = httpm.paramFormatting(reqParams); soteErr.ErrCode == nil {
-		if soteErr = httpm.sHTTPCall("POST", route); soteErr.ErrCode == nil {
+		if soteErr = httpm.sHTTPCall(http.MethodPost, route); soteErr.ErrCode == nil {
 			if soteErr = httpm.readHTTPResponse(); soteErr.ErrCode == nil {
 				soteErr = httpm.parseJSONResult(parseResult)
 			}
@@ -129,19 +130,19 @@ func (httpm *HTTPManager) sHTTPCall(method string, route string) (soteErr sError
 
 	// Success is indicated with 2xx status codes
 	switch method {
-	case "DELETE":
+	case http.MethodDelete:
 		if httpm.sHTTPResponse, err = httpm.httpclient.Delete(httpm.sURL+route,
 			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
 			soteErr = sError.GetSError(sError.ErrBadHTTPRequest, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
-	case "GET":
+	case http.MethodGet:
 		if httpm.sHTTPResponse, err = httpm.httpclient.Get(httpm.sURL+route,
 			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
 			soteErr = sError.GetSError(sError.ErrBadHTTPRequest, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)
 			sLogger.Debug(soteErr.FmtErrMsg)
 		}
-	case "POST":
+	case http.MethodPost:
 		if httpm.sHTTPResponse, err = httpm.httpclient.PostJson(httpm.sURL+route,
 			httpm.reqParams); err != nil || httpm.sHTTPResponse.StatusCode < 200 || httpm.sHTTPResponse.StatusCode >= 300 {
 			soteErr = sError.GetSError(sError.ErrBadHTTPRequest, sError.BuildParams([]string{httpm.sHTTPResponse.Status}), sError.EmptyMap)

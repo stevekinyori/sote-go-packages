@@ -7,7 +7,7 @@ CONSUMERS:
 	JetStream will deliver the messages as fast as possible to a subject of your choice or pull based for typical work queue like
 	behavior.
 
-	The Consumer subject filter must be a subset of the Stream subject. Error Code: 206700
+	The Consumer subject filter must be a subset of the Stream subject. Error Code: sError.ErrInvalidConsumerSubjectFilter
 	Here are some examples:
 		Stream subject: IMAGES  Consumer subject filter: IMAGES -> works
 		Stream subject: IMAGES  Consumer subject filter: IMAGES.cat -> DOES NOT works
