@@ -44,39 +44,27 @@ find . -name "coverage*.out" -type f -delete 1>>/dev/null
 echo -n 'processing internal tests .'
 #
 # The following will generate coverage.out files and new packages should be added.
-echo -n 'sLogger ' 1>/tmp/tmp_$$.out
-go test sLogger/*.go -coverprofile sLogger/coverage.out 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sError ' 1>>/tmp/tmp_$$.out
-go test sError/*.go -coverprofile sError/coverage.out 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sDatabase ' 1>>/tmp/tmp_$$.out
-rm sDatabase/coverage.out 2>/dev/null
-go test sDatabase/*.go -coverprofile sDatabase/coverage.out 1>>/tmp/tmp_$$.out
-echo -n '.'
+echo
+echo -n 'sLogger '
+go test sLogger/*.go -coverprofile sLogger/coverage.out | tee /tmp/tmp_$$.out
+echo -n 'sError '
+go test sError/*.go -coverprofile sError/coverage.out | tee /tmp/tmp_$$.out
+echo -n 'sDatabase '
+go test sDatabase/*.go -coverprofile sDatabase/coverage.out | tee /tmp/tmp_$$.out
 echo -n 'sConfigParams ' 1>>/tmp/tmp_$$.out
-rm sConfigParams/coverage.out 2>/dev/null
-go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sAuthentication ' 1>>/tmp/tmp_$$.out
-rm sAuthentication/coverage.out 2>/dev/null
-GOARCH=amd64 go test sAuthentication/*.go -coverprofile sAuthentication/coverage.out 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sMessage ' 1>>/tmp/tmp_$$.out
-rm sMessage/coverage.out 2>/dev/null
-go test sMessage/*.go -coverprofile sMessage/coverage.out 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sHTTPClient ' 1>>/tmp/tmp_$$.out
-rm sHTTPClient/coverage.out 2>/dev/null
-go test sHTTPClient/*.go -coverprofile sHTTPClient/coverage.out 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sCustom ' 1>>/tmp/tmp_$$.out
-rm sCustom/coverage.out 2>/dev/null
-go test sCustom/*.go -coverprofile sCustom/coverage.out 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sDocument ' 1>>/tmp/tmp_$$.out
-rm sDocument/coverage.out 2>/dev/null
-go test sDocument/*.go -coverprofile sDocument/coverage.out 1>>/tmp/tmp_$$.out
+go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out | tee /tmp/tmp_$$.out
+echo -n 'sAuthentication '
+go test sAuthentication/*.go -coverprofile sAuthentication/coverage.out | tee /tmp/tmp_$$.out
+echo -n 'sMessage '
+go test sMessage/*.go -coverprofile sMessage/coverage.out | tee /tmp/tmp_$$.out
+echo -n 'sHTTPClient '
+go test sHTTPClient/*.go -coverprofile sHTTPClient/coverage.out | tee /tmp/tmp_$$.out
+echo -n 'sHTTP '
+go test sHTTP/*.go -coverprofile sHTTP/coverage.out | tee /tmp/tmp_$$.out
+echo -n 'sCustom '
+go test sCustom/*.go -coverprofile sCustom/coverage.out | tee /tmp/tmp_$$.out
+echo -n 'sDocument '
+go test sDocument/*.go -coverprofile sDocument/coverage.out | tee /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<<"$(grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}')"
@@ -92,33 +80,26 @@ echo -n 'processing external tests .'
 #
 # # The following will run tests that use the packages as an external package or program.
 # # There is no coverage because the tests are outside the directory with the source file.
-echo -n 'sLogger_external_test ' 1>/tmp/tmp_$$.out
-go test tests/sLogger_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sError_external_test ' 1>>/tmp/tmp_$$.out
-go test tests/sError_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sDatabase_external_test ' 1>>/tmp/tmp_$$.out
-go test tests/sDatabase_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sConfigParams_external_test ' 1>>/tmp/tmp_$$.out
-go test tests/sConfigParams_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sAuthentication ' 1>>/tmp/tmp_$$.out
-go test tests/sAuthentication_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sMessage_external_test ' 1>>/tmp/tmp_$$.out
-go test tests/sMessages_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sHTTPClient_external_test ' 1>>/tmp/tmp_$$.out
-go test tests/sHTTPClient_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sCustom_external_test ' 1>>/tmp/tmp_$$.out
-go test tests/sCustom_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
-echo -n 'sDocument_external_test ' 1>>/tmp/tmp_$$.out
-go test tests/sDocument_external_test.go 1>>/tmp/tmp_$$.out
-echo -n '.'
+echo -n 'sLogger_external_test '
+go test tests/sLogger_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sError_external_test '
+go test tests/sError_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sDatabase_external_test '
+go test tests/sDatabase_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sConfigParams_external_test '
+go test tests/sConfigParams_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sAuthentication '
+go test tests/sAuthentication_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sMessage_external_test '
+go test tests/sMessages_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sHTTPClient_external_test '
+go test tests/sHTTPClient_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sCustom_external_test '
+go test tests/sCustom_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sHTTP_external_test '
+go test tests/sHTTP_external_test.go | tee /tmp/tmp_$$.out
+echo -n 'sDocument_external_test '
+go test tests/sDocument_external_test.go | tee /tmp/tmp_$$.out
 echo "Done"
 cat /tmp/tmp_$$.out
 read RC <<<"$(grep '^FAIL' /tmp/tmp_$$.out | awk '/[F][A][I][L]/ {print 1}')"
@@ -141,8 +122,20 @@ go tool cover -func=sConfigParams/coverage.out >>coverage_review.out
 go tool cover -func=sAuthentication/coverage.out >>coverage_review.out
 go tool cover -func=sMessage/coverage.out >>coverage_review.out
 go tool cover -func=sHTTPClient/coverage.out >>coverage_review.out
-go tool cover -func=sDocument/coverage.out >>coverage_review.out
 go tool cover -func=sCustom/coverage.out >>coverage_review.out
+go tool cover -func=sHTTP/coverage.out >>coverage_review.out
+go tool cover -func=sDocument/coverage.out >>coverage_review.out
+rm sLogger/coverage.out 2>/dev/null
+rm sError/coverage.out 2>/dev/null
+rm sDatabase/coverage.out 2>/dev/null
+rm sConfigParams/coverage.out 2>/dev/null
+rm sAuthentication/coverage.out 2>/dev/null
+rm sMessage/coverage.out 2>/dev/null
+rm sHTTPClient/coverage.out 2>/dev/null
+rm sCustom/coverage.out 2>/dev/null
+rm sHTTP/coverage.out 2>/dev/null
+rm sDocument/coverage.out 2>/dev/null
+
 echo "Done"
 #
 # # Review the coverage totals for 70%+ compliance

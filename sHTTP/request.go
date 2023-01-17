@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -78,7 +79,7 @@ func PrepareReqMessage(ctx context.Context, req *RequestParams, requestMap inter
 	reqHeaderMessage = &RequestHeaderParams{}
 	if soteErr = reqHeaderMessage.PrepareReqHeader(req.Headers, req.TestMode); soteErr.ErrCode == nil {
 		if soteErr = ValidateRequestMessage(ctx, reqHeaderMessage, req.TestMode); soteErr.ErrCode == nil {
-			soteErr = PrepareRequestMessage(ctx, req, requestMap)
+			soteErr = PrepareMessage(ctx, req, requestMap)
 		}
 	}
 	return
@@ -125,8 +126,8 @@ forLoop:
 	return
 }
 
-// PrepareRequestMessage unmarshal the incoming request message and validate it
-func PrepareRequestMessage(ctx context.Context, req *RequestParams, requestMap interface{}) (
+// PrepareMessage unmarshal the incoming request message and validate it
+func PrepareMessage(ctx context.Context, req *RequestParams, requestMap interface{}) (
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
@@ -158,7 +159,7 @@ func ReadRequest(ctx *gin.Context) (reqMsg []byte, soteErr sError.SoteError) {
 	)
 
 	switch ctx.Request.Method {
-	case "GET", "DELETE":
+	case http.MethodGet, http.MethodDelete:
 		qParams := ctx.Request.URL.Query().Get("params")
 		if qParams != "" {
 			reqMsg, err = base64.StdEncoding.DecodeString(qParams)

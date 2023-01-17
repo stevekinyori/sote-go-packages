@@ -41,8 +41,25 @@ type Request struct {
 	BodyParams  []byte
 }
 
-type ConnInfo struct {
+type ClientPool struct {
 	Pool *sync.Pool
+}
+
+// ClientPoolImpl struct that holds the ClientPool struct
+type ClientPoolImpl struct {
+	Client Client
+}
+
+type Client interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+// Do makes an HTTP Do request using pool
+func (clientPtr *ClientPool) Do(req *http.Request) (*http.Response, error) {
+	client := clientPtr.Pool.Get().(*http.Client) // get a client from the pool
+	defer clientPtr.Pool.Put(client)              // put the client back into the pool when idle
+
+	return client.Do(req)
 }
 
 // AuthenticationMiddleware runs JWT authentication check
@@ -85,12 +102,13 @@ func CORSMiddleware(targetEnvironment string) gin.HandlerFunc {
 		ctx.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		// ctx.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		ctx.Writer.Header().Set("Access-Control-Allow-Headers", "*")
-		ctx.Writer.Header().Set("Access-Control-Allow-Methods", "OPTIONS, POST, GET, PATCH, DELETE")
+		ctx.Writer.Header().Set("Access-Control-Allow-Methods",
+			fmt.Sprintf("%v, %v, %v, %v, %v", http.MethodOptions, http.MethodPost, http.MethodGet, http.MethodPatch, http.MethodDelete))
 		ctx.Writer.Header().Set("Access-Control-Max-Age", fmt.Sprint(12*time.Hour))
 		ctx.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
 		ctx.Writer.Header().Set("X-XSS-Protection", "1; mode=block")
 
-		if ctx.Request.Method == "OPTIONS" {
+		if ctx.Request.Method == http.MethodOptions {
 			ctx.AbortWithStatus(http.StatusNoContent)
 			return
 		}
@@ -123,8 +141,8 @@ func GetAllowedOrigins(ctx *gin.Context, targetEnvironment string) (origin strin
 	return
 }
 
-// Delete makes a DELETE request and return the response body
-func (ConnInfo *ConnInfo) Delete(request *Request, testMode bool) (body []byte, soteErr sError.SoteError) {
+// Delete makes a http.MethodDelete request and return the response body
+func (poolPtr *ClientPoolImpl) Delete(request *Request, testMode bool) (body []byte, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -133,7 +151,7 @@ func (ConnInfo *ConnInfo) Delete(request *Request, testMode bool) (body []byte, 
 	)
 
 	if request != nil {
-		if req, err = http.NewRequest("DELETE", request.URL, nil); err != nil { // create a new DELETE request
+		if req, err = http.NewRequest(http.MethodDelete, request.URL, nil); err != nil { // create a new http.MethodDelete request
 			sLogger.Info(err.Error())
 			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 			return
@@ -143,14 +161,14 @@ func (ConnInfo *ConnInfo) Delete(request *Request, testMode bool) (body []byte, 
 		SetReqQuery(req, request.QueryParams) // set query parameters
 
 		// execute the request and read the entire response body
-		body, soteErr = ConnInfo.DoRequest(req, testMode)
+		body, soteErr = poolPtr.DoRequest(req, testMode)
 	}
 
 	return
 }
 
-// Get makes a GET request and return the response body
-func (ConnInfo *ConnInfo) Get(request *Request, testMode bool) (body []byte, soteErr sError.SoteError) {
+// Get makes a http.MethodGet request and return the response body
+func (poolPtr *ClientPoolImpl) Get(request *Request, testMode bool) (body []byte, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -159,7 +177,7 @@ func (ConnInfo *ConnInfo) Get(request *Request, testMode bool) (body []byte, sot
 	)
 
 	if request != nil {
-		if req, err = http.NewRequest("GET", request.URL, nil); err != nil { // create a new GET request
+		if req, err = http.NewRequest(http.MethodGet, request.URL, nil); err != nil { // create a new http.MethodGet request
 			sLogger.Info(err.Error())
 			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 
@@ -169,14 +187,14 @@ func (ConnInfo *ConnInfo) Get(request *Request, testMode bool) (body []byte, sot
 		SetReqHeaders(req, request.Headers)   // set headers
 		SetReqQuery(req, request.QueryParams) // set query parameters
 
-		body, soteErr = ConnInfo.DoRequest(req, testMode) // execute the request and read the entire response body
+		body, soteErr = poolPtr.DoRequest(req, testMode) // execute the request and read the entire response body
 	}
 
 	return
 }
 
-// Patch makes a PATCH request and return the response body
-func (ConnInfo *ConnInfo) Patch(request *Request, testMode bool) (body []byte, soteErr sError.SoteError) {
+// Patch makes a http.MethodPatch request and return the response body
+func (poolPtr *ClientPoolImpl) Patch(request *Request, testMode bool) (body []byte, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -190,22 +208,22 @@ func (ConnInfo *ConnInfo) Patch(request *Request, testMode bool) (body []byte, s
 			tBody = bytes.NewReader(request.BodyParams)
 		}
 
-		if req, err = http.NewRequest("PATCH", request.URL, tBody); err != nil { // create a new PATCH request
+		if req, err = http.NewRequest(http.MethodPatch, request.URL, tBody); err != nil { // create a new http.MethodPatch request
 			sLogger.Info(err.Error())
 			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 
 			return
 		}
 
-		SetReqHeaders(req, request.Headers)               // set headers
-		body, soteErr = ConnInfo.DoRequest(req, testMode) // execute the request and read the entire response body
+		SetReqHeaders(req, request.Headers)              // set headers
+		body, soteErr = poolPtr.DoRequest(req, testMode) // execute the request and read the entire response body
 	}
 
 	return
 }
 
-// Post makes a POST request and return the response body
-func (ConnInfo *ConnInfo) Post(request *Request, testMode bool) (body []byte, soteErr sError.SoteError) {
+// Post makes a http.MethodPost request and return the response body
+func (poolPtr *ClientPoolImpl) Post(request *Request, testMode bool) (body []byte, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
@@ -219,32 +237,30 @@ func (ConnInfo *ConnInfo) Post(request *Request, testMode bool) (body []byte, so
 			tBody = bytes.NewReader(request.BodyParams)
 		}
 
-		if req, err = http.NewRequest("POST", request.URL, tBody); err != nil { // create a new POST request
+		if req, err = http.NewRequest(http.MethodPost, request.URL, tBody); err != nil { // create a new http.MethodPost request
 			sLogger.Info(err.Error())
 			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 
 			return
 		}
 
-		SetReqHeaders(req, request.Headers)               // set headers
-		body, soteErr = ConnInfo.DoRequest(req, testMode) // execute the request and read the entire response body
+		SetReqHeaders(req, request.Headers)              // set headers
+		body, soteErr = poolPtr.DoRequest(req, testMode) // execute the request and read the entire response body
 	}
 
 	return
 }
 
 // DoRequest makes an HTTP request, read the entire response body, and return the response
-func (ConnInfo *ConnInfo) DoRequest(req *http.Request, testMode bool) (body []byte, soteErr sError.SoteError) {
+func (poolPtr *ClientPoolImpl) DoRequest(req *http.Request, testMode bool) (body []byte, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
-		client *http.Client
-		resp   *http.Response
-		err    error
+		resp *http.Response
+		err  error
 	)
 
-	client = ConnInfo.Pool.Get().(*http.Client) // get a client from the pool
-	if resp, err = client.Do(req); err == nil { // execute the request and get the response
+	if resp, err = poolPtr.Client.Do(req); err == nil { // execute the request and get the response
 		defer func(Body io.ReadCloser) {
 			_ = Body.Close()
 		}(resp.Body) // read the entire response body
@@ -265,8 +281,6 @@ func (ConnInfo *ConnInfo) DoRequest(req *http.Request, testMode bool) (body []by
 		}
 	}
 
-	// put the client back into the pool
-	ConnInfo.Pool.Put(client)
 	if err != nil {
 		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{err.Error()}), sError.EmptyMap)
 	}
@@ -307,9 +321,9 @@ func ConvertError(soteErr sError.SoteError) (statusCode int) {
 	sLogger.Info(soteErr.FmtErrMsg)
 	// convert Sote Error to HTTP Errors
 	switch soteErr.ErrCode {
-	case 206200:
+	case sError.ErrInvalidMsgSignature:
 		statusCode = http.StatusBadRequest
-	case 207110:
+	case sError.ErrInvalidJSON:
 		statusCode = http.StatusUnprocessableEntity
 	case sError.ErrItemNotFound:
 		statusCode = http.StatusNotFound
