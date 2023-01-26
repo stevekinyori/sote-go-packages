@@ -298,11 +298,11 @@ func TestDocumentPreSignedURL(tPtr *testing.T) {
 			sourceFilepath = strings.Join([]string{sDocument.GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALFILENAME}, "/")
 			keys = sDocument.GetObjectKeys(filename, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyName))
 			// Read contents of file to be uploaded
-			if contents, soteErr = sDocument.ReadFile(parentCtx, sourceFilepath); soteErr.ErrCode != nil {
+			if contents, soteErr = sDocument.ReadFile(sDocumentCtx, sourceFilepath); soteErr.ErrCode != nil {
 				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
 			}
 			// Upload source document
-			if s3ClientServerPtr.DocumentUpload(parentCtx, keys.ProcessedObjectKey, contents,
+			if s3ClientServerPtr.DocumentUpload(sDocumentCtx, keys.ProcessedObjectKey, contents,
 				sDocument.GetMIMEType(contents)); soteErr.ErrCode != nil {
 				tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
 			}
