@@ -60,9 +60,8 @@ func GetDocumentsMountPoint(ctx context.Context, mountPointEnvName string) (docu
 	sLogger.DebugMethod()
 
 	if documentsMountPoint = os.Getenv(mountPointEnvName); documentsMountPoint == "" {
-		soteErr = panicService(ctx,
-			sError.GetSError(sError.ErrMissingEnvVariable, sError.BuildParams([]string{DOCUMENTSMOUNTPOINTENVIRONMENTVARNAME}), sError.EmptyMap))
-
+		soteErr = sError.GetSError(sError.ErrMissingEnvVariable, sError.BuildParams([]string{DOCUMENTSMOUNTPOINTENVIRONMENTVARNAME}),
+			sError.EmptyMap)
 	}
 
 	return
@@ -112,31 +111,6 @@ func ValidateFilepath(filepath string) (pathExists bool, soteErr sError.SoteErro
 	} else {
 		pathExists = true
 		sLogger.Info(fmt.Sprintf("Document %v was found", filepath))
-	}
-
-	return
-}
-
-// panicService panic when not in test mode/production/demo
-func panicService(ctx context.Context, inSoteErr sError.SoteError) (soteErr sError.SoteError) {
-	sLogger.DebugMethod()
-
-	sLogger.Info(inSoteErr.FmtErrMsg)
-	soteErr = inSoteErr
-	if !testMode {
-		if inSoteErr.ErrCode != sError.ErrGenericError {
-			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{""}), sError.EmptyMap)
-		}
-
-		if appEnvironment == "development" || appEnvironment == "staging" {
-			defer func() {
-				if r := recover(); r != nil {
-					sLogger.Info(fmt.Sprintf("Recovered from panic %v", r))
-				}
-			}()
-
-			panic(inSoteErr.FmtErrMsg)
-		}
 	}
 
 	return
