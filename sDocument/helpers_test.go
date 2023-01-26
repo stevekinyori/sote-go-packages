@@ -37,10 +37,10 @@ import (
 
 const (
 	// Add Constants here
-	TESTCLIENTCOMPANYNAMEONE       = "SILAFRICA KENYA LTD"
-	TESTCOMPANYSUPPLIERNAMEONE     = "ExxonMobil Petroleum & Chemical BV"
-	TESTCLIENTCOMPANYID            = 1
-	TESTCLIENTCOMPANYIDSTR         = "1"
+	TESTCLIENTCOMPANYNAMEONE   = "Test Client Company One"
+	TESTCOMPANYSUPPLIERNAMEONE = "Test Company Supplier One "
+	// TESTCLIENTCOMPANYID        = 1
+	// TESTCLIENTCOMPANYIDSTR         = "1"
 	TESTFILENAMEONE                = "test-invoice.jpeg"
 	TESTS3BUCKETNAME               = "sote-internal-technology-data"
 	TESTAPPENVIRONMENT             = "staging"
@@ -49,7 +49,7 @@ const (
 	TESTLOCALFILENAME              = "invoice.jpeg"
 	TESTLOCALPDFFILENAME           = "invoice-two.pdf"
 	TESTINVALIDFILEPATH            = "INVALID PATH"
-	TESTOBJECTKEYONE               = INBOUNDFOLDER + "/" + TESTAPPENVIRONMENT + "/" + TESTCLIENTCOMPANYIDSTR + "/" + TESTFILENAMEONE
+	TESTOBJECTKEYONE               = INBOUNDFOLDER + "/" + TESTAPPENVIRONMENT + "/" + TESTCLIENTCOMPANYNAMEONE + "/" + TESTFILENAMEONE
 )
 
 // List type's here
@@ -136,35 +136,6 @@ func TestValidateFilepath(tPtr *testing.T) {
 		if _, soteErr = ValidateFilepath(testLocalFilepath); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
-	})
-}
-func TestPanicService(tPtr *testing.T) {
-	var (
-		function, _, _, _ = runtime.Caller(0)
-		testName          = runtime.FuncForPC(function).Name()
-		soteErr           sError.SoteError
-	)
-
-	tPtr.Run("nil error", func(tPtr *testing.T) {
-		testMode = true
-		if soteErr = panicService(parentCtx, sError.SoteError{}); soteErr.ErrCode != nil {
-			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, "nil", soteErr.FmtErrMsg)
-		}
-	})
-
-	tPtr.Run("non nil error", func(tPtr *testing.T) {
-		testMode = true
-		if soteErr = panicService(parentCtx, sError.SoteError{ErrCode: 207500}); soteErr.ErrCode != 207500 {
-			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, "207500", soteErr.FmtErrMsg)
-		}
-	})
-
-	tPtr.Run("non-testMode error", func(tPtr *testing.T) {
-		testMode = false
-		if soteErr = panicService(parentCtx, sError.SoteError{ErrCode: 207500}); soteErr.ErrCode != sError.ErrGenericError {
-			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, sError.ErrGenericError, soteErr.FmtErrMsg)
-		}
-		testMode = true
 	})
 }
 func TestAmazonTextractErrorHandler(tPtr *testing.T) {
@@ -305,41 +276,59 @@ func deleteTestFile[V UploadRes](tPtr *testing.T, uploadRes V, delTestFile *Dele
 	}
 }
 
-func copyTestDocument(tPtr *testing.T, filename string, useProcessedFolder, usePDF bool) (sourceFilepath, targetFilepath string, keys *ObjectKeys,
+func copyTestDocument(tPtr *testing.T, filename string, useProcessedFolder, usePDF bool) (sourceFilepath, targetObjectKey string, keys *ObjectKeys,
 	soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	tPtr.Helper()
 	var (
-		s3ClientServerPtr *S3ClientServer
-		inboundFilepath   string
-		processedFilepath string
+		s3ClientServerPtr  *S3ClientServer
+		inboundObjectKey   string
+		processedObjectKey string
+		contents           []byte
+		metadata           = make(map[string]interface{}, 0)
 	)
 	if s3ClientServerPtr, soteErr = NewS3ClientServer(parentCtx, &DocumentParams{
-		AppConfigName:        sConfigParams.DOCUMENTS,
-		MountPointEnvVarName: TESTDOCUMENTSMOUNTPOINTENVNAME,
-		ClientCompanyId:      TESTCLIENTCOMPANYID,
-		AppEnvironment:       TESTAPPENVIRONMENT,
-		TestMode:             testMode,
-	}); soteErr.ErrCode == nil {
-		keys = GetObjectKeys(filename, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyId))
-		inboundFilepath, processedFilepath, _ = s3ClientServerPtr.GetMountPointFilepath(keys)
+		AppConfigName:     sConfigParams.DOCUMENTS,
+		ClientCompanyName: TESTCLIENTCOMPANYNAMEONE,
+		AppEnvironment:    TESTAPPENVIRONMENT,
+		TestMode:          testMode,
+	}); soteErr.ErrCode != nil {
+		return
+	}
 
-		switch usePDF {
-		case true:
-			sourceFilepath = strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALPDFFILENAME}, "/")
-		case false:
-			sourceFilepath = strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALFILENAME}, "/")
+	keys = GetObjectKeys(filename, fmt.Sprint(s3ClientServerPtr.DocumentParamsPtr.ClientCompanyName))
+	switch usePDF {
+	case true:
+		sourceFilepath = strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALPDFFILENAME}, "/")
+	case false:
+		sourceFilepath = strings.Join([]string{GetFullDirectoryPath(), TESTFILESFOLDER, TESTLOCALFILENAME}, "/")
+	}
 
+	switch useProcessedFolder {
+	case true:
+		targetObjectKey = processedObjectKey
+	case false:
+		targetObjectKey = inboundObjectKey
+	}
+	// Read contents of file to be copied
+	if contents, soteErr = ReadFile(parentCtx, sourceFilepath); soteErr.ErrCode != nil {
+		return
+	}
+	// Upload source document
+	if s3ClientServerPtr.DocumentUpload(parentCtx, keys.InboundObjectKey, contents, GetMIMEType(contents)); soteErr.ErrCode != nil {
+		return
+	}
+	// Copy source object to get embedded metadata
+	if targetObjectKey == keys.ProcessedObjectKey {
+		if soteErr = s3ClientServerPtr.DocumentCopy(parentCtx, keys.InboundObjectKey, targetObjectKey); soteErr.ErrCode != nil {
+			return
 		}
-
-		switch useProcessedFolder {
-		case true:
-			targetFilepath = processedFilepath
-		case false:
-			targetFilepath = inboundFilepath
+	} else {
+		metadata[InboundObjectKeyFieldName.String()] = keys.InboundObjectKey
+		if soteErr = s3ClientServerPtr.EmbedMetadata(parentCtx, keys.InboundObjectKey, metadata); soteErr.ErrCode != nil {
+			return
 		}
-		_, soteErr = s3ClientServerPtr.DocumentCopy(parentCtx, sourceFilepath, targetFilepath)
 	}
 
 	return
