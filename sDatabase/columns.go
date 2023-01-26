@@ -34,7 +34,9 @@ const (
 	STRING             = "varchar"
 	TEXT               = "text"
 	BIGINTEGER         = "bigint"
-	INTEGER            = "integer"
+	BIGSERIAL          = "bigserial" // biginteger auto-increment
+	INTEGER            = "integer"   // integer auto-increment
+	SERIAL             = "serial"
 	BOOLEAN            = "boolean"
 	DOUBLE             = "double"
 	FLOAT              = "float precision"
@@ -278,7 +280,14 @@ func setAddColumnsQuery(isExistingTable bool, columnInfo ColumnsAdd, errorKey st
 func validateDataType(dataType string) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	var types = []string{STRING, TEXT, BIGINTEGER, INTEGER, BOOLEAN, DOUBLE, FLOAT, DATE, TIMESTAMP, TIMESTAMPTZ, CHARACTERVARYING}
+	var types = []string{
+		STRING, TEXT, CHARACTERVARYING,
+		BIGINTEGER, BIGSERIAL, INTEGER, SERIAL,
+		BOOLEAN,
+		DOUBLE, FLOAT,
+		DATE, TIMESTAMP, TIMESTAMPTZ,
+		TSVECTOR,
+	}
 
 	if !slices.Contains(types, strings.ToLower(dataType)) {
 		soteErr = sError.GetSError(sError.ErrInvalidSQLDataType, nil, nil)

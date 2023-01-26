@@ -153,7 +153,24 @@ func TestCORSMiddleware(tPtr *testing.T) {
 		}
 	})
 
-	tPtr.Run("valid CORS "+sConfigParams.STAGING+" or "+sConfigParams.DEMO, func(tPtr *testing.T) {
+	tPtr.Run("valid CORS "+sConfigParams.STAGING, func(tPtr *testing.T) {
+		env := sConfigParams.STAGING
+		httpReqPtr := &httpReqTest{
+			method: http.MethodDelete,
+			path:   "/",
+		}
+
+		routerPtr, reqPtr := setRequestTestHandler(tPtr, httpReqPtr, CORSMiddleware(env))
+		reqPtr.Header = make(map[string][]string, 0)
+		reqPtr.Header.Add("Origin", fmt.Sprintf("https://test.%v.soteapps.com", env))
+		httpResp := httptest.NewRecorder()
+		routerPtr.ServeHTTP(httpResp, reqPtr)
+		if httpResp.Code != http.StatusOK {
+			tPtr.Errorf("%v Failed: Expected response error to be %v got  %v", testName, http.StatusOK, httpResp.Code)
+		}
+	})
+
+	tPtr.Run("valid CORS "+sConfigParams.DEMO, func(tPtr *testing.T) {
 		env := sConfigParams.DEMO
 		httpReqPtr := &httpReqTest{
 			method: http.MethodDelete,

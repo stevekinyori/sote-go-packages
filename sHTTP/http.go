@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gitlab.com/soteapps/packages/v2023/sAuthentication"
+	"gitlab.com/soteapps/packages/v2023/sConfigParams"
 	"gitlab.com/soteapps/packages/v2023/sError"
 	"gitlab.com/soteapps/packages/v2023/sLogger"
 )
@@ -125,9 +126,11 @@ func GetAllowedOrigins(ctx *gin.Context, targetEnvironment string) (origin strin
 	origin = strings.ToLower(ctx.GetHeader("Origin"))
 	sLogger.Info("Checking CORS: " + origin)
 	switch targetEnvironment {
-	case "development", "staging":
-		pattern = `(?i)((^|^[^:]+:\/\/|[^\.]+\.)localhost((:[0-9]{1,4})?(\/[-\w]*\/?)?)$)|(^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.)*?staging\.(soteapps|sote)\.com$)`
-	case "production":
+	case sConfigParams.DEVELOPMENT:
+		pattern = `(?i)((^|^[^:]+:\/\/|[^\.]+\.)localhost((:[0-9]{4})?(\/[-\w]*\/?)?)$)|(^http:\/\/[a-z]{4}[a-z0-9\-]*$)`
+	case sConfigParams.STAGING:
+		pattern = `(?i)((^|^[^:]+:\/\/|[^\.]+\.)localhost((:[0-9]{4})?(\/[-\w]*\/?)?)$)|(^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.)*?staging\.(soteapps|sote)\.com$)`
+	case sConfigParams.PRODUCTION:
 		pattern = `(?i)^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.){0,1}soteapps|sote\.com$`
 	default:
 		pattern = fmt.Sprintf(`(?i)^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.)*?%v\.soteapps|sote\.com$`, targetEnvironment)
