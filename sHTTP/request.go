@@ -3,8 +3,11 @@ package sHTTP
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"mime"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
@@ -151,11 +154,12 @@ func PrepareMessage(ctx context.Context, req *RequestParams, requestMap interfac
 }
 
 // ReadRequest reads data from HTTP request
-func ReadRequest(ctx *gin.Context) (reqMsg []byte, soteErr sError.SoteError) {
+func ReadRequest(ctx *gin.Context, preserveMultipartDataType map[string]bool) (reqMsg []byte, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
 	var (
-		err error
+		err       error
+		mediaType string
 	)
 
 	switch ctx.Request.Method {
@@ -165,7 +169,11 @@ func ReadRequest(ctx *gin.Context) (reqMsg []byte, soteErr sError.SoteError) {
 			reqMsg, err = base64.StdEncoding.DecodeString(qParams)
 		}
 	default:
-		reqMsg, err = ioutil.ReadAll(ctx.Request.Body)
+		if mediaType, _, err = mime.ParseMediaType(ctx.Request.Header.Get("Content-Type")); err == nil && strings.HasPrefix(mediaType, "multipart/") {
+			reqMsg, err = ConvertFormDataToByte(ctx, preserveMultipartDataType)
+		} else {
+			reqMsg, err = ioutil.ReadAll(ctx.Request.Body)
+		}
 	}
 
 	if err != nil {
@@ -174,6 +182,50 @@ func ReadRequest(ctx *gin.Context) (reqMsg []byte, soteErr sError.SoteError) {
 	}
 
 	ctx.Header("origin", ctx.Request.Host)
+
+	return
+}
+
+// ConvertFormDataToByte Will convert form-RequestMsg to []byte
+func ConvertFormDataToByte(ctx *gin.Context, preserveMultipartDataType map[string]bool) (reqMsg []byte, err error) {
+	sLogger.DebugMethod()
+
+	var (
+		form    *multipart.Form
+		vInt    int
+		tReqMsg = make(map[string]interface{})
+		boolVal bool
+	)
+
+	if form, err = ctx.MultipartForm(); err == nil {
+		for k, formValue := range form.Value {
+			if preserveMultipartDataType == nil {
+				tReqMsg[k] = formValue[0]
+			} else if preserve, found := preserveMultipartDataType[k]; found {
+				if preserve {
+					tReqMsg[k] = formValue
+				} else {
+					// Convert string boolean value to boolean
+					if boolVal, err = strconv.ParseBool(strings.Trim(formValue[0], " ")); err == nil {
+						tReqMsg[k] = boolVal
+					}
+				}
+			} else {
+				tReqMsg[k] = formValue[0]
+			}
+
+			if vInt, err = strconv.Atoi(formValue[0]); err == nil {
+				tReqMsg[k] = vInt
+			}
+		}
+
+		for k, formFiles := range form.File {
+			tReqMsg[k] = formFiles
+		}
+
+		ctx.Set(FORMKEY, form.File)
+		reqMsg, err = json.Marshal(tReqMsg)
+	}
 
 	return
 }

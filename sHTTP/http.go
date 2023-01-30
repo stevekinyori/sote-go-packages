@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	FORMKEY      = "formKey"
 	BEARERSCHEMA = "Bearer "
 )
 

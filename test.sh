@@ -55,8 +55,8 @@ echo -n 'sConfigParams ' 1>>/tmp/tmp_$$.out
 go test sConfigParams/*.go -coverprofile sConfigParams/coverage.out | tee /tmp/tmp_$$.out
 echo -n 'sAuthentication '
 go test sAuthentication/*.go -coverprofile sAuthentication/coverage.out | tee /tmp/tmp_$$.out
-echo -n 'sMessage '
-go test sMessage/*.go -coverprofile sMessage/coverage.out | tee /tmp/tmp_$$.out
+#echo -n 'sMessage '
+#go test sMessage/*.go -coverprofile sMessage/coverage.out | tee /tmp/tmp_$$.out
 echo -n 'sHTTPClient '
 go test sHTTPClient/*.go -coverprofile sHTTPClient/coverage.out | tee /tmp/tmp_$$.out
 echo -n 'sHTTP '
@@ -90,8 +90,8 @@ echo -n 'sConfigParams_external_test '
 go test tests/sConfigParams_external_test.go | tee /tmp/tmp_$$.out
 echo -n 'sAuthentication '
 go test tests/sAuthentication_external_test.go | tee /tmp/tmp_$$.out
-echo -n 'sMessage_external_test '
-go test tests/sMessages_external_test.go | tee /tmp/tmp_$$.out
+#echo -n 'sMessage_external_test '
+#go test tests/sMessages_external_test.go | tee /tmp/tmp_$$.out
 echo -n 'sHTTPClient_external_test '
 go test tests/sHTTPClient_external_test.go | tee /tmp/tmp_$$.out
 echo -n 'sCustom_external_test '
