@@ -321,6 +321,13 @@ func SetReqHeaders(req *http.Request, headers map[string][]string) {
 func ConvertError(soteErr sError.SoteError) (statusCode int) {
 	sLogger.DebugMethod()
 
+	switch soteErr.ErrCode.(type) {
+	case float64:
+		soteErr.ErrCode = int(soteErr.ErrCode.(float64))
+	case float32:
+		soteErr.ErrCode = int(soteErr.ErrCode.(float32))
+	}
+
 	sLogger.Info(soteErr.FmtErrMsg)
 	// convert Sote Error to HTTP Errors
 	switch soteErr.ErrCode {
