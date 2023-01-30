@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	"bou.ke/monkey"
-	"github.com/dgrijalva/jwt-go"
 	"gitlab.com/soteapps/packages/v2023/sConfigParams"
 	"gitlab.com/soteapps/packages/v2023/sError"
 )
@@ -31,19 +28,6 @@ func validateBodyTest(environment string, data []byte) sError.SoteError {
 }
 
 func validateBodyMock(data []byte, tEnvironment string) sError.SoteError {
-	var (
-		validPatch  *monkey.PatchGuard
-		verifyPatch *monkey.PatchGuard
-		rsa         *jwt.SigningMethodRSA
-	)
-	validPatch = monkey.Patch(jwt.MapClaims.Valid, func(jwt.MapClaims) error {
-		validPatch.Unpatch()
-		return nil
-	})
-	verifyPatch = monkey.PatchInstanceMethod(reflect.TypeOf(rsa), "Verify", func(*jwt.SigningMethodRSA, string, string, interface{}) error {
-		verifyPatch.Unpatch()
-		return nil
-	})
 	_, soteError := ValidateBody(parentCtx, data, tEnvironment, true)
 	return soteError
 }
@@ -155,7 +139,8 @@ func TestRequestRequesrHeaderReleaseOne(t *testing.T) {
 		"aws-user-name": "soteuser",
 		"organizations-id": 10003
 	}`), sConfigParams.DEVELOPMENT)
-	AssertEqual(t, soteErr.FmtErrMsg, "")
+	fmt.Println(soteErr)
+	AssertEqual(t, soteErr.ErrCode, sError.ErrExpiredToken)
 }
 
 func TestRequestRequesrHeaderFutureReleases(t *testing.T) {
@@ -166,5 +151,5 @@ func TestRequestRequesrHeaderFutureReleases(t *testing.T) {
 			"organizations-id": 10003
 		}
 	}`), sConfigParams.DEVELOPMENT)
-	AssertEqual(t, soteErr.FmtErrMsg, "")
+	AssertEqual(t, soteErr.ErrCode, sError.ErrExpiredToken)
 }
