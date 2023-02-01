@@ -179,7 +179,7 @@ func ReadRequest(ctx *gin.Context) (reqMsg []byte, soteErr sError.SoteError) {
 }
 
 // BindMultipart Binds Gin form data with the given struct
-func BindMultipart(ctx *gin.Context, requestMap interface{}) (formData bool, soteErr sError.SoteError) {
+func BindMultipart(ctx *gin.Context, requestMap interface{}) (soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 	if mediaType, _, _ := mime.ParseMediaType(ctx.Request.Header.Get("Content-Type")); strings.HasPrefix(mediaType, "multipart/") {
 		if err := ctx.ShouldBind(requestMap); err != nil {
@@ -188,8 +188,6 @@ func BindMultipart(ctx *gin.Context, requestMap interface{}) (formData bool, sot
 				sError.EmptyMap)
 			return
 		}
-
-		formData = true
 	}
 
 	return

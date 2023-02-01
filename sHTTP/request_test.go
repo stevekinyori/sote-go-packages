@@ -439,7 +439,7 @@ func TestBindMultipart(tPtr *testing.T) {
 		httpResp := httptest.NewRecorder()
 		ctx, _ := gin.CreateTestContext(httpResp)
 		ctx.Request = reqPtr
-		if _, soteErr = BindMultipart(ctx, resp); soteErr.ErrCode != nil {
+		if soteErr = BindMultipart(ctx, resp); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
 	})
@@ -461,7 +461,7 @@ func TestBindMultipart(tPtr *testing.T) {
 		httpResp := httptest.NewRecorder()
 		ctx, _ := gin.CreateTestContext(httpResp)
 		ctx.Request = reqPtr
-		if _, soteErr = BindMultipart(ctx, resp); soteErr.ErrCode != sError.ErrGenericError {
+		if soteErr = BindMultipart(ctx, resp); soteErr.ErrCode != sError.ErrGenericError {
 			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, sError.ErrGenericError, soteErr.FmtErrMsg)
 		}
 	})
