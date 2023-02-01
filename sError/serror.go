@@ -114,6 +114,7 @@ const (
 	ErrJSONConversionError                   = 207105
 	ErrInvalidJSON                           = 207110
 	ErrMapConversionError                    = 207111
+	ErrFormDataConversionError               = 207112
 	ErrConversionError                       = 207200
 	ErrColumnNotNullable                     = 208000
 	ErrInvalidSQLDataType                    = 208010
@@ -248,6 +249,7 @@ var (
 		207110: {207110, CONTENTERROR, 1, "Parameter name", ": %v couldn't be parsed - Invalid JSON error", EmptyMap, "", nil},
 		207111: {207111, CONTENTERROR, 2, "Parameter name, Application/Package name", ": %v couldn't be converted to a map/keyed array - %v",
 			EmptyMap, "", nil},
+		207112: {207112, CONTENTERROR, 1, "Parameter name", ": %v couldn't be parsed - Invalid Form Data error", EmptyMap, "", nil},
 		207200: {207200, CONTENTERROR, 2, "Parameter name, Data Structure Type", ": %v couldn't be converted to an %v", EmptyMap, "", nil},
 		208000: {208000, CONTENTERROR, 0, "None", ": Column must have a non-null value. Details: ", EmptyMap, "", nil},
 		208010: {208010, CONTENTERROR, 0, "None", ": Column data type is not supported", EmptyMap, "", nil},

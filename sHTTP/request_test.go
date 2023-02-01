@@ -342,7 +342,7 @@ func TestReadRequest(tPtr *testing.T) {
 		httpResp := httptest.NewRecorder()
 		ctx, _ := gin.CreateTestContext(httpResp)
 		ctx.Request = reqPtr
-		if _, soteErr = ReadRequest(ctx, nil); soteErr.ErrCode != nil {
+		if _, soteErr = ReadRequest(ctx); soteErr.ErrCode != nil {
 			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, "nil", soteErr.FmtErrMsg)
 		}
 	})
@@ -362,7 +362,7 @@ func TestReadRequest(tPtr *testing.T) {
 		httpResp := httptest.NewRecorder()
 		ctx, _ := gin.CreateTestContext(httpResp)
 		ctx.Request = reqPtr
-		if _, soteErr = ReadRequest(ctx, nil); soteErr.ErrCode != sError.ErrGenericError {
+		if _, soteErr = ReadRequest(ctx); soteErr.ErrCode != sError.ErrGenericError {
 			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, sError.ErrGenericError, soteErr.FmtErrMsg)
 		}
 	})

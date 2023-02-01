@@ -120,7 +120,7 @@ go tool cover -func=sError/coverage.out >>coverage_review.out
 go tool cover -func=sDatabase/coverage.out >>coverage_review.out
 go tool cover -func=sConfigParams/coverage.out >>coverage_review.out
 go tool cover -func=sAuthentication/coverage.out >>coverage_review.out
-go tool cover -func=sMessage/coverage.out >>coverage_review.out
+#go tool cover -func=sMessage/coverage.out >>coverage_review.out
 go tool cover -func=sHTTPClient/coverage.out >>coverage_review.out
 go tool cover -func=sCustom/coverage.out >>coverage_review.out
 go tool cover -func=sHTTP/coverage.out >>coverage_review.out
@@ -130,7 +130,7 @@ rm sError/coverage.out 2>/dev/null
 rm sDatabase/coverage.out 2>/dev/null
 rm sConfigParams/coverage.out 2>/dev/null
 rm sAuthentication/coverage.out 2>/dev/null
-rm sMessage/coverage.out 2>/dev/null
+#rm sMessage/coverage.out 2>/dev/null
 rm sHTTPClient/coverage.out 2>/dev/null
 rm sCustom/coverage.out 2>/dev/null
 rm sHTTP/coverage.out 2>/dev/null
