@@ -11,7 +11,6 @@ require (
 	github.com/ddliu/go-httpclient v0.6.9
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
 	github.com/gin-gonic/gin v1.8.2
-	github.com/go-playground/form v3.1.4+incompatible
 	github.com/go-playground/mold/v4 v4.2.0
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/google/uuid v1.3.0
@@ -75,6 +74,5 @@ require (
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

@@ -5,13 +5,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"mime"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/form"
 	"github.com/go-playground/mold/v4/modifiers"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -32,7 +31,6 @@ type LeafReqParams struct {
 // RequestParams Holds request message parameters
 type RequestParams struct {
 	RequestMsg   []byte
-	FormData     url.Values
 	Headers      map[string][]string
 	JSONWebToken string
 	TestMode     bool
@@ -135,16 +133,7 @@ func PrepareMessage(ctx context.Context, req *RequestParams, requestMap interfac
 	sLogger.DebugMethod()
 
 	if requestMap != nil {
-		if len(req.FormData) > 0 {
-			decoder := form.NewDecoder()
-			if err := decoder.Decode(requestMap, req.FormData); err != nil {
-				sLogger.Info(err.Error())
-				soteErr = sError.ConvertError(sError.GetSError(sError.ErrFormDataConversionError, sError.BuildParams([]string{req.FormData.Encode()}),
-					sError.EmptyMap),
-					req.TestMode)
-				return
-			}
-		} else if soteErr = sCustom.JSONUnmarshal(ctx, req.RequestMsg, &requestMap); soteErr.ErrCode != nil {
+		if soteErr = sCustom.JSONUnmarshal(ctx, req.RequestMsg, &requestMap); soteErr.ErrCode != nil {
 			soteErr = sError.ConvertError(soteErr, req.TestMode)
 			return
 		}
@@ -174,7 +163,9 @@ func ReadRequest(ctx *gin.Context) (reqMsg []byte, soteErr sError.SoteError) {
 			reqMsg, err = base64.StdEncoding.DecodeString(qParams)
 		}
 	default:
-		reqMsg, err = ioutil.ReadAll(ctx.Request.Body)
+		if mediaType, _, _ := mime.ParseMediaType(ctx.Request.Header.Get("Content-Type")); !strings.HasPrefix(mediaType, "multipart/") {
+			reqMsg, err = ioutil.ReadAll(ctx.Request.Body)
+		}
 	}
 
 	if err != nil {
@@ -183,6 +174,23 @@ func ReadRequest(ctx *gin.Context) (reqMsg []byte, soteErr sError.SoteError) {
 	}
 
 	ctx.Header("origin", ctx.Request.Host)
+
+	return
+}
+
+// BindMultipart Binds Gin form data with the given struct
+func BindMultipart(ctx *gin.Context, requestMap interface{}) (formData bool, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+	if mediaType, _, _ := mime.ParseMediaType(ctx.Request.Header.Get("Content-Type")); strings.HasPrefix(mediaType, "multipart/") {
+		if err := ctx.ShouldBind(requestMap); err != nil {
+			sLogger.Info(err.Error())
+			soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{fmt.Sprint(err.Error())}),
+				sError.EmptyMap)
+			return
+		}
+
+		formData = true
+	}
 
 	return
 }

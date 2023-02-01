@@ -1,7 +1,9 @@
 package sHTTP
 
 import (
+	"bytes"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"runtime"
@@ -407,4 +409,61 @@ func TestValidateRequestMessage(tPtr *testing.T) {
 			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, sError.ErrInvalidMsgSignature, soteErr.FmtErrMsg)
 		}
 	})
+}
+
+func TestBindMultipart(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+	)
+
+	type testStruct struct {
+		Id   int    `form:"id"`
+		Name string `form:"name"`
+		Age  int    `form:"age"`
+	}
+	tPtr.Run("valid", func(tPtr *testing.T) {
+		var (
+			reqMessage = fmt.Sprintf("{\"id\": 1,\"name\": %q,\"age\": 1}", "name")
+			resp       = &testStruct{}
+		)
+
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+		part, _ := writer.CreateFormField("message")
+		_, _ = part.Write([]byte(reqMessage))
+		_ = writer.Close()
+		reqPtr := httptest.NewRequest(http.MethodPost, "/test", body)
+		reqPtr.Header.Add("Content-Type", writer.FormDataContentType())
+		httpResp := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(httpResp)
+		ctx.Request = reqPtr
+		if _, soteErr = BindMultipart(ctx, resp); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
+
+	tPtr.Run("invalid", func(tPtr *testing.T) {
+		var (
+			reqMessage = fmt.Sprintf("{\"id\": 1,\"name\":1,\"age\":  %q}", TESTAWSNAME)
+			httpReqPtr = &httpReqTest{
+				method: http.MethodDelete,
+				path:   "/",
+				params: map[string]string{"params": reqMessage},
+			}
+			resp = &testStruct{}
+		)
+
+		_, reqPtr := setRequestTestHandler(tPtr, httpReqPtr, CORSMiddleware(sConfigParams.DEVELOPMENT))
+		reqPtr.Header = make(map[string][]string, 0)
+		reqPtr.Header.Add("Content-Type", "multipart/form-data")
+		httpResp := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(httpResp)
+		ctx.Request = reqPtr
+		if _, soteErr = BindMultipart(ctx, resp); soteErr.ErrCode != sError.ErrGenericError {
+			tPtr.Errorf("%v Failed: Expected return to be %v got %v", testName, sError.ErrGenericError, soteErr.FmtErrMsg)
+		}
+	})
+
 }

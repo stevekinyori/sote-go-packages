@@ -886,6 +886,22 @@ func TestConvertError(tPtr *testing.T) {
 			tPtr.Errorf("%v Failed: Expected HTTP status code to be %v got %v", testName, http.StatusNotFound, statusCode)
 		}
 	})
+
+	tPtr.Run("float64 ErrCode", func(tPtr *testing.T) {
+		if statusCode := ConvertError(sError.SoteError{
+			ErrCode: float64(sError.ErrItemNotFound),
+		}); statusCode != http.StatusNotFound {
+			tPtr.Errorf("%v Failed: Expected HTTP status code to be %v got %v", testName, http.StatusNotFound, statusCode)
+		}
+	})
+
+	tPtr.Run("float32 ErrCode", func(tPtr *testing.T) {
+		if statusCode := ConvertError(sError.SoteError{
+			ErrCode: float32(sError.ErrItemNotFound),
+		}); statusCode != http.StatusNotFound {
+			tPtr.Errorf("%v Failed: Expected HTTP status code to be %v got %v", testName, http.StatusNotFound, statusCode)
+		}
+	})
 }
 
 // setRequestTestHandler start a test server and return the server request options
