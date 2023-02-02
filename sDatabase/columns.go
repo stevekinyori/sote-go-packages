@@ -38,7 +38,7 @@ const (
 	INTEGER            = "integer"   // integer auto-increment
 	SERIAL             = "serial"
 	BOOLEAN            = "boolean"
-	DOUBLE             = "double"
+	DOUBLE             = "double precision"
 	FLOAT              = "float precision"
 	DATE               = "date"
 	TIMESTAMP          = "timestamp"
