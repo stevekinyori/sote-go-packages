@@ -46,6 +46,8 @@ import (
 	"gitlab.com/soteapps/packages/v2023/sCustom"
 	"gitlab.com/soteapps/packages/v2023/sError"
 	"gitlab.com/soteapps/packages/v2023/sLogger"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -171,122 +173,93 @@ func NewS3ClientServer(ctx context.Context, documentParamsPtr *DocumentParams,
 
 // MultipleDocumentsUpload Uploads multiple documents
 func (s3sPtr *S3ClientServer) MultipleDocumentsUpload(ctx context.Context) (uploadResponse map[string][]*UploadResponse,
-	attachment []string, soteErr sError.SoteError) {
+	attachments []string, soteErr sError.SoteError) {
 	sLogger.DebugMethod()
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
 	var (
-		formFiles                     = s3sPtr.DocumentParamsPtr.FormFiles
-		tParentDocResponse            []*UploadResponse
-		tSupportingDocsResponse       []*UploadResponse
-		supportingDocsAttachments     []string
-		parentDocAttachment           []string
-		wg                            sync.WaitGroup
-		parentDocChan                 = make(chan []*UploadResponse)
-		supportingDocsChan            = make(chan []*UploadResponse)
-		supportingDocsAttachmentsChan = make(chan []string)
-		parentDocAttachmentsChan      = make(chan []string)
-		soteErrChan                   = make(chan sError.SoteError)
-		uploadResChan                 = make(chan *UploadResponse)
-		parentSoteErr                 sError.SoteError
-
-		// supportingSoteErr             sError.SoteError
+		formFiles = s3sPtr.DocumentParamsPtr.FormFiles
+		// wgCtx, cancel   = context.WithCancel(ctx)
+		wg              sync.WaitGroup
+		mapSize         = len(formFiles)
+		soteErrChan     = make(chan sError.SoteError, 1)
+		uploadResChan   = make(chan map[string][]*UploadResponse, mapSize)
+		attachmentsChan = make(chan []string, mapSize)
 	)
+
 	uploadResponse = make(map[string][]*UploadResponse)
-	wgCtx, cancel := context.WithCancel(ctx)
-	defer cancel() // Make sure cancel is called to release resources even if no errors
-	defer close(parentDocChan)
-	defer close(supportingDocsChan)
-	defer close(supportingDocsAttachmentsChan)
-	defer close(parentDocAttachmentsChan)
-	go func() {
-		var (
-			tUploadRes *UploadResponse
-			uploadsRes []*UploadResponse
-		)
-		wg.Add(1)
+	// defer cancel() // Make sure cancel is called to release resources even if no errors
 
-		sLogger.Info("starting parent-document upload...")
-		for _, file := range formFiles[ParentDocumentKey.String()] {
-			if openedFile, err := file.Open(); err != nil {
-				break
-			} else {
-				go s3sPtr.DocumentsUpload(wgCtx, &FileParams{
-					Wg:                 &wg,
-					ErrChan:            soteErrChan,
-					UploadResponseChan: uploadResChan,
-					File:               openedFile,
-					Filename:           file.Filename,
-				})
-				if parentSoteErr = <-soteErrChan; parentSoteErr.ErrCode == nil {
-					tUploadRes = <-uploadResChan
-					uploadsRes = append(uploadsRes, tUploadRes)
-					parentDocChan <- uploadsRes
-					parentDocAttachmentsChan <- []string{uploadsRes[0].ProcessedDocumentLink}
-				} else {
-					parentDocChan <- []*UploadResponse{}
-					parentDocAttachmentsChan <- []string{}
-				}
-			}
-		}
+	wg.Add(mapSize)
+	go func() {
+		wg.Wait()
+		close(soteErrChan)
+		close(uploadResChan)
+		close(attachmentsChan)
 	}()
 
-	go func() {
-		var (
-			tUploadRes  *UploadResponse
-			uploadsRes  []*UploadResponse
-			attachments []string
-		)
+	for fileType, files := range formFiles {
+		go func(fileType string, files []*multipart.FileHeader) {
+			defer wg.Done()
+			if !slices.Contains([]string{ParentDocumentKey.String(), SupportingDocumentsKey.String()}, fileType) {
 
-		if files, found := formFiles[SupportingDocumentsKey.String()]; found {
-			sLogger.Info("starting supporting-documents upload...")
+				return
+			}
+			var (
+				sliceSize      = len(files)
+				tUploadsRes    = make(map[string][]*UploadResponse, 0)
+				tAttachments   = make([]string, 0)
+				tSoteErrChan   = make(chan sError.SoteError, sliceSize)
+				tUploadResChan = make(chan *UploadResponse)
+				tWg            = sync.WaitGroup{}
+			)
+			tWg.Add(sliceSize)
+			go func() {
+				tWg.Wait()
+				close(tUploadResChan)
+				close(tSoteErrChan)
+			}()
 			for _, file := range files {
-				wg.Add(1)
-
-				if openedFile, err := file.Open(); err != nil {
-					break
-				} else {
-					go s3sPtr.DocumentsUpload(wgCtx, &FileParams{
-						Wg:                 &wg,
-						ErrChan:            soteErrChan,
-						UploadResponseChan: uploadResChan,
-						File:               openedFile,
-						Filename:           file.Filename,
-					})
-					// todo: determine if we care about this error
-					if tSoteErr := <-soteErrChan; tSoteErr.ErrCode == nil {
-						tUploadRes = <-uploadResChan
-						uploadsRes = append(uploadsRes, tUploadRes)
-						attachments = append(attachments, tUploadRes.ProcessedDocumentLink)
+				go func(tFile *multipart.FileHeader) {
+					if openedFile, err := tFile.Open(); err != nil {
+						tUploadResChan <- &UploadResponse{}
+						tSoteErrChan <- sError.SoteError{}
+						tWg.Done()
+					} else {
+						s3sPtr.DocumentsUpload(ctx, &FileParams{
+							Wg:                 &tWg,
+							ErrChan:            tSoteErrChan,
+							UploadResponseChan: tUploadResChan,
+							File:               openedFile,
+							Filename:           tFile.Filename,
+						})
 					}
+				}(file)
+
+				if tSoteErr := <-tSoteErrChan; tSoteErr.ErrCode != nil && tSoteErr.ErrCode != sError.ErrContextCancelled {
+					soteErrChan <- tSoteErr
+					return
 				}
+
+				tRes := <-tUploadResChan
+				tUploadsRes[fileType] = append(tUploadsRes[fileType], tRes)
+				tAttachments = append(tAttachments, tRes.ProcessedDocumentLink)
 			}
-			supportingDocsChan <- uploadsRes
-			supportingDocsAttachmentsChan <- attachments
-		} else {
-			supportingDocsChan <- []*UploadResponse{}
-			supportingDocsAttachmentsChan <- []string{}
-		}
-	}()
 
-	tParentDocResponse = <-parentDocChan
-	tSupportingDocsResponse = <-supportingDocsChan
-	supportingDocsAttachments = <-supportingDocsAttachmentsChan
-	parentDocAttachment = <-parentDocAttachmentsChan
-	attachment = append(parentDocAttachment, supportingDocsAttachments...)
-	// Populate Upload Response
-	uploadResponse[ParentDocumentKey.String()] = tParentDocResponse
-	if len(tSupportingDocsResponse) > 0 {
-		uploadResponse[SupportingDocumentsKey.String()] = tSupportingDocsResponse
+			attachmentsChan <- tAttachments
+			uploadResChan <- tUploadsRes
+		}(fileType, files)
 	}
 
-	if parentSoteErr.ErrCode != nil {
-		soteErr = parentSoteErr
+	if soteErr = <-soteErrChan; soteErr.ErrCode != nil {
+		return
 	}
 
-	wg.Wait()
+	for i := 0; i < mapSize; i++ {
+		maps.Copy(uploadResponse, <-uploadResChan)
+		attachments = append(attachments, <-attachmentsChan...)
+	}
 
-	return
+	return uploadResponse, attachments, soteErr
 }
 
 /*DocumentsUpload  Will upload a document to S3 Bucket without use of a mount-point*/
