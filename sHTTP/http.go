@@ -131,9 +131,9 @@ func GetAllowedOrigins(ctx *gin.Context, targetEnvironment string) (origin strin
 	case sConfigParams.STAGING:
 		pattern = `(?i)((^|^[^:]+:\/\/|[^\.]+\.)localhost((:[0-9]{4})?(\/[-\w]*\/?)?)$)|(^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.)*?staging\.(soteapps|sote)\.com$)`
 	case sConfigParams.PRODUCTION:
-		pattern = `(?i)^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.){0,1}soteapps|sote\.com$`
+		pattern = `(?i)^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.){0,1}(soteapps|sote)\.com$`
 	default:
-		pattern = fmt.Sprintf(`(?i)^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.)*?%v\.soteapps|sote\.com$`, targetEnvironment)
+		pattern = fmt.Sprintf(`(?i)^https:\/\/([a-z0-9]+([a-z0-9-]{1,61}[a-z0-9])?\.)*?%v\.(soteapps|sote)\.com$`, targetEnvironment)
 	}
 
 	if len(regexp.MustCompile(pattern).FindStringIndex(origin)) == 0 {
