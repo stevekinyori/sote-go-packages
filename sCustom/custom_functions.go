@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/mail"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -389,6 +390,28 @@ func readFileAndReplace(source, replaceRegex, replaceNew string) (fPtr *bufio.Re
 		data = regexp.MustCompile(replaceRegex).ReplaceAllString(string(dataBytes), replaceNew)
 		fPtr.Reset(bytes.NewBufferString(data))
 	}
+
+	return
+}
+
+// ParseEmail validates if the email address is correct and also gets it from format <example.user@test.com>
+func ParseEmail(emailAddress string) (validatedEmail string, soteErr sError.SoteError) {
+	sLogger.DebugMethod()
+	var (
+		address = &mail.Address{}
+		err     error
+		regex   = &regexp.Regexp{}
+	)
+
+	// regex
+	regex = regexp.MustCompile(`"(?m)^|\\n|\\r|\\t|\n|\r|\t|[ \t \n \r]$|\n|\r|\t|[ \t \n \n]||\\n|\\r|\\t"`)
+	// remove leading and trailing spaces and parse the email address to verify the email address and remove '<'
+	if address, err = mail.ParseAddress(strings.Trim(regex.ReplaceAllString(emailAddress, ""), " ")); err != nil {
+		soteErr = sError.GetSError(sError.ErrGenericError, sError.BuildParams([]string{"invalid email address"}), sError.EmptyMap)
+		return
+	}
+
+	validatedEmail = address.Address
 
 	return
 }

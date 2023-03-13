@@ -18,8 +18,10 @@ package sCustom
 import (
 	// Add imports here
 
+	"runtime"
 	"testing"
 
+	"gitlab.com/soteapps/packages/v2023/sError"
 	"gitlab.com/soteapps/packages/v2023/sLogger"
 )
 
@@ -45,4 +47,29 @@ func TestMarshal(tPtr *testing.T) {
 	if _, soteErr := JSONMarshal(v); soteErr.ErrCode != nil {
 		tPtr.Errorf("TestMarshal Failed: Expected error code to be %v but got %v", nil, soteErr.FmtErrMsg)
 	}
+}
+func TestParseEmail(tPtr *testing.T) {
+	var (
+		function, _, _, _ = runtime.Caller(0)
+		testName          = runtime.FuncForPC(function).Name()
+		soteErr           sError.SoteError
+	)
+
+	tPtr.Run("valid email with special characters", func(tPtr *testing.T) {
+		if _, soteErr = ParseEmail("\r\n\ttuser.test@example.com\n\t"); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
+
+	tPtr.Run("valid email with extra characters", func(tPtr *testing.T) {
+		if _, soteErr = ParseEmail("User <user.test@example.com>"); soteErr.ErrCode != nil {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, "nil", soteErr.FmtErrMsg)
+		}
+	})
+
+	tPtr.Run("invalid email", func(tPtr *testing.T) {
+		if _, soteErr = ParseEmail("example"); soteErr.ErrCode != sError.ErrGenericError {
+			tPtr.Errorf("%v Failed: Expected error code to be %v but got %v", testName, sError.ErrGenericError, soteErr.FmtErrMsg)
+		}
+	})
 }
