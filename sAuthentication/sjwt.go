@@ -2,6 +2,7 @@ package sAuthentication
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -9,6 +10,7 @@ import (
 	"gitlab.com/soteapps/packages/v2023/sConfigParams"
 	"gitlab.com/soteapps/packages/v2023/sError"
 	"gitlab.com/soteapps/packages/v2023/sLogger"
+	"golang.org/x/exp/slices"
 )
 
 type Config struct {
@@ -159,7 +161,7 @@ func validateClaims(ctx context.Context, claims jwt.MapClaims, tEnvironment stri
 			switch key {
 			case "scope":
 				claimCount++
-				if claim != "aws.cognito.signin.user.admin" {
+				if !slices.Contains([]string{"aws.cognito.signin.user.admin", "email", "openid", "profile"}, fmt.Sprint(claim)) {
 					soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
 					sLogger.Info(soteErr.FmtErrMsg)
 				} else {
