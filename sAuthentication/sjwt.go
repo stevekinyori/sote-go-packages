@@ -156,56 +156,59 @@ func validateClaims(ctx context.Context, claims jwt.MapClaims, tEnvironment stri
 		region, userPoolId string
 	)
 
-	for key, claim := range claims {
-		if soteErr.ErrCode == nil {
-			switch key {
-			case "scope":
-				claimCount++
-				if !slices.Contains([]string{"aws.cognito.signin.user.admin", "email", "openid", "profile"}, fmt.Sprint(claim)) {
-					soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
+	for key, tClaim := range claims {
+		claim := fmt.Sprint(tClaim)
+		switch key {
+		case "scope":
+			for _, s := range strings.Split(claim, " ") {
+				if !slices.Contains([]string{"aws.cognito.signin.user.admin", "email", "openid", "profile"}, strings.TrimSpace(s)) {
+					soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{s}), sError.EmptyMap)
 					sLogger.Info(soteErr.FmtErrMsg)
-				} else {
-					sLogger.Info("Claim (scope) was found")
+
+					return
 				}
-			case "token_use":
-				claimCount++
-				if claim != "access" {
-					soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
-					sLogger.Info(soteErr.FmtErrMsg)
-				} else {
-					sLogger.Info("Claim (token_use) was found")
-				}
-			case "iss":
-				claimCount++
-				if region, soteErr = sConfigParams.GetRegion(ctx); soteErr.ErrCode == nil {
-					if userPoolId, soteErr = sConfigParams.GetUserPoolId(ctx, tEnvironment); soteErr.ErrCode == nil {
-						issuerURL := "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId
-						if claim != issuerURL {
-							soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
-							sLogger.Info(soteErr.FmtErrMsg)
-						} else {
-							sLogger.Info("Claim (iss) was found")
-						}
-					} else {
-						soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
-						sLogger.Info(soteErr.FmtErrMsg)
-					}
-				} else {
-					soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim.(string)}), sError.EmptyMap)
-					sLogger.Info(soteErr.FmtErrMsg)
-				}
-				/*case "client_id":
-				claimCount++
-				if soteErr = validateClientId(claim.(string), tApplication, tEnvironment); soteErr.ErrCode == nil {
-					sLogger.Info("Claim (client_id) was found")
-				}*/
 			}
-		} else {
-			break
+
+			claimCount++
+			sLogger.Info("A valid claim (scope) was found")
+		case "token_use":
+			if claim != "access" {
+				soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim}), sError.EmptyMap)
+				sLogger.Info(soteErr.FmtErrMsg)
+
+				return
+			}
+
+			claimCount++
+			sLogger.Info("A valid claim (token_use) was found")
+		case "iss":
+			if region, soteErr = sConfigParams.GetRegion(ctx); soteErr.ErrCode != nil {
+				soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim}), sError.EmptyMap)
+				sLogger.Info(soteErr.FmtErrMsg)
+
+				return
+			}
+
+			if userPoolId, soteErr = sConfigParams.GetUserPoolId(ctx, tEnvironment); soteErr.ErrCode != nil {
+				soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim}), sError.EmptyMap)
+				sLogger.Info(soteErr.FmtErrMsg)
+				return
+			}
+
+			issuerURL := "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId
+			if claim != issuerURL {
+				soteErr = sError.GetSError(sError.ErrInvalidClaims, sError.BuildParams([]string{claim}), sError.EmptyMap)
+				sLogger.Info(soteErr.FmtErrMsg)
+
+				return
+			}
+
+			claimCount++
+			sLogger.Info("A valid claim (iss) was found")
 		}
 	}
 
-	if claimCount != 3 && soteErr.ErrCode == nil {
+	if claimCount != 3 {
 		soteErr = sError.GetSError(sError.ErrMissingClaims, nil, sError.EmptyMap)
 		sLogger.Info(soteErr.FmtErrMsg)
 	}
